@@ -30,7 +30,7 @@ This document defines the **minimum playable version** of the game, including:
 
 - **Shooting:**  
   The ship fires bullets automatically at regular intervals (e.g. every 300 ms).  
-  Bullets travel **left to right** and are destroyed offscreen or on hit.
+  Bullets travel **from left to right** (from player toward enemies) and are destroyed offscreen or on hit.
 
 - **Collision:**  
   The player is destroyed if:
@@ -49,7 +49,7 @@ Each wave contains a mix of enemies from the following types:
 - Dies from one hit
 
 ### 2. **Kamikaze**
-- Moves slowly but **tracks the player’s vertical position**
+- Moves slowly but **tracks the player's vertical position**
 - Gradually curves toward the player
 - Dies from one hit
 

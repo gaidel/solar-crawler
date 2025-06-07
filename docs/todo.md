@@ -66,3 +66,23 @@ Check off each item as it's completed.
 - [ ] Create Game Over screen with restart
 - [ ] Create Victory screen after wave 8
 - [ ] Add Restart logic
+
+---
+
+## 🛠️ Code Quality & Bug Fixes
+
+- [x] Remove debug graphics from production build
+- [x] Disable physics debug mode in production
+- [ ] Remove console.log statements from production code
+- [ ] Add proper error handling
+- [ ] Add code comments and documentation
+
+---
+
+## 🎯 Priority Tasks for Next Session
+
+1. **Game States System** - Add proper GameOver and Victory screens
+2. **Wave System** - Implement structured waves instead of infinite spawning
+3. **Additional Enemy Types** - At least implement Kamikaze enemy
+4. **Audio System** - Add basic sound effects
+5. **Code Cleanup** - Remove debug console.logs

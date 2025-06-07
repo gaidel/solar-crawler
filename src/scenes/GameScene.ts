@@ -1,10 +1,12 @@
+import { PLAYER_CONFIG, ASTEROID_CONFIG, BULLET_CONFIG, GAME_CONFIG } from '../config/constants';
+import { setupCircularCollision } from '../utils/CollisionHelpers';
+
 export class GameScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite;
     private asteroids!: Phaser.Physics.Arcade.Group;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private lastFired = 0;
     private bullets!: Phaser.Physics.Arcade.Group;
-    private playerDebug!: Phaser.GameObjects.Graphics;
 
     constructor() {
         super({ key: 'GameScene' });
@@ -20,32 +22,29 @@ export class GameScene extends Phaser.Scene {
 
     create() {
         // Add background
-        const bg = this.add.tileSprite(640, 360, 1280, 720, 'background')!;
+        const bg = this.add.tileSprite(GAME_CONFIG.WIDTH/2, GAME_CONFIG.HEIGHT/2, GAME_CONFIG.WIDTH, GAME_CONFIG.HEIGHT, 'background')!;
         bg.setScrollFactor(0);
 
         // Create player
-        this.player = this.physics.add.sprite(200, 360, 'player')!;
+        this.player = this.physics.add.sprite(PLAYER_CONFIG.START_X, PLAYER_CONFIG.START_Y, 'player')!;
         this.player.setCollideWorldBounds(true);
-        this.player.setScale(0.5);
-        this.player.setOrigin(0.5, 0.5); // Set anchor to center
-        // Set circular collision body for player
-        // Original size is 64x64, scaled to 0.5, so we use 32px radius (half of scaled width)
-        this.player.setCircle(32, 48, 32); // Increased x offset to move collision circle right
-        // Debug visualization
-        this.playerDebug = this.add.graphics();
-        this.playerDebug.lineStyle(2, 0xff0000);
+        this.player.setScale(PLAYER_CONFIG.SCALE);
+        this.player.setOrigin(0.5, 0.5);
+        
+        // Set up player collision using dynamic calculation
+        setupCircularCollision(this.player, 0.9); // Чуть меньше для более щадящего геймплея
 
-        // Create bullets group with larger pool
+        // Create bullets group
         this.bullets = this.physics.add.group({
             defaultKey: 'bullet',
-            maxSize: 20,
+            maxSize: BULLET_CONFIG.MAX_POOL_SIZE,
             runChildUpdate: true
         });
 
         // Create asteroids group
         this.asteroids = this.physics.add.group({
             defaultKey: 'asteroid',
-            maxSize: 10
+            maxSize: ASTEROID_CONFIG.MAX_POOL_SIZE
         });
 
         // Set up keyboard input
@@ -63,7 +62,7 @@ export class GameScene extends Phaser.Scene {
 
         // Start spawning asteroids
         this.time.addEvent({
-            delay: 2000,
+            delay: ASTEROID_CONFIG.SPAWN_INTERVAL,
             callback: this.spawnAsteroid,
             callbackScope: this,
             loop: true
@@ -77,9 +76,9 @@ export class GameScene extends Phaser.Scene {
 
         // Handle player movement
         if (this.cursors.up?.isDown) {
-            this.player.setVelocityY(-300);
+            this.player.setVelocityY(-PLAYER_CONFIG.SPEED);
         } else if (this.cursors.down?.isDown) {
-            this.player.setVelocityY(300);
+            this.player.setVelocityY(PLAYER_CONFIG.SPEED);
         } else {
             this.player.setVelocityY(0);
         }
@@ -87,20 +86,15 @@ export class GameScene extends Phaser.Scene {
         // Auto-fire bullets
         if (this.time.now > this.lastFired) {
             this.fireBullet();
-            this.lastFired = this.time.now + 200;
+            this.lastFired = this.time.now + PLAYER_CONFIG.FIRE_RATE;
         }
-
-        // Update debug visualization
-        this.playerDebug.clear();
-        this.playerDebug.lineStyle(2, 0xff0000);
-        this.playerDebug.strokeCircle(this.player.x, this.player.y, 32);
 
         // Clean up bullets
         this.bullets.getChildren().forEach((bullet) => {
             if (
                 bullet instanceof Phaser.Physics.Arcade.Sprite &&
                 bullet.active &&
-                bullet.x > 1280
+                bullet.x > GAME_CONFIG.WIDTH
             ) {
                 bullet.setActive(false);
                 bullet.setVisible(false);
@@ -121,40 +115,41 @@ export class GameScene extends Phaser.Scene {
     }
 
     private spawnAsteroid() {
-        const y = Phaser.Math.Between(100, 620);
-        const asteroid = this.asteroids.get(1380, y, 'asteroid') as Phaser.Physics.Arcade.Sprite;
+        const y = Phaser.Math.Between(ASTEROID_CONFIG.SPAWN_Y_MIN, ASTEROID_CONFIG.SPAWN_Y_MAX);
+        const asteroid = this.asteroids.get(ASTEROID_CONFIG.SPAWN_X, y, 'asteroid') as Phaser.Physics.Arcade.Sprite;
         
         if (asteroid) {
-            console.log('Spawning asteroid:', asteroid);
-            console.log('Asteroid origin:', asteroid.originX, asteroid.originY);
+            console.log('Spawning asteroid at:', ASTEROID_CONFIG.SPAWN_X, y);
             asteroid.setActive(true);
             asteroid.setVisible(true);
-            asteroid.setOrigin(0.5, 0.5); // Set anchor to center
-            asteroid.setScale(0.5);
-            asteroid.setVelocityX(-300);
+            asteroid.setOrigin(0.5, 0.5);
+            asteroid.setScale(ASTEROID_CONFIG.SCALE);
+            asteroid.setVelocityX(ASTEROID_CONFIG.SPEED);
             
-            // Set circular collision body for asteroid
-            // Original size is 207x201, scaled to 0.5, so we use ~50px radius
-            // Offset by half the scaled width/height
-            asteroid.setCircle(50, 50, 50);
+            // Set up collision using dynamic calculation
+            setupCircularCollision(asteroid, 0.9); // Чуть меньше для более щадящего геймплея
             
-            // Debug visualization
-            const asteroidDebug = this.add.graphics();
-            asteroidDebug.lineStyle(2, 0x00ff00);
-            asteroidDebug.strokeCircle(asteroid.x, asteroid.y, 50);
+            console.log('Asteroid size:', asteroid.displayWidth, 'x', asteroid.displayHeight);
         }
     }
 
     private hitAsteroid(bullet: Phaser.Physics.Arcade.Sprite, asteroid: Phaser.Physics.Arcade.Sprite) {
-        // Deactivate both bullet and asteroid
+        // Deactivate bullet
         bullet.setActive(false);
         bullet.setVisible(false);
+        
+        // Move asteroid off-screen and deactivate it for reuse
+        asteroid.x = -200; // Перемещаем за левый край экрана
+        asteroid.setVelocityX(0); // Останавливаем движение
         asteroid.setActive(false);
         asteroid.setVisible(false);
-        // Disable the asteroid's physics body
+        
+        // Re-enable physics body for future reuse
         if (asteroid.body) {
-            asteroid.body.enable = false;
+            asteroid.body.enable = true;
         }
+        
+        console.log('Asteroid destroyed, moved off-screen for reuse');
     }
 
     private gameOver() {
@@ -164,13 +159,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     private fireBullet() {
-        const bullet = this.bullets.get(this.player.x + 50, this.player.y, 'bullet');
+        const bullet = this.bullets.get(this.player.x + BULLET_CONFIG.OFFSET_X, this.player.y, 'bullet');
         if (bullet) {
-            console.log('Creating bullet at:', this.player.x + 50, this.player.y);
+            console.log('Creating bullet at:', this.player.x + BULLET_CONFIG.OFFSET_X, this.player.y);
             bullet.setActive(true);
             bullet.setVisible(true);
-            bullet.setScale(0.1); // Scale down the bullet
-            bullet.setVelocityX(400);
+            bullet.setScale(BULLET_CONFIG.SCALE);
+            bullet.setVelocityX(BULLET_CONFIG.SPEED);
             console.log('Bullet created, active:', bullet.active, 'visible:', bullet.visible);
         } else {
             console.log('Failed to create bullet - no available bullets in pool');
