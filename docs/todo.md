@@ -11,7 +11,7 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Player Movement | ✅ | ✅ | ✅ Complete |
 | Auto-firing | ✅ | ✅ | ✅ Complete |
 | Asteroids | ✅ | ✅ | ✅ Complete |
-| Kamikaze Enemy | ✅ | ❌ | 🔴 Missing |
+| Kamikaze Enemy | ✅ | ✅ | ✅ Complete |
 | Gunner Enemy | ✅ | ❌ | 🔴 Missing |
 | Leaper Enemy | ✅ | ❌ | 🔴 Missing |
 | Wave System | ✅ | ❌ | 🔴 Missing |
@@ -27,12 +27,12 @@ This document tracks development progress, known issues, and upcoming tasks for 
 ### 1. **Missing Core Features**
 - **Wave System**: Game currently spawns asteroids infinitely instead of structured waves
 - **Roguelike Elements**: Missing upgrade system between waves
-- **Additional Enemy Types**: Only 1 of 4 enemy types implemented
+- **Additional Enemy Types**: 2 of 4 enemy types implemented
 
 ### 2. **Incomplete Enemy Types**
 According to design document, should have 4 enemy types:
 - ✅ **Asteroid** (implemented)
-- ❌ **Kamikaze** (missing - should home toward player)
+- ✅ **Kamikaze** (implemented - homing enemy)
 - ❌ **Gunner** (missing - should fire projectiles)
 - ❌ **Leaper** (missing - should move in zigzag pattern)
 
@@ -87,7 +87,7 @@ According to design document, should have 4 enemy types:
 ### 👾 Enemies
 - [x] Create enemy spawner system
 - [x] Implement Asteroid (straight movement)
-- [ ] Implement Kamikaze (homing movement)
+- [x] Implement Kamikaze (homing movement)
 - [ ] Implement Gunner (fires projectiles)
 - [ ] Implement Leaper (zigzag/sine movement)
 - [x] Handle enemy destruction on bullet hit

@@ -4,6 +4,7 @@ import {
     BULLET_CONFIG,
     GAME_CONFIG,
     UI_CONFIG,
+    KAMIKAZE_CONFIG,
 } from '../config/constants';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 
@@ -16,6 +17,7 @@ enum GameState {
 export class GameScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite;
     private asteroids!: Phaser.Physics.Arcade.Group;
+    private kamikazes!: Phaser.Physics.Arcade.Group;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private lastFired = 0;
     private bullets!: Phaser.Physics.Arcade.Group;
@@ -36,6 +38,7 @@ export class GameScene extends Phaser.Scene {
         // Load assets
         this.load.image('player', 'assets/player.png');
         this.load.image('asteroid', 'assets/asteroid.png');
+        this.load.image('kamikaze', 'assets/kamikaze.png');
         this.load.image('bullet', 'assets/bullet.png');
         this.load.image('background', 'assets/background.png');
     }
@@ -67,7 +70,7 @@ export class GameScene extends Phaser.Scene {
         this.player.setOrigin(0.5, 0.5);
 
         // Set up player collision using dynamic calculation
-        setupCircularCollision(this.player, 0.9); // Чуть меньше для более щадящего геймплея
+        setupCircularCollision(this.player, 0.9); // Slightly smaller for forgiving gameplay
 
         // Create bullets group
         this.bullets = this.physics.add.group({
@@ -80,6 +83,12 @@ export class GameScene extends Phaser.Scene {
         this.asteroids = this.physics.add.group({
             defaultKey: 'asteroid',
             maxSize: ASTEROID_CONFIG.MAX_POOL_SIZE,
+        });
+
+        // Create kamikazes group
+        this.kamikazes = this.physics.add.group({
+            defaultKey: 'kamikaze', // Use dedicated kamikaze sprite
+            maxSize: KAMIKAZE_CONFIG.MAX_POOL_SIZE,
         });
 
         // Set up keyboard input
@@ -98,12 +107,31 @@ export class GameScene extends Phaser.Scene {
             undefined,
             this
         );
+        this.physics.add.collider(
+            this.bullets,
+            this.kamikazes,
+            (bullet, kamikaze) =>
+                this.hitKamikaze(
+                    bullet as Phaser.Physics.Arcade.Sprite,
+                    kamikaze as Phaser.Physics.Arcade.Sprite
+                ),
+            undefined,
+            this
+        );
         this.physics.add.collider(this.player, this.asteroids, this.gameOver, undefined, this);
+        this.physics.add.collider(this.player, this.kamikazes, this.gameOver, undefined, this);
 
-        // Start spawning asteroids
+        // Start spawning enemies
         this.time.addEvent({
             delay: ASTEROID_CONFIG.SPAWN_INTERVAL,
             callback: this.spawnAsteroid,
+            callbackScope: this,
+            loop: true,
+        });
+
+        this.time.addEvent({
+            delay: KAMIKAZE_CONFIG.SPAWN_INTERVAL,
+            callback: this.spawnKamikaze,
             callbackScope: this,
             loop: true,
         });
@@ -123,7 +151,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         if (this.gameState !== GameState.PLAYING) {
-            return; // Останавливаем обновление если игра не активна
+            return; // Stop updating if game is not active
         }
 
         // Check for victory condition
@@ -177,6 +205,31 @@ export class GameScene extends Phaser.Scene {
             ) {
                 asteroid.setActive(false);
                 asteroid.setVisible(false);
+            }
+        });
+
+        // Clean up kamikazes (they can move in any direction now)
+        this.kamikazes.getChildren().forEach((kamikaze) => {
+            if (
+                kamikaze instanceof Phaser.Physics.Arcade.Sprite &&
+                kamikaze.active &&
+                (kamikaze.x < -100 || kamikaze.x > GAME_CONFIG.WIDTH + 100 || 
+                 kamikaze.y < -100 || kamikaze.y > GAME_CONFIG.HEIGHT + 100)
+            ) {
+                kamikaze.setActive(false);
+                kamikaze.setVisible(false);
+            }
+        });
+
+        // Update kamikaze homing behavior
+        this.kamikazes.getChildren().forEach((kamikaze) => {
+            if (kamikaze instanceof Phaser.Physics.Arcade.Sprite && kamikaze.active) {
+                // Double check that this is actually a kamikaze (check texture key)
+                if (kamikaze.texture.key === 'kamikaze') {
+                    this.updateKamikazeHoming(kamikaze);
+                } else {
+                    console.warn('Found non-kamikaze object in kamikaze group:', kamikaze);
+                }
             }
         });
     }
@@ -340,7 +393,7 @@ export class GameScene extends Phaser.Scene {
 
     private spawnAsteroid() {
         if (this.gameState !== GameState.PLAYING) {
-            return; // Не спавним астероиды если игра не активна
+            return; // Don't spawn asteroids if game is not active
         }
 
         const y = Phaser.Math.Between(ASTEROID_CONFIG.SPAWN_Y_MIN, ASTEROID_CONFIG.SPAWN_Y_MAX);
@@ -359,7 +412,7 @@ export class GameScene extends Phaser.Scene {
             asteroid.setVelocityX(ASTEROID_CONFIG.SPEED);
 
             // Set up collision using dynamic calculation
-            setupCircularCollision(asteroid, 0.9); // Чуть меньше для более щадящего геймплея
+            setupCircularCollision(asteroid, 0.9); // Slightly smaller for forgiving gameplay
 
             console.log('Asteroid size:', asteroid.displayWidth, 'x', asteroid.displayHeight);
         }
@@ -374,8 +427,8 @@ export class GameScene extends Phaser.Scene {
         bullet.setVisible(false);
 
         // Move asteroid off-screen and deactivate it for reuse
-        asteroid.x = -200; // Перемещаем за левый край экрана
-        asteroid.setVelocityX(0); // Останавливаем движение
+        asteroid.x = -200; // Move off-screen to left edge
+        asteroid.setVelocityX(0); // Stop movement
         asteroid.setActive(false);
         asteroid.setVisible(false);
 
@@ -390,6 +443,32 @@ export class GameScene extends Phaser.Scene {
         console.log('Asteroid destroyed, moved off-screen for reuse');
     }
 
+    private hitKamikaze(
+        bullet: Phaser.Physics.Arcade.Sprite,
+        kamikaze: Phaser.Physics.Arcade.Sprite
+    ) {
+        // Deactivate bullet
+        bullet.setActive(false);
+        bullet.setVisible(false);
+
+        // Move kamikaze off-screen and deactivate it for reuse
+        kamikaze.x = -200; // Move off-screen to left edge
+        kamikaze.setVelocityX(0); // Stop X movement
+        kamikaze.setVelocityY(0); // Stop Y movement too
+        kamikaze.setActive(false);
+        kamikaze.setVisible(false);
+
+        // Re-enable physics body for future reuse
+        if (kamikaze.body) {
+            kamikaze.body.enable = true;
+        }
+
+        // Increase score
+        this.score += 10;
+
+        console.log('Kamikaze destroyed, moved off-screen for reuse');
+    }
+
     private gameOver() {
         this.gameState = GameState.GAME_OVER;
         this.physics.pause();
@@ -400,7 +479,7 @@ export class GameScene extends Phaser.Scene {
     private victory() {
         this.gameState = GameState.VICTORY;
         this.physics.pause();
-        this.player.setTint(0x44ff44); // Зеленый цвет для победы
+        this.player.setTint(0x44ff44); // Green tint for victory
         this.showVictoryScreen();
     }
 
@@ -420,9 +499,65 @@ export class GameScene extends Phaser.Scene {
             bullet.setVisible(true);
             bullet.setScale(BULLET_CONFIG.SCALE);
             bullet.setVelocityX(BULLET_CONFIG.SPEED);
-            console.log('Bullet created, active:', bullet.active, 'visible:', bullet.visible);
+            bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
+            bullet.clearTint(); // Make sure bullet has no tint
+            console.log('Bullet created, active:', bullet.active, 'visible:', bullet.visible, 'velocityY:', bullet.body?.velocity.y);
         } else {
             console.log('Failed to create bullet - no available bullets in pool');
+        }
+    }
+
+    private updateKamikazeHoming(kamikaze: Phaser.Physics.Arcade.Sprite) {
+        // Calculate direction vector to player
+        const deltaX = this.player.x - kamikaze.x;
+        const deltaY = this.player.y - kamikaze.y;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        
+        // Debug log
+        console.log(`Kamikaze at (${kamikaze.x}, ${kamikaze.y}) homing to player at (${this.player.x}, ${this.player.y}), distance: ${distance.toFixed(1)}`);
+        
+        // Only home if player is reasonably far
+        if (distance > 10) {
+            // Normalize the direction vector and apply speed
+            const normalizedX = deltaX / distance;
+            const normalizedY = deltaY / distance;
+            
+            // Use absolute value of HOMING_SPEED as the total speed
+            const speed = Math.abs(KAMIKAZE_CONFIG.HOMING_SPEED);
+            kamikaze.setVelocityX(normalizedX * speed);
+            kamikaze.setVelocityY(normalizedY * speed);
+        } else {
+            // Stop moving when very close to player
+            kamikaze.setVelocityX(0);
+            kamikaze.setVelocityY(0);
+        }
+    }
+
+    private spawnKamikaze() {
+        if (this.gameState !== GameState.PLAYING) {
+            return; // Don't spawn kamikazes if game is not active
+        }
+
+        const y = Phaser.Math.Between(KAMIKAZE_CONFIG.SPAWN_Y_MIN, KAMIKAZE_CONFIG.SPAWN_Y_MAX);
+        const kamikaze = this.kamikazes.get(KAMIKAZE_CONFIG.SPAWN_X, y, 'kamikaze') as Phaser.Physics.Arcade.Sprite;
+        
+        if (kamikaze) {
+            console.log('Spawning kamikaze at:', KAMIKAZE_CONFIG.SPAWN_X, y);
+            kamikaze.setActive(true);
+            kamikaze.setVisible(true);
+            kamikaze.setOrigin(0.5, 0.5);
+            kamikaze.setScale(KAMIKAZE_CONFIG.SCALE);
+            kamikaze.setFlipX(true); // Flip horizontally so the front (right side) points toward player
+            kamikaze.setVelocityX(0); // Start without movement, homing system will handle it
+            kamikaze.setVelocityY(0); // Start without movement
+            
+            // Clear tint to show original sprite colors
+            kamikaze.clearTint();
+            
+            // Set up collision using dynamic calculation
+            setupCircularCollision(kamikaze, 0.9);
+            
+            console.log('Kamikaze size:', kamikaze.displayWidth, 'x', kamikaze.displayHeight);
         }
     }
 }

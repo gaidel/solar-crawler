@@ -2,24 +2,24 @@
 export const GAME_CONFIG = {
     WIDTH: 1280,
     HEIGHT: 720,
-    WIN_TIME: 60000, // Время для победы в миллисекундах (1 минута)
+    WIN_TIME: 60000, // Victory time in milliseconds (1 minute)
     BACKGROUND_SCROLL_SPEED: 2,
 };
 
 export const UI_CONFIG = {
-    FONT_SIZE_LARGE: 48,
-    FONT_SIZE_MEDIUM: 32,
-    FONT_SIZE_SMALL: 24,
+    FONT_SIZE_LARGE: '48px',
+    FONT_SIZE_MEDIUM: '32px',
+    FONT_SIZE_SMALL: '24px',
     BUTTON_PADDING: 20,
-    OVERLAY_ALPHA: 0.8,
+    OVERLAY_ALPHA: 0.7,
 };
 
 export const PLAYER_CONFIG = {
-    SCALE: 0.5,
-    SPEED: 300,
-    FIRE_RATE: 200, // ms between shots
-    START_X: 200,
+    START_X: 100,
     START_Y: 360,
+    SCALE: 0.8,
+    SPEED: 300,
+    FIRE_RATE: 300, // ms between shots
 };
 
 export const ASTEROID_CONFIG = {
@@ -29,7 +29,18 @@ export const ASTEROID_CONFIG = {
     SPAWN_Y_MIN: 100,
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
-    MAX_POOL_SIZE: 15, // Увеличенный пул для обработки одновременных уничтожений
+    MAX_POOL_SIZE: 15, // Enlarged pool to handle simultaneous destructions
+};
+
+export const KAMIKAZE_CONFIG = {
+    SCALE: 0.5, // Scale for new sprite 170x120 -> 85x60
+    SPEED: -200, // No longer used, kept for compatibility
+    HOMING_SPEED: 180, // Total movement speed towards player
+    SPAWN_INTERVAL: 4000, // Less frequent than asteroids
+    SPAWN_Y_MIN: 100,
+    SPAWN_Y_MAX: 620,
+    SPAWN_X: 1380,
+    MAX_POOL_SIZE: 8,
 };
 
 export const BULLET_CONFIG = {

@@ -54,21 +54,21 @@ solar-crawler/
 
 ## 📋 File Placement Rules
 
-### ✅ **DO:**
-- Put all TypeScript source files in `src/`
-- Put game constants in `src/config/constants.ts`
-- Put Phaser scenes in `src/scenes/`
-- Put utility functions in `src/utils/`
-- Put game entities in `src/entities/` (when created)
-- Put all images/sounds in `assets/`
-- Put all documentation in `docs/`
+### **DO:**
+- [x] Put all TypeScript source files in `src/`
+- [x] Put game constants in `src/config/constants.ts`
+- [x] Put Phaser scenes in `src/scenes/`
+- [x] Put utility functions in `src/utils/`
+- [x] Put game entities in `src/entities/` (when created)
+- [x] Put all images/sounds in `assets/`
+- [x] Put all documentation in `docs/`
 
-### ❌ **DON'T:**
-- Put source code files in root directory
-- Mix configuration with game logic
-- Put assets inside `src/` directory
-- Create deep nested structures without reason
-- Leave magic numbers scattered in code
+### **DON'T:**
+- [ ] Put source code files in root directory
+- [ ] Mix configuration with game logic
+- [ ] Put assets inside `src/` directory
+- [ ] Create deep nested structures without reason
+- [ ] Leave magic numbers scattered in code
 
 ---
 
@@ -156,7 +156,7 @@ src/
 - **Review and refactor** constants regularly
 - **Verify file formatting** with `npm run lint` before releases
 
-### ✅ **Pre-commit checklist:**
+### **Pre-commit checklist:**
 - [ ] All files end with newline
 - [ ] No trailing spaces or inconsistent indentation  
 - [ ] No console.log statements in production code
@@ -168,8 +168,15 @@ src/
 
 ## 🎯 Benefits of This Structure
 
-- ✅ **Easy to navigate** - logical file locations
-- ✅ **Scalable** - can grow without becoming messy
-- ✅ **Maintainable** - clear separation of concerns
-- ✅ **Collaborative** - new developers can understand quickly
-- ✅ **Professional** - industry-standard organization 
+- [x] **Easy to navigate** - logical file locations
+- [x] **Scalable** - can grow without becoming messy
+- [x] **Maintainable** - clear separation of concerns
+- [x] **Collaborative** - new developers can understand quickly
+- [x] **Professional** - industry-standard organization
+
+---
+
+## 📋 Code Standards
+
+### Language Policy
+**English Only**: This project uses English exclusively for all code, comments, documentation, and assets. No other languages are permitted, including in code comments. The game is developed in English with no current localization plans.
