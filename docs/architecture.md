@@ -14,22 +14,18 @@ solar-crawler/
 ├── 📁 docs/                  # Project documentation
 │   ├── 📄 prd.md            # Product Requirements Document
 │   ├── 📄 design.md         # Game Design Document
-│   ├── 📄 todo.md           # Development checklist
-│   ├── 📄 issues.md         # Known issues and bugs
+│   ├── 📄 todo.md           # Development progress & issues
 │   └── 📄 architecture.md   # This file
 ├── 📁 src/                   # Source code
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
-│   └── 📁 scenes/           # Phaser scenes
-│       └── 📄 GameScene.ts  # Main game scene
+│   ├── 📁 scenes/           # Phaser scenes
+│   │   └── 📄 GameScene.ts  # Main game scene
+│   └── 📁 utils/            # Utility functions
+│       └── 📄 CollisionHelpers.ts # Collision utilities
 ├── 📄 package.json          # Dependencies and scripts
 ├── 📄 tsconfig.json         # TypeScript configuration
-├── 📄 vite.config.ts        # Build tool configuration
-├── 📄 webpack.config.js     # Alternative build config
-├── 📄 .eslintrc.js          # Code linting rules
-├── 📄 .prettierrc           # Code formatting rules
-├── 📄 .gitignore            # Git ignore patterns
-└── 📁 node_modules/         # Installed dependencies
+└── ⚙️ config files          # Build tools, linting, etc.
 ```
 
 ---
@@ -62,7 +58,7 @@ solar-crawler/
 - Put all TypeScript source files in `src/`
 - Put game constants in `src/config/constants.ts`
 - Put Phaser scenes in `src/scenes/`
-- Put utility functions in `src/utils/` (when created)
+- Put utility functions in `src/utils/`
 - Put game entities in `src/entities/` (when created)
 - Put all images/sounds in `assets/`
 - Put all documentation in `docs/`
@@ -122,8 +118,25 @@ src/
 
 ### 📝 **File Naming**
 - **PascalCase** for classes and components (`GameScene.ts`, `Player.ts`)
-- **camelCase** for utilities and helpers (`constants.ts`, `mathHelpers.ts`)
+- **camelCase** for utilities and helpers (`constants.ts`, `collisionHelpers.ts`)
 - **kebab-case** for documentation (`architecture.md`, `game-design.md`)
+
+### 📄 **File Formatting Standards**
+- **Always end files with newline** - Every file must end with a single newline character (`\n`)
+- **No trailing spaces** - Remove whitespace at end of lines
+- **Consistent indentation** - Use spaces (configured in prettier)
+- **UTF-8 encoding** - All text files should use UTF-8 encoding
+
+#### 🔧 **Why newline at end of file?**
+- **POSIX compliance** - Text files should end with newline per POSIX standard
+- **Git compatibility** - Prevents "no newline at end of file" warnings
+- **Tool compatibility** - Works correctly with command-line tools (cat, grep, etc.)
+- **Editor consistency** - Prevents issues when files are edited across different systems
+
+#### ⚙️ **Automated enforcement:**
+- **Prettier** handles most formatting automatically (`npm run format`)
+- **ESLint** enforces newline rule with `'eol-last': ['error', 'always']`
+- **Use `npm run lint:fix`** to automatically fix formatting issues
 
 ---
 
@@ -134,12 +147,22 @@ src/
 2. **Create appropriate directory** if needed
 3. **Update constants** instead of hardcoding values
 4. **Add to documentation** if it's a major feature
+5. **Run `npm run format` and `npm run lint:fix`** before committing
 
 ### 🧹 **Regular Cleanup:**
 - **Remove unused files** and imports
 - **Consolidate similar functionality**
 - **Update documentation** when structure changes
 - **Review and refactor** constants regularly
+- **Verify file formatting** with `npm run lint` before releases
+
+### ✅ **Pre-commit checklist:**
+- [ ] All files end with newline
+- [ ] No trailing spaces or inconsistent indentation  
+- [ ] No console.log statements in production code
+- [ ] All imports are organized correctly
+- [ ] Constants used instead of magic numbers
+- [ ] Documentation updated if needed
 
 ---
 

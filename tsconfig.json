@@ -15,7 +15,7 @@
   },
   "include": [
     "*.ts",
-    "scenes/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"

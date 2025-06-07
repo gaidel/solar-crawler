@@ -2,6 +2,16 @@
 export const GAME_CONFIG = {
     WIDTH: 1280,
     HEIGHT: 720,
+    WIN_TIME: 60000, // Время для победы в миллисекундах (1 минута)
+    BACKGROUND_SCROLL_SPEED: 2,
+};
+
+export const UI_CONFIG = {
+    FONT_SIZE_LARGE: 48,
+    FONT_SIZE_MEDIUM: 32,
+    FONT_SIZE_SMALL: 24,
+    BUTTON_PADDING: 20,
+    OVERLAY_ALPHA: 0.8,
 };
 
 export const PLAYER_CONFIG = {
@@ -27,4 +37,4 @@ export const BULLET_CONFIG = {
     SPEED: 400,
     MAX_POOL_SIZE: 20,
     OFFSET_X: 50, // Distance from player center
-}; 
+};

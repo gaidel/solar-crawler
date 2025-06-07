@@ -10,7 +10,7 @@
     "serve": "vite preview",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --write \"*.ts\" \"scenes/**/*.ts\""
+    "format": "prettier --write \"*.ts\" \"src/**/*.ts\""
   },
   "dependencies": {
     "phaser": "^3.70.0"

@@ -35,10 +35,9 @@ If the game uses ES modules, you'll need to serve it with a local web server (e.
 ## 📚 Documentation
 
 - **[Architecture & File Structure](docs/architecture.md)** - Project organization and coding standards
-- **[Product Requirements](docs/prd.md)** - Game requirements and scope
+- **[Product Requirements](docs/prd.md)** - Game requirements, scope, and control design
 - **[Game Design](docs/design.md)** - Gameplay mechanics and features
-- **[Development Progress](docs/todo.md)** - Current development status
-- **[Known Issues](docs/issues.md)** - Bugs and inconsistencies
+- **[Development Status](docs/todo.md)** - Current progress, issues, and upcoming tasks
 
 ---
 

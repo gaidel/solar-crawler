@@ -33,6 +33,32 @@ The goal is to develop a complete, playable prototype that can be hosted on itch
 
 ---
 
+## ⌨️ Control Design Philosophy: "Three-Key Design"
+
+**Solar Crawler** follows a minimalist control philosophy: **the entire game should be playable using only three keys**.
+
+### 🎯 Core Control Scheme
+| Key | Function | Context |
+|-----|----------|---------|
+| **↑ / W** | Move ship up | During gameplay |
+| **↓ / S** | Move ship down | During gameplay |
+| **⏎ Enter** | Confirm/Restart | Menus and end screens |
+
+### 🎮 Design Benefits
+- **Accessibility** - Simple controls for all players
+- **Focus on gameplay** - No complex control schemes to distract from the action
+- **Universal compatibility** - Works on any keyboard layout
+- **One-handed play** possible - No hand position changes required
+- **Instant muscle memory** development
+
+### 🎨 Control Guidelines
+- **Mouse is optional** - game must work without mouse
+- **Always show key hints** on interactive elements
+- **Automatic firing** - no fire button needed
+- **Enter is universal confirm** across all contexts
+
+---
+
 ## 🧱 Platform and Technology
 
 - **Engine:** Phaser 3 (HTML5)
