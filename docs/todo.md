@@ -7,32 +7,32 @@ Check off each item as it's completed.
 
 ## 🧱 Core Infrastructure
 
-- [ ] Set up project structure with Phaser 3 and TypeScript
-- [ ] Create basic game loop and initialize Phaser scene
-- [ ] Add background with horizontal scrolling
-- [ ] Load placeholder PNG sprites for player, enemies, bullets
+- [x] Set up project structure with Phaser 3 and TypeScript
+- [x] Create basic game loop and initialize Phaser scene
+- [x] Add background with horizontal scrolling
+- [x] Load placeholder PNG sprites for player, enemies, bullets
 
 ---
 
 ## 🚀 Player Mechanics
 
-- [ ] Implement vertical movement via `W` / `S` or `Arrow Up` / `Arrow Down`
-- [ ] Add automatic shooting at fixed intervals
-- [ ] Create player bullets that move left to right
-- [ ] Detect collisions between player and enemies or projectiles
-- [ ] Trigger Game Over on collision
+- [x] Implement vertical movement via `W` / `S` or `Arrow Up` / `Arrow Down`
+- [x] Add automatic shooting at fixed intervals
+- [x] Create player bullets that move left to right
+- [x] Detect collisions between player and enemies or projectiles
+- [x] Trigger Game Over on collision
 
 ---
 
 ## 👾 Enemies
 
-- [ ] Create enemy spawner system
-- [ ] Implement Asteroid (straight movement)
+- [x] Create enemy spawner system
+- [x] Implement Asteroid (straight movement)
 - [ ] Implement Kamikaze (homing movement)
 - [ ] Implement Gunner (fires projectiles)
 - [ ] Implement Leaper (zigzag/sine movement)
-- [ ] Handle enemy destruction on bullet hit
-- [ ] Detect collision between enemies and player
+- [x] Handle enemy destruction on bullet hit
+- [x] Detect collision between enemies and player
 
 ---
 
