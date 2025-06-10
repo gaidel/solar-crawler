@@ -49,3 +49,10 @@ export const BULLET_CONFIG = {
     MAX_POOL_SIZE: 20,
     OFFSET_X: 50, // Distance from player center
 };
+
+export const SCORE_CONFIG = {
+    ASTEROID: 10,
+    KAMIKAZE: 20,
+    GUNNER: 15,
+    LEAPER: 25,
+};

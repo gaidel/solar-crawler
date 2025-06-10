@@ -5,6 +5,7 @@ import {
     GAME_CONFIG,
     UI_CONFIG,
     KAMIKAZE_CONFIG,
+    SCORE_CONFIG,
 } from '../config/constants';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 
@@ -29,6 +30,8 @@ export class GameScene extends Phaser.Scene {
     private scoreText!: Phaser.GameObjects.Text;
     private score: number = 0;
     private enterKey!: Phaser.Input.Keyboard.Key;
+    private wKey!: Phaser.Input.Keyboard.Key;
+    private sKey!: Phaser.Input.Keyboard.Key;
 
     constructor() {
         super({ key: 'GameScene' });
@@ -94,6 +97,14 @@ export class GameScene extends Phaser.Scene {
         // Set up keyboard input
         this.cursors = this.input!.keyboard!.createCursorKeys()!;
         this.enterKey = this.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)!;
+        
+        // Add WASD keys as per PRD requirement
+        const wKey = this.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W)!;
+        const sKey = this.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S)!;
+        
+        // Store WASD keys for reference
+        this.wKey = wKey;
+        this.sKey = sKey;;
 
         // Set up collisions
         this.physics.add.collider(
@@ -165,10 +176,10 @@ export class GameScene extends Phaser.Scene {
         const bg = this.children.list[0] as Phaser.GameObjects.TileSprite;
         bg.tilePositionX += GAME_CONFIG.BACKGROUND_SCROLL_SPEED;
 
-        // Handle player movement
-        if (this.cursors.up?.isDown) {
+        // Handle player movement (both arrow keys and WASD)
+        if (this.cursors.up?.isDown || this.wKey.isDown) {
             this.player.setVelocityY(-PLAYER_CONFIG.SPEED);
-        } else if (this.cursors.down?.isDown) {
+        } else if (this.cursors.down?.isDown || this.sKey.isDown) {
             this.player.setVelocityY(PLAYER_CONFIG.SPEED);
         } else {
             this.player.setVelocityY(0);
@@ -227,8 +238,6 @@ export class GameScene extends Phaser.Scene {
                 // Double check that this is actually a kamikaze (check texture key)
                 if (kamikaze.texture.key === 'kamikaze') {
                     this.updateKamikazeHoming(kamikaze);
-                } else {
-                    console.warn('Found non-kamikaze object in kamikaze group:', kamikaze);
                 }
             }
         });
@@ -404,7 +413,6 @@ export class GameScene extends Phaser.Scene {
         ) as Phaser.Physics.Arcade.Sprite;
 
         if (asteroid) {
-            console.log('Spawning asteroid at:', ASTEROID_CONFIG.SPAWN_X, y);
             asteroid.setActive(true);
             asteroid.setVisible(true);
             asteroid.setOrigin(0.5, 0.5);
@@ -413,8 +421,6 @@ export class GameScene extends Phaser.Scene {
 
             // Set up collision using dynamic calculation
             setupCircularCollision(asteroid, 0.9); // Slightly smaller for forgiving gameplay
-
-            console.log('Asteroid size:', asteroid.displayWidth, 'x', asteroid.displayHeight);
         }
     }
 
@@ -437,10 +443,8 @@ export class GameScene extends Phaser.Scene {
             asteroid.body.enable = true;
         }
 
-        // Increase score
-        this.score += 10;
-
-        console.log('Asteroid destroyed, moved off-screen for reuse');
+        // Increase score for asteroid destruction
+        this.score += SCORE_CONFIG.ASTEROID;
     }
 
     private hitKamikaze(
@@ -463,10 +467,8 @@ export class GameScene extends Phaser.Scene {
             kamikaze.body.enable = true;
         }
 
-        // Increase score
-        this.score += 10;
-
-        console.log('Kamikaze destroyed, moved off-screen for reuse');
+        // Increase score for kamikaze destruction (higher value for harder enemy)
+        this.score += SCORE_CONFIG.KAMIKAZE;
     }
 
     private gameOver() {
@@ -490,20 +492,12 @@ export class GameScene extends Phaser.Scene {
             'bullet'
         );
         if (bullet) {
-            console.log(
-                'Creating bullet at:',
-                this.player.x + BULLET_CONFIG.OFFSET_X,
-                this.player.y
-            );
             bullet.setActive(true);
             bullet.setVisible(true);
             bullet.setScale(BULLET_CONFIG.SCALE);
             bullet.setVelocityX(BULLET_CONFIG.SPEED);
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
-            console.log('Bullet created, active:', bullet.active, 'visible:', bullet.visible, 'velocityY:', bullet.body?.velocity.y);
-        } else {
-            console.log('Failed to create bullet - no available bullets in pool');
         }
     }
 
@@ -512,9 +506,6 @@ export class GameScene extends Phaser.Scene {
         const deltaX = this.player.x - kamikaze.x;
         const deltaY = this.player.y - kamikaze.y;
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
-        // Debug log
-        console.log(`Kamikaze at (${kamikaze.x}, ${kamikaze.y}) homing to player at (${this.player.x}, ${this.player.y}), distance: ${distance.toFixed(1)}`);
         
         // Only home if player is reasonably far
         if (distance > 10) {
@@ -542,7 +533,6 @@ export class GameScene extends Phaser.Scene {
         const kamikaze = this.kamikazes.get(KAMIKAZE_CONFIG.SPAWN_X, y, 'kamikaze') as Phaser.Physics.Arcade.Sprite;
         
         if (kamikaze) {
-            console.log('Spawning kamikaze at:', KAMIKAZE_CONFIG.SPAWN_X, y);
             kamikaze.setActive(true);
             kamikaze.setVisible(true);
             kamikaze.setOrigin(0.5, 0.5);
@@ -556,8 +546,6 @@ export class GameScene extends Phaser.Scene {
             
             // Set up collision using dynamic calculation
             setupCircularCollision(kamikaze, 0.9);
-            
-            console.log('Kamikaze size:', kamikaze.displayWidth, 'x', kamikaze.displayHeight);
         }
     }
 }

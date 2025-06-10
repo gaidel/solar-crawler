@@ -27,21 +27,10 @@ export function setupCircularCollision(
 ): void {
     const radius = getCollisionRadius(sprite, paddingFactor);
 
-    // Debug information
-    console.log('Setting up collision for sprite:');
-    console.log('  - Original size:', sprite.width, 'x', sprite.height);
-    console.log('  - Display size:', sprite.displayWidth, 'x', sprite.displayHeight);
-    console.log('  - Scale:', sprite.scaleX, 'x', sprite.scaleY);
-    console.log('  - Padding factor:', paddingFactor);
-    console.log('  - Calculated radius (for original):', radius);
-    console.log('  - Effective radius (after scale):', radius * sprite.scaleX);
-
     // Calculate offset to center the collision circle
     // Phaser's setCircle expects offset from top-left corner of the original sprite
     const offsetX = (sprite.width - radius * 2) / 2;
     const offsetY = (sprite.height - radius * 2) / 2;
-
-    console.log('  - Offset:', offsetX, 'x', offsetY);
 
     sprite.setCircle(radius, offsetX, offsetY);
 }
