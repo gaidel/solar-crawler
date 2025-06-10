@@ -9,6 +9,7 @@ export enum GameState {
 export interface PlayerInput {
     moveUp: boolean;
     moveDown: boolean;
+    action: boolean;
 }
 
 export class GameUI {
@@ -16,11 +17,18 @@ export class GameUI {
     private uiOverlay?: Phaser.GameObjects.Container;
     private scoreText!: Phaser.GameObjects.Text;
 
+    // Menu navigation
+    private menuItems: Phaser.GameObjects.Text[] = [];
+    private selectedIndex: number = 0;
+    private menuCallbacks: (() => void)[] = [];
+
     // Input keys
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private wKey!: Phaser.Input.Keyboard.Key;
     private sKey!: Phaser.Input.Keyboard.Key;
     private enterKey!: Phaser.Input.Keyboard.Key;
+    private spaceKey!: Phaser.Input.Keyboard.Key;
+    private escKey!: Phaser.Input.Keyboard.Key;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -42,8 +50,12 @@ export class GameUI {
         this.wKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W)!;
         this.sKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S)!;
 
-        // Add Enter key for UI interactions
+        // Add action keys for UI interactions
         this.enterKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)!;
+        this.spaceKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)!;
+
+        // Add ESC key for menu navigation
+        this.escKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
     }
 
     private createHUD(): void {
@@ -60,11 +72,15 @@ export class GameUI {
         return {
             moveUp: this.cursors.up?.isDown || this.wKey.isDown,
             moveDown: this.cursors.down?.isDown || this.sKey.isDown,
+            action: this.enterKey.isDown || this.spaceKey.isDown,
         };
     }
 
     isEnterPressed(): boolean {
-        return Phaser.Input.Keyboard.JustDown(this.enterKey);
+        return (
+            Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+            Phaser.Input.Keyboard.JustDown(this.spaceKey)
+        );
     }
 
     // HUD update methods
@@ -72,9 +88,21 @@ export class GameUI {
         this.scoreText.setText(`Score: ${score}  Time: ${Math.ceil(timeLeft / 1000)}s`);
     }
 
+    // Update method for menu navigation (called from GameScene)
+    update(): void {
+        if (this.menuItems.length > 0) {
+            this.handleMenuNavigation();
+        }
+    }
+
     // Screen management methods
-    showGameOverScreen(score: number, onRestart: () => void): void {
+    showGameOverScreen(score: number, onRestart: () => void, onReturnToMenu: () => void): void {
         this.clearScreens();
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onRestart, onReturnToMenu];
+        this.selectedIndex = 0; // Default to RESTART
 
         // Create overlay
         this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
@@ -92,7 +120,7 @@ export class GameUI {
 
         // Game Over text
         const gameOverText = this.scene.add
-            .text(0, -100, 'GAME OVER', {
+            .text(0, -120, 'GAME OVER', {
                 fontSize: UI_CONFIG.FONT_SIZE_LARGE,
                 color: '#ff4444',
                 align: 'center',
@@ -102,7 +130,7 @@ export class GameUI {
 
         // Final score
         const finalScoreText = this.scene.add
-            .text(0, -40, `Final Score: ${score}`, {
+            .text(0, -60, `Final Score: ${score}`, {
                 fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
                 color: '#ffffff',
                 align: 'center',
@@ -110,37 +138,58 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(finalScoreText);
 
-        // Restart button
-        const restartButton = this.scene.add
-            .text(0, 40, 'RESTART', {
-                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
-                color: '#44ff44',
-                align: 'center',
-            })
-            .setOrigin(0.5);
+        // Create menu items
+        const menuOptions = [
+            { text: 'RESTART', y: 0 },
+            { text: 'RETURN TO MENU', y: 50 },
+        ];
 
-        restartButton.setInteractive({ useHandCursor: true });
-        restartButton.on('pointerdown', onRestart);
-        restartButton.on('pointerover', () => restartButton.setStyle({ color: '#88ff88' }));
-        restartButton.on('pointerout', () => restartButton.setStyle({ color: '#44ff44' }));
+        menuOptions.forEach((option, index) => {
+            const menuItem = this.scene.add
+                .text(0, option.y, option.text, {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#ffffff',
+                    align: 'center',
+                })
+                .setOrigin(0.5);
 
-        this.uiOverlay.add(restartButton);
+            // Mouse interactions
+            menuItem.setInteractive({ useHandCursor: true });
+            menuItem.on('pointerover', () => {
+                this.selectedIndex = index;
+                this.updateMenuSelection();
+            });
+            menuItem.on('pointerdown', () => {
+                this.menuCallbacks[index]();
+            });
 
-        // Enter key hint
-        const enterHint = this.scene.add
-            .text(0, 80, 'Press ENTER to restart', {
+            this.menuItems.push(menuItem);
+            this.uiOverlay!.add(menuItem);
+        });
+
+        // Control hints
+        const controlHint = this.scene.add
+            .text(0, 100, 'W/S to navigate | ENTER to select | ESC for menu', {
                 fontSize: UI_CONFIG.FONT_SIZE_SMALL,
                 color: '#888888',
                 align: 'center',
             })
             .setOrigin(0.5);
-        this.uiOverlay.add(enterHint);
+        this.uiOverlay.add(controlHint);
 
         this.uiOverlay.setScrollFactor(0);
+
+        // Initial selection
+        this.updateMenuSelection();
     }
 
-    showVictoryScreen(score: number, onRestart: () => void): void {
+    showVictoryScreen(score: number, onRestart: () => void, onReturnToMenu: () => void): void {
         this.clearScreens();
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onRestart, onReturnToMenu];
+        this.selectedIndex = 0; // Default to PLAY AGAIN
 
         // Create overlay
         this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
@@ -158,7 +207,7 @@ export class GameUI {
 
         // Victory text
         const victoryText = this.scene.add
-            .text(0, -100, 'VICTORY!', {
+            .text(0, -120, 'VICTORY!', {
                 fontSize: UI_CONFIG.FONT_SIZE_LARGE,
                 color: '#44ff44',
                 align: 'center',
@@ -168,7 +217,7 @@ export class GameUI {
 
         // Congratulations text
         const congratsText = this.scene.add
-            .text(0, -40, 'You survived the solar crawler!', {
+            .text(0, -60, 'You survived the solar crawler!', {
                 fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
                 color: '#ffffff',
                 align: 'center',
@@ -178,7 +227,7 @@ export class GameUI {
 
         // Final score
         const finalScoreText = this.scene.add
-            .text(0, 0, `Final Score: ${score}`, {
+            .text(0, -20, `Final Score: ${score}`, {
                 fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
                 color: '#ffffff',
                 align: 'center',
@@ -186,39 +235,108 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(finalScoreText);
 
-        // Play again button
-        const playAgainButton = this.scene.add
-            .text(0, 60, 'PLAY AGAIN', {
-                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
-                color: '#44ff44',
-                align: 'center',
-            })
-            .setOrigin(0.5);
+        // Create menu items
+        const menuOptions = [
+            { text: 'PLAY AGAIN', y: 30 },
+            { text: 'RETURN TO MENU', y: 80 },
+        ];
 
-        playAgainButton.setInteractive({ useHandCursor: true });
-        playAgainButton.on('pointerdown', onRestart);
-        playAgainButton.on('pointerover', () => playAgainButton.setStyle({ color: '#88ff88' }));
-        playAgainButton.on('pointerout', () => playAgainButton.setStyle({ color: '#44ff44' }));
+        menuOptions.forEach((option, index) => {
+            const menuItem = this.scene.add
+                .text(0, option.y, option.text, {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#ffffff',
+                    align: 'center',
+                })
+                .setOrigin(0.5);
 
-        this.uiOverlay.add(playAgainButton);
+            // Mouse interactions
+            menuItem.setInteractive({ useHandCursor: true });
+            menuItem.on('pointerover', () => {
+                this.selectedIndex = index;
+                this.updateMenuSelection();
+            });
+            menuItem.on('pointerdown', () => {
+                this.menuCallbacks[index]();
+            });
 
-        // Enter key hint
-        const enterHint = this.scene.add
-            .text(0, 100, 'Press ENTER to play again', {
+            this.menuItems.push(menuItem);
+            this.uiOverlay!.add(menuItem);
+        });
+
+        // Control hints
+        const controlHint = this.scene.add
+            .text(0, 120, 'W/S to navigate | ENTER to select | ESC for menu', {
                 fontSize: UI_CONFIG.FONT_SIZE_SMALL,
                 color: '#888888',
                 align: 'center',
             })
             .setOrigin(0.5);
-        this.uiOverlay.add(enterHint);
+        this.uiOverlay.add(controlHint);
 
         this.uiOverlay.setScrollFactor(0);
+
+        // Initial selection
+        this.updateMenuSelection();
     }
 
     clearScreens(): void {
         if (this.uiOverlay) {
             this.uiOverlay.destroy();
             this.uiOverlay = undefined;
+        }
+        // Clear menu state
+        this.menuItems = [];
+        this.menuCallbacks = [];
+        this.selectedIndex = 0;
+    }
+
+    // ESC key handling
+    isEscPressed(): boolean {
+        return Phaser.Input.Keyboard.JustDown(this.escKey);
+    }
+
+    // Menu navigation methods
+    private updateMenuSelection(): void {
+        this.menuItems.forEach((item, index) => {
+            if (index === this.selectedIndex) {
+                item.setColor('#00ff00');
+                item.setScale(1.1);
+            } else {
+                item.setColor('#ffffff');
+                item.setScale(1.0);
+            }
+        });
+    }
+
+    private handleMenuNavigation(): void {
+        // Handle menu navigation input
+        if (
+            Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
+            Phaser.Input.Keyboard.JustDown(this.wKey)
+        ) {
+            this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+            this.updateMenuSelection();
+        }
+
+        if (
+            Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
+            Phaser.Input.Keyboard.JustDown(this.sKey)
+        ) {
+            this.selectedIndex = Math.min(this.menuItems.length - 1, this.selectedIndex + 1);
+            this.updateMenuSelection();
+        }
+
+        // Handle menu selection
+        if (this.isEnterPressed()) {
+            if (this.selectedIndex >= 0 && this.selectedIndex < this.menuCallbacks.length) {
+                this.menuCallbacks[this.selectedIndex]();
+            }
+        }
+
+        // ESC always goes to menu (second option)
+        if (this.isEscPressed() && this.menuCallbacks.length > 1) {
+            this.menuCallbacks[1](); // Return to menu is always second option
         }
     }
 
@@ -228,7 +346,8 @@ export class GameUI {
         onPlayerTint: (color: number) => void,
         onPhysicsPause: () => void,
         onStopSpawning: () => void,
-        onRestart: () => void
+        onRestart: () => void,
+        onReturnToMenu: () => void
     ): void {
         // Handle game state changes
         onPhysicsPause();
@@ -236,7 +355,7 @@ export class GameUI {
         onStopSpawning();
 
         // Show game over screen
-        this.showGameOverScreen(score, onRestart);
+        this.showGameOverScreen(score, onRestart, onReturnToMenu);
     }
 
     victory(
@@ -244,7 +363,8 @@ export class GameUI {
         onPlayerTint: (color: number) => void,
         onPhysicsPause: () => void,
         onStopSpawning: () => void,
-        onRestart: () => void
+        onRestart: () => void,
+        onReturnToMenu: () => void
     ): void {
         // Handle game state changes
         onPhysicsPause();
@@ -252,7 +372,7 @@ export class GameUI {
         onStopSpawning();
 
         // Show victory screen
-        this.showVictoryScreen(score, onRestart);
+        this.showVictoryScreen(score, onRestart, onReturnToMenu);
     }
 
     destroy(): void {

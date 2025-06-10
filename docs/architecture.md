@@ -9,6 +9,7 @@ solar-crawler/
 ├── 📁 assets/                # All game resources
 │   ├── 🖼️ player.png
 │   ├── 🖼️ asteroid.png
+│   ├── 🖼️ kamikaze.png
 │   ├── 🖼️ bullet.png
 │   └── 🖼️ background.png
 ├── 📁 docs/                  # Project documentation
@@ -18,10 +19,20 @@ solar-crawler/
 │   └── 📄 architecture.md   # This file
 ├── 📁 src/                   # Source code
 │   ├── 📄 Player.ts         # Player class
+│   ├── 📄 GameUI.ts         # UI system and input handling
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
+│   ├── 📁 enemies/          # Enemy system
+│   │   ├── 📄 Enemy.ts      # Base enemy interface and class
+│   │   ├── 📄 Asteroid.ts   # Asteroid enemy implementation
+│   │   ├── 📄 Kamikaze.ts   # Kamikaze enemy implementation
+│   │   └── 📄 EnemyManager.ts # Enemy management system
 │   ├── 📁 scenes/           # Phaser scenes
-│   │   └── 📄 GameScene.ts  # Main game scene
+│   │   ├── 📄 MainMenuScene.ts  # Main menu
+│   │   ├── 📄 AboutScene.ts     # About screen
+│   │   ├── 📄 ControlsScene.ts  # Controls screen
+│   │   ├── 📄 CreditsScene.ts   # Credits screen
+│   │   └── 📄 GameScene.ts      # Main game scene
 │   └── 📁 utils/            # Utility functions
 │       └── 📄 CollisionHelpers.ts # Collision utilities
 ├── 📄 package.json          # Dependencies and scripts
@@ -78,21 +89,26 @@ solar-crawler/
 ```
 src/
 ├── Player.ts                # Player class  
-├── Asteroid.ts              # Asteroid enemy class
-├── Kamikaze.ts              # Kamikaze enemy class
-├── Gunner.ts                # Gunner enemy class (future)
-├── Leaper.ts                # Leaper enemy class (future)
+├── GameUI.ts                # UI system and input handling
+├── enemies/                 # Enemy system (implemented)
+│   ├── Enemy.ts             # Base enemy interface and class
+│   ├── Asteroid.ts          # Asteroid enemy implementation
+│   ├── Kamikaze.ts          # Kamikaze enemy implementation
+│   ├── EnemyManager.ts      # Enemy management system
+│   ├── Gunner.ts            # Gunner enemy class (future)
+│   └── Leaper.ts            # Leaper enemy class (future)
 ├── Bullet.ts                # Bullet class (future)
 ├── WaveManager.ts           # Wave progression logic (future)
 ├── AudioManager.ts          # Sound management (future)
 ├── config/
 │   ├── constants.ts         # Game constants
 │   └── settings.ts          # Game settings (future)
-├── scenes/
-│   ├── GameScene.ts         # Main gameplay
-│   ├── MenuScene.ts         # Main menu (future)
-│   ├── GameOverScene.ts     # Game over screen (future)
-│   └── VictoryScene.ts      # Victory screen (future)
+├── scenes/                  # Scene system (implemented)
+│   ├── MainMenuScene.ts     # Main menu
+│   ├── AboutScene.ts        # About screen
+│   ├── ControlsScene.ts     # Controls screen  
+│   ├── CreditsScene.ts      # Credits screen
+│   └── GameScene.ts         # Main gameplay
 └── utils/
     ├── CollisionHelpers.ts  # Collision utilities
     └── MathHelpers.ts       # Math utilities (future)

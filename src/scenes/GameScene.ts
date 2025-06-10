@@ -111,14 +111,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // Check for restart input in game over/victory states
-        if (
-            (this.gameState === GameState.GAME_OVER || this.gameState === GameState.VICTORY) &&
-            this.gameUI.isEnterPressed()
-        ) {
-            this.restart();
-            return;
-        }
+        // Update UI (handles menu navigation in game over/victory states)
+        this.gameUI.update();
 
         if (this.gameState !== GameState.PLAYING) {
             return; // Stop updating if game is not active
@@ -183,7 +177,8 @@ export class GameScene extends Phaser.Scene {
             (color: number) => this.player.setTint(color),
             () => this.physics.pause(),
             () => this.enemyManager.stopSpawning(),
-            () => this.restart()
+            () => this.restart(),
+            () => this.returnToMenu()
         );
     }
 
@@ -194,7 +189,8 @@ export class GameScene extends Phaser.Scene {
             (color: number) => this.player.setTint(color),
             () => this.physics.pause(),
             () => this.enemyManager.stopSpawning(),
-            () => this.restart()
+            () => this.restart(),
+            () => this.returnToMenu()
         );
     }
 
@@ -204,5 +200,13 @@ export class GameScene extends Phaser.Scene {
 
         // Restart the scene
         this.scene.restart();
+    }
+
+    private returnToMenu(): void {
+        // Clean up UI screens
+        this.gameUI.clearScreens();
+
+        // Return to main menu
+        this.scene.switch('MainMenuScene');
     }
 }

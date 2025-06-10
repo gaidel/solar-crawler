@@ -4,6 +4,7 @@ import { setupCircularCollision } from './utils/CollisionHelpers';
 export interface PlayerInput {
     moveUp: boolean;
     moveDown: boolean;
+    action: boolean; // ENTER/SPACE for manual firing
 }
 
 export class Player {
@@ -50,8 +51,9 @@ export class Player {
             this.sprite.setVelocityY(0);
         }
 
-        // Auto-fire bullets
-        if (time > this.lastFired) {
+        // Auto-fire bullets OR manual fire on action key
+        if (time > this.lastFired && (true || input.action)) {
+            // Auto-fire always enabled
             this.fireBullet();
             this.lastFired = time + PLAYER_CONFIG.FIRE_RATE;
         }

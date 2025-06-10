@@ -14,6 +14,7 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Player Class | ✅ | ✅ | ✅ Complete |
 | Asteroids | ✅ | ✅ | ✅ Complete |
 | Kamikaze Enemy | ✅ | ✅ | ✅ Complete |
+| Main Menu System | ✅ | ✅ | ✅ Complete |
 | Gunner Enemy | ✅ | ❌ | 🔴 Missing |
 | Leaper Enemy | ✅ | ❌ | 🔴 Missing |
 | Wave System | ✅ | ❌ | 🔴 Missing |
@@ -134,6 +135,9 @@ According to design document, should have 4 enemy types:
 - [x] Add score display
 - [x] Add timer display
 - [x] Add Enter key support for restart
+- [x] Create Main Menu system with navigation
+- [x] Add About, Controls, and Credits screens
+- [x] Add Return to Menu functionality from game screens
 
 ### 🛠️ Code Quality & Bug Fixes
 - [x] Remove debug graphics from production build
@@ -161,13 +165,22 @@ According to design document, should have 4 enemy types:
 
 ## 🏗️ Recent Improvements (Current Session)
 
-### ✅ **Player Refactoring**
-- Created dedicated `Player` class in `src/entities/Player.ts`
-- Encapsulated all player-related functionality (movement, shooting, collision)
-- Reduced GameScene complexity from 552 to 484 lines
-- Improved code maintainability and testability
+### ✅ **Main Menu System** (LATEST)
+- Created comprehensive main menu with MainMenuScene, AboutScene, ControlsScene, CreditsScene
+- Added keyboard and mouse navigation with W/S + ENTER support
+- Integrated decorative elements and consistent visual design
+- Added Return to Menu functionality from game over/victory screens
+- Disabled physics debug mode for production release
+- Enhanced game flow with proper scene management
 
-### ✅ **Code Quality Improvements**
+### ✅ **Architecture Refactoring** (Previous)
+- Completed modular refactoring: GameScene reduced from 552 to 180 lines (-68%)
+- Created Player.ts, GameUI.ts, and enemies/ directory with full enemy system
+- Implemented object pooling and unified collision handling
+- Added static preload() methods for each component
+- Achieved perfect separation of concerns with callback-driven communication
+
+### ✅ **Code Quality Improvements** (Previous)
 - Added WASD controls support (W/S keys alongside arrow keys)
 - Removed all console.log statements for cleaner production code
 - Enhanced scoring system with different values for enemy types

@@ -1,19 +1,22 @@
 # Solar Crawler
 
-Solar-themed arcade shooter where each run is unique.
+Space shooter with innovative Three-Key Design.
 
-**Solar Crawler** is a browser-based side-scrolling space shooter with roguelike elements.
+**Solar Crawler** is a browser-based side-scrolling space shooter featuring the innovative Three-Key Design. 
+You pilot a spacecraft through hostile space regions, using only W/S (or arrow keys) + ENTER for complete gameplay control.
 
-You pilot a spacecraft through dangerous regions of space, moving vertically while the background scrolls horizontally. The ship fires automatically, and enemies appear in procedurally generated patterns. Between waves, you collect random upgrades that shape each run differently.
+The ship moves vertically while the background scrolls horizontally. Your objective: survive for 60 seconds while battling various enemy types including asteroids and homing kamikazes.
 
 ---
 
 ## 🎮 Gameplay Overview
 
-- Side-scrolling shooter: The ship moves up and down; the world scrolls left.
-- Auto-fire: No need to press buttons to shoot — focus on navigation.
-- Enemy waves: Enemies approach from the right and must be avoided or destroyed.
-- Roguelike structure: After each wave, you gain a random upgrade. Each run is unique.
+- **Three-Key Design**: Complete control with just W/S + ENTER
+- **Side-scrolling shooter**: Move up/down while the world scrolls horizontally  
+- **Auto-fire system**: Ship fires automatically while moving
+- **Survival challenge**: Survive 60 seconds to achieve victory
+- **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)
+- **Main Menu**: Navigate game options, view controls, about, and credits
 
 ---
 
