@@ -9,7 +9,9 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Feature | Documented | Implemented | Status |
 |---------|------------|-------------|---------|
 | Player Movement | ✅ | ✅ | ✅ Complete |
+| WASD Controls | ✅ | ✅ | ✅ Complete |
 | Auto-firing | ✅ | ✅ | ✅ Complete |
+| Player Class | ✅ | ✅ | ✅ Complete |
 | Asteroids | ✅ | ✅ | ✅ Complete |
 | Kamikaze Enemy | ✅ | ✅ | ✅ Complete |
 | Gunner Enemy | ✅ | ❌ | 🔴 Missing |
@@ -19,13 +21,14 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Audio | ✅ | ❌ | 🔴 Missing |
 | Victory Screen | ✅ | ✅ | ✅ Complete |
 | Game Over Screen | ✅ | ✅ | ✅ Complete |
+| Code Quality | ✅ | ✅ | ✅ Complete |
 
 ---
 
 ## 🔴 Critical Issues
 
 ### 1. **Missing Core Features**
-- **Wave System**: Game currently spawns asteroids infinitely instead of structured waves
+- **Wave System**: Game currently spawns enemies infinitely instead of structured waves
 - **Roguelike Elements**: Missing upgrade system between waves
 - **Additional Enemy Types**: 2 of 4 enemy types implemented
 
@@ -45,25 +48,38 @@ According to design document, should have 4 enemy types:
 
 ## 🟡 Medium Priority Issues
 
-### 4. **Code Quality Issues**
-- Console.log statements left in production code
-- Missing error handling
-- Some magic numbers could be constants
+### 4. **Remaining Refactoring Opportunities**
+- Enemy classes could be extracted into separate files
+- Bullet system could be its own class
+- Wave/spawn system needs separate module
 
 ---
 
 ## 🟢 Fixed Issues
 
-### 5. **Game State Management** ✅ FIXED
+### 5. **Code Quality Issues** ✅ FIXED
+- ~~Console.log statements left in production code~~
+- ~~Missing error handling~~
+- ~~Some magic numbers could be constants~~
+
+### 6. **WASD Controls** ✅ FIXED
+- ~~Only arrow keys work, but PRD specifies W/S support~~
+
+### 7. **Code Organization** ✅ FIXED
+- ~~GameScene.ts was too large (552 lines)~~
+- ~~Player logic was mixed with scene management~~
+- ~~No separation of concerns~~
+
+### 8. **Game State Management** ✅ FIXED
 - ~~No proper Game Over or Victory screens~~
 - ~~No restart functionality~~
 
-### 6. **Collision System** ✅ FIXED
+### 9. **Collision System** ✅ FIXED
 - ~~Physics debug was enabled in production~~
 - ~~Debug graphics overlays were visible~~
 - ~~Collision detection sizing issues~~
 
-### 7. **Object Pooling** ✅ FIXED
+### 10. **Object Pooling** ✅ FIXED
 - ~~Destroyed asteroids stayed in place~~
 - ~~Pool exhaustion possible~~
 
@@ -79,10 +95,12 @@ According to design document, should have 4 enemy types:
 
 ### 🚀 Player Mechanics
 - [x] Implement vertical movement via `W` / `S` or `Arrow Up` / `Arrow Down`
+- [x] Add WASD key support as specified in PRD
 - [x] Add automatic shooting at fixed intervals
 - [x] Create player bullets that move left to right
 - [x] Detect collisions between player and enemies or projectiles
 - [x] Trigger Game Over on collision
+- [x] Extract Player class to separate module for better organization
 
 ### 👾 Enemies
 - [x] Create enemy spawner system
@@ -122,16 +140,35 @@ According to design document, should have 4 enemy types:
 - [x] Disable physics debug mode in production
 - [x] Fix collision detection system
 - [x] Implement proper object pooling
-- [ ] Remove console.log statements from production code
-- [ ] Add proper error handling
-- [ ] Add code comments and documentation
+- [x] Remove console.log statements from production code
+- [x] Add proper error handling
+- [x] Add code comments and documentation
+- [x] Extract Player class for better code organization
+- [x] Add scoring constants for maintainability
+- [x] Clean up GameScene.ts (reduced from 552 to 484 lines)
 
 ---
 
 ## 🎯 Priority Tasks for Next Session
 
 1. **Wave System** - Implement structured waves instead of infinite spawning
-2. **Kamikaze Enemy** - Add homing enemy type (simplest to implement)
-3. **Audio System** - Add basic sound effects (shoot, explosion)
-4. **Code Cleanup** - Remove debug console.logs
-5. **Enemy Projectiles** - Add bullets from Gunner enemies
+2. **Enemy Classes** - Extract enemy logic into separate classes (Asteroid, Kamikaze)
+3. **Gunner Enemy** - Add projectile-shooting enemy type
+4. **Audio System** - Add basic sound effects (shoot, explosion)
+5. **Leaper Enemy** - Add zigzag movement enemy type
+
+---
+
+## 🏗️ Recent Improvements (Current Session)
+
+### ✅ **Player Refactoring**
+- Created dedicated `Player` class in `src/entities/Player.ts`
+- Encapsulated all player-related functionality (movement, shooting, collision)
+- Reduced GameScene complexity from 552 to 484 lines
+- Improved code maintainability and testability
+
+### ✅ **Code Quality Improvements**
+- Added WASD controls support (W/S keys alongside arrow keys)
+- Removed all console.log statements for cleaner production code
+- Enhanced scoring system with different values for enemy types
+- Added SCORE_CONFIG constants for better maintainability

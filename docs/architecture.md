@@ -17,6 +17,7 @@ solar-crawler/
 │   ├── 📄 todo.md           # Development progress & issues
 │   └── 📄 architecture.md   # This file
 ├── 📁 src/                   # Source code
+│   ├── 📄 Player.ts         # Player class
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
 │   ├── 📁 scenes/           # Phaser scenes
@@ -59,7 +60,7 @@ solar-crawler/
 - [x] Put game constants in `src/config/constants.ts`
 - [x] Put Phaser scenes in `src/scenes/`
 - [x] Put utility functions in `src/utils/`
-- [x] Put game entities in `src/entities/` (when created)
+- [x] Put game classes directly in `src/` (Player.ts, etc.)
 - [x] Put all images/sounds in `assets/`
 - [x] Put all documentation in `docs/`
 
@@ -76,29 +77,25 @@ solar-crawler/
 
 ```
 src/
+├── Player.ts                # Player class  
+├── Asteroid.ts              # Asteroid enemy class
+├── Kamikaze.ts              # Kamikaze enemy class
+├── Gunner.ts                # Gunner enemy class (future)
+├── Leaper.ts                # Leaper enemy class (future)
+├── Bullet.ts                # Bullet class (future)
+├── WaveManager.ts           # Wave progression logic (future)
+├── AudioManager.ts          # Sound management (future)
 ├── config/
 │   ├── constants.ts         # Game constants
-│   └── settings.ts          # Game settings
+│   └── settings.ts          # Game settings (future)
 ├── scenes/
 │   ├── GameScene.ts         # Main gameplay
-│   ├── MenuScene.ts         # Main menu
-│   ├── GameOverScene.ts     # Game over screen
-│   └── VictoryScene.ts      # Victory screen
-├── entities/
-│   ├── Player.ts            # Player class
-│   ├── enemies/
-│   │   ├── Asteroid.ts
-│   │   ├── Kamikaze.ts
-│   │   ├── Gunner.ts
-│   │   └── Leaper.ts
-│   └── Bullet.ts            # Bullet class
-├── systems/
-│   ├── WaveManager.ts       # Wave progression logic
-│   ├── UpgradeSystem.ts     # Roguelike upgrades
-│   └── AudioManager.ts      # Sound management
+│   ├── MenuScene.ts         # Main menu (future)
+│   ├── GameOverScene.ts     # Game over screen (future)
+│   └── VictoryScene.ts      # Victory screen (future)
 └── utils/
     ├── CollisionHelpers.ts  # Collision utilities
-    └── MathHelpers.ts       # Math utilities
+    └── MathHelpers.ts       # Math utilities (future)
 ```
 
 ---
