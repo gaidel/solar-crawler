@@ -1,5 +1,6 @@
 import 'phaser';
 import { GAME_CONFIG, UI_CONFIG } from '../config/constants';
+import { AudioManager } from '../AudioManager';
 
 export class MainMenuScene extends Phaser.Scene {
     private backgroundTileSprite?: Phaser.GameObjects.TileSprite;
@@ -8,6 +9,7 @@ export class MainMenuScene extends Phaser.Scene {
     private selectedIndex: number = 0;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private wasdKeys?: { [key: string]: Phaser.Input.Keyboard.Key };
+    private audioManager!: AudioManager;
 
     constructor() {
         super({ key: 'MainMenuScene' });
@@ -17,12 +19,26 @@ export class MainMenuScene extends Phaser.Scene {
         // Load assets for menu
         this.load.image('background', 'assets/background.png');
         this.load.image('player', 'assets/player.png');
+
+        // Load audio assets
+        AudioManager.preload(this);
     }
 
     create(): void {
         // Reset menu items array
         this.menuItems = [];
         this.selectedIndex = 0;
+
+        // Initialize audio manager and start menu music
+        this.audioManager = new AudioManager(this);
+        this.audioManager.playMenuMusic();
+
+        // Add scene resume handler to restart music when returning from game
+        this.scene.scene.events.on('resume', () => {
+            if (this.audioManager && !this.audioManager.isMusicPlaying()) {
+                this.audioManager.playMenuMusic();
+            }
+        });
 
         // Create scrolling background
         this.backgroundTileSprite = this.add.tileSprite(
@@ -90,9 +106,18 @@ export class MainMenuScene extends Phaser.Scene {
             menuItem.on('pointerover', () => {
                 this.selectedIndex = index;
                 this.updateMenuSelection();
+
+                // Try to start music on mouse interaction
+                if (this.audioManager) {
+                    this.audioManager.retryPendingMusic();
+                }
             });
 
             menuItem.on('pointerdown', () => {
+                // Try to start music on mouse click
+                if (this.audioManager) {
+                    this.audioManager.retryPendingMusic();
+                }
                 option.action();
             });
 
@@ -110,17 +135,47 @@ export class MainMenuScene extends Phaser.Scene {
         const spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         const escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-        enterKey.on('down', () => this.selectCurrentMenuItem());
-        spaceKey.on('down', () => this.selectCurrentMenuItem());
-        escKey.on('down', () => this.selectCurrentMenuItem());
+        enterKey.on('down', () => {
+            // Try to start music on key press
+            if (this.audioManager) {
+                this.audioManager.retryPendingMusic();
+            }
+            this.selectCurrentMenuItem();
+        });
+        spaceKey.on('down', () => {
+            // Try to start music on key press
+            if (this.audioManager) {
+                this.audioManager.retryPendingMusic();
+            }
+            this.selectCurrentMenuItem();
+        });
+        escKey.on('down', () => {
+            // Try to start music on key press
+            if (this.audioManager) {
+                this.audioManager.retryPendingMusic();
+            }
+            this.selectCurrentMenuItem();
+        });
 
         // Initial selection - delay to ensure all objects are properly initialized
         this.time.delayedCall(50, () => {
             this.updateMenuSelection();
         });
+
+        // Add universal click handler to activate audio on any interaction
+        this.input.on('pointerdown', () => {
+            if (this.audioManager) {
+                this.audioManager.retryPendingMusic();
+            }
+        });
     }
 
     update(): void {
+        // Try to start pending music on any user interaction
+        if (this.audioManager && this.audioManager.hasPendingMusic()) {
+            this.audioManager.retryPendingMusic();
+        }
+
         // Scroll background
         if (this.backgroundTileSprite) {
             this.backgroundTileSprite.tilePositionX += GAME_CONFIG.BACKGROUND_SCROLL_SPEED;
@@ -134,6 +189,11 @@ export class MainMenuScene extends Phaser.Scene {
             ) {
                 this.selectedIndex = Math.max(0, this.selectedIndex - 1);
                 this.updateMenuSelection();
+
+                // Try to start music on user interaction
+                if (this.audioManager) {
+                    this.audioManager.retryPendingMusic();
+                }
             }
 
             if (
@@ -142,6 +202,11 @@ export class MainMenuScene extends Phaser.Scene {
             ) {
                 this.selectedIndex = Math.min(this.menuItems.length - 1, this.selectedIndex + 1);
                 this.updateMenuSelection();
+
+                // Try to start music on user interaction
+                if (this.audioManager) {
+                    this.audioManager.retryPendingMusic();
+                }
             }
         }
     }
@@ -195,6 +260,13 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     private startGame(): void {
+        // Stop all audio before starting game
+        AudioManager.stopAllAudio(this);
+
+        // Clean up local audio manager
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
         this.scene.start('GameScene');
     }
 
@@ -211,8 +283,12 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     destroy(): void {
+        // Clean up audio
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
+
         // Clean up menu items
         this.menuItems = [];
-        super.destroy();
     }
 }

@@ -1,5 +1,6 @@
 import 'phaser';
 import { GAME_CONFIG, UI_CONFIG } from '../config/constants';
+import { AudioManager } from '../AudioManager';
 
 export class AboutScene extends Phaser.Scene {
     private backgroundTileSprite?: Phaser.GameObjects.TileSprite;
@@ -10,6 +11,7 @@ export class AboutScene extends Phaser.Scene {
 
     preload(): void {
         this.load.image('background', 'assets/background.png');
+        AudioManager.preload(this);
     }
 
     create(): void {

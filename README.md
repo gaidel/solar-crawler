@@ -17,6 +17,7 @@ The ship moves vertically while the background scrolls horizontally. Your object
 - **Survival challenge**: Survive 60 seconds to achieve victory
 - **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)
 - **Main Menu**: Navigate game options, view controls, about, and credits
+- **Background Music**: Dynamic audio experience with menu and gameplay tracks
 
 ---
 
@@ -48,4 +49,18 @@ If the game uses ES modules, you'll need to serve it with a local web server (e.
 
 Created by Andrey Gaidel, with assistance from large language models.
 
-Some assets (e.g., music, sounds, images) may use third-party licenses such as Creative Commons.
+### Audio Credits
+Music files are used under royalty-free licenses from [Pixabay](https://pixabay.com):
+- **Menu music**: "Space Ambient Cinematic" by DELOSound (`menu.mp3`)
+- **Game music**: "Space Ambient Cinematic Music" by MFCC (`space-ambient-cinematic-music-345394.mp3`)
+
+All audio is used under the [Pixabay Content License](https://pixabay.com/service/license/) - free to use, modify, and integrate into creative works.
+
+### Software License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### License Compatibility
+The combination of MIT (code) + Pixabay Content License (audio) is fully compatible with no restrictions on distribution or commercial use.
+
+### Third-party Assets
+Some assets (music, sounds, images) may use third-party licenses such as Creative Commons or royalty-free licenses from Pixabay.

@@ -2,12 +2,14 @@ import { BULLET_CONFIG, GAME_CONFIG } from '../config/constants';
 import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
+import { AudioManager } from '../AudioManager';
 
 export class GameScene extends Phaser.Scene {
     private player!: Player;
     private gameUI!: GameUI;
     private enemyManager!: EnemyManager;
     private bullets!: Phaser.Physics.Arcade.Group;
+    private audioManager!: AudioManager;
 
     // Game state
     private gameState: GameState = GameState.PLAYING;
@@ -25,6 +27,9 @@ export class GameScene extends Phaser.Scene {
         // Load assets for game entities
         Player.preload(this);
         EnemyManager.preload(this);
+
+        // Load audio assets
+        AudioManager.preload(this);
     }
 
     create() {
@@ -32,6 +37,10 @@ export class GameScene extends Phaser.Scene {
         this.gameState = GameState.PLAYING;
         this.startTime = this.time.now;
         this.score = 0;
+
+        // Initialize audio manager and start game music
+        this.audioManager = new AudioManager(this);
+        this.audioManager.playGameMusic();
 
         // Add background
         const bg = this.add.tileSprite(
@@ -198,6 +207,14 @@ export class GameScene extends Phaser.Scene {
         // Clean up UI screens
         this.gameUI.clearScreens();
 
+        // Stop all audio globally
+        AudioManager.stopAllAudio(this);
+
+        // Clean up local audio manager
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
+
         // Restart the scene
         this.scene.restart();
     }
@@ -205,6 +222,14 @@ export class GameScene extends Phaser.Scene {
     private returnToMenu(): void {
         // Clean up UI screens
         this.gameUI.clearScreens();
+
+        // Stop all audio globally
+        AudioManager.stopAllAudio(this);
+
+        // Clean up local audio manager
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
 
         // Return to main menu
         this.scene.switch('MainMenuScene');

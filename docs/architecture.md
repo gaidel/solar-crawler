@@ -11,7 +11,9 @@ solar-crawler/
 │   ├── 🖼️ asteroid.png
 │   ├── 🖼️ kamikaze.png
 │   ├── 🖼️ bullet.png
-│   └── 🖼️ background.png
+│   ├── 🖼️ background.png
+│   ├── 🎵 menu.mp3
+│   └── 🎵 space-ambient-cinematic-music-345394.mp3
 ├── 📁 docs/                  # Project documentation
 │   ├── 📄 prd.md            # Product Requirements Document
 │   ├── 📄 design.md         # Game Design Document
@@ -20,6 +22,7 @@ solar-crawler/
 ├── 📁 src/                   # Source code
 │   ├── 📄 Player.ts         # Player class
 │   ├── 📄 GameUI.ts         # UI system and input handling
+│   ├── 📄 AudioManager.ts   # Audio system and music management
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
 │   ├── 📁 enemies/          # Enemy system
@@ -99,7 +102,7 @@ src/
 │   └── Leaper.ts            # Leaper enemy class (future)
 ├── Bullet.ts                # Bullet class (future)
 ├── WaveManager.ts           # Wave progression logic (future)
-├── AudioManager.ts          # Sound management (future)
+├── AudioManager.ts          # Sound management (implemented)
 ├── config/
 │   ├── constants.ts         # Game constants
 │   └── settings.ts          # Game settings (future)
@@ -186,6 +189,70 @@ src/
 - [x] **Maintainable** - clear separation of concerns
 - [x] **Collaborative** - new developers can understand quickly
 - [x] **Professional** - industry-standard organization
+
+---
+
+## 🎵 Audio System Architecture
+
+### **AudioManager.ts** - Centralized Audio Management
+The `AudioManager` class provides centralized management of all game audio:
+
+**Features:**
+- **Background Music Management** - Menu and game music with looping
+- **Volume Control** - Adjustable volume levels per audio type
+- **Cleanup & Memory Management** - Proper disposal of audio resources
+- **Error Handling** - Graceful fallback when audio fails
+- **Autoplay Policy Handling** - Progressive retry system for blocked autoplay
+
+**Usage Pattern:**
+```typescript
+// In preload() method of scenes
+AudioManager.preload(this);
+
+// In create() method 
+this.audioManager = new AudioManager(this);
+this.audioManager.playMenuMusic(); // or playGameMusic()
+
+// In destroy() method
+this.audioManager.destroy();
+```
+
+**Audio Files:**
+- **`menu.mp3`** - Looping background music for menu system (volume: 0.3)
+- **`space-ambient-cinematic-music-345394.mp3`** - Looping background music for gameplay (volume: 0.4)
+
+**Integration:**
+- All scenes load audio assets via `AudioManager.preload()`
+- MainMenuScene plays menu music automatically  
+- GameScene plays game music automatically
+- Proper cleanup when switching between scenes
+
+### **Browser Autoplay Policy Handling**
+
+Modern browsers block automatic audio playback. The system handles this gracefully:
+
+**Current Implementation:**
+- **Automatic retry**: 10 attempts with progressive delays (1s, 2s, 3s... up to 10s)
+- **AudioContext resume**: Attempts to resume suspended audio context
+- **User interaction fallback**: Guaranteed to work on first user input
+
+**Development Workarounds:**
+For development, you can disable autoplay restrictions:
+
+#### Chrome/Edge:
+```bash
+# Windows
+chrome.exe --autoplay-policy=no-user-gesture-required --disable-features=PreloadMediaEngagementData
+```
+
+#### Site Settings:
+1. Click **🔒 lock icon** in address bar → **Site settings** → Set **Sound** to **Allow**
+
+**Production Behavior:**
+1. Attempts autoplay on scene load
+2. Shows no error if blocked  
+3. Starts music immediately on first user interaction
+4. No additional UI required
 
 ---
 

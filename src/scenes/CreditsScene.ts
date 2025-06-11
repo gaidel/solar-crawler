@@ -1,5 +1,6 @@
 import 'phaser';
 import { GAME_CONFIG, UI_CONFIG } from '../config/constants';
+import { AudioManager } from '../AudioManager';
 
 export class CreditsScene extends Phaser.Scene {
     private backgroundTileSprite?: Phaser.GameObjects.TileSprite;
@@ -13,6 +14,7 @@ export class CreditsScene extends Phaser.Scene {
         this.load.image('player', 'assets/player.png');
         this.load.image('asteroid', 'assets/asteroid.png');
         this.load.image('kamikaze', 'assets/kamikaze.png');
+        AudioManager.preload(this);
     }
 
     create(): void {
