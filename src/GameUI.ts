@@ -2,6 +2,7 @@ import { GAME_CONFIG, UI_CONFIG } from './config/constants';
 
 export enum GameState {
     PLAYING,
+    PAUSED,
     GAME_OVER,
     VICTORY,
 }
@@ -21,6 +22,13 @@ export class GameUI {
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedIndex: number = 0;
     private menuCallbacks: (() => void)[] = [];
+    
+    // Pause system
+    private pauseCallbacks: {
+        onResume?: () => void;
+        onReturnToMenu?: () => void;
+    } = {};
+    private showingConfirmation = false;
 
     // Input keys
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -280,6 +288,178 @@ export class GameUI {
         this.updateMenuSelection();
     }
 
+    showPauseMenu(onResume: () => void, onReturnToMenu: () => void): void {
+        this.clearScreens();
+        this.showingConfirmation = false;
+
+        // Store callbacks
+        this.pauseCallbacks.onResume = onResume;
+        this.pauseCallbacks.onReturnToMenu = onReturnToMenu;
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onResume, () => this.showExitConfirmation()];
+        this.selectedIndex = 0; // Default to RESUME
+
+        // Create overlay
+        this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
+
+        // Semi-transparent background
+        const overlay = this.scene.add.rectangle(
+            0,
+            0,
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            0x000000,
+            UI_CONFIG.OVERLAY_ALPHA
+        );
+        this.uiOverlay.add(overlay);
+
+        // Pause text
+        const pauseText = this.scene.add
+            .text(0, -120, 'GAME PAUSED', {
+                fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+                color: '#ffff44',
+                align: 'center',
+            })
+            .setOrigin(0.5);
+        this.uiOverlay.add(pauseText);
+
+        // Create menu items
+        const menuOptions = [
+            { text: 'RESUME GAME', y: -20 },
+            { text: 'RETURN TO MENU', y: 30 },
+        ];
+
+        menuOptions.forEach((option, index) => {
+            const menuItem = this.scene.add
+                .text(0, option.y, option.text, {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#ffffff',
+                    align: 'center',
+                })
+                .setOrigin(0.5);
+
+            // Mouse interactions
+            menuItem.setInteractive({ useHandCursor: true });
+            menuItem.on('pointerover', () => {
+                this.selectedIndex = index;
+                this.updateMenuSelection();
+            });
+            menuItem.on('pointerdown', () => {
+                this.menuCallbacks[index]();
+            });
+
+            this.menuItems.push(menuItem);
+            this.uiOverlay!.add(menuItem);
+        });
+
+        // Control hints
+        const controlHint = this.scene.add
+            .text(0, 80, 'W/S to navigate | ENTER to select', {
+                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                color: '#888888',
+                align: 'center',
+            })
+            .setOrigin(0.5);
+        this.uiOverlay.add(controlHint);
+
+        this.uiOverlay.setScrollFactor(0);
+
+        // Initial selection
+        this.updateMenuSelection();
+    }
+
+    private showExitConfirmation(): void {
+        this.clearScreens();
+        this.showingConfirmation = true;
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [
+            () => this.showPauseMenu(this.pauseCallbacks.onResume!, this.pauseCallbacks.onReturnToMenu!),
+            this.pauseCallbacks.onReturnToMenu!
+        ];
+        this.selectedIndex = 0; // Default to NO
+
+        // Create overlay
+        this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
+
+        // Semi-transparent background
+        const overlay = this.scene.add.rectangle(
+            0,
+            0,
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            0x000000,
+            UI_CONFIG.OVERLAY_ALPHA
+        );
+        this.uiOverlay.add(overlay);
+
+        // Confirmation text
+        const confirmText = this.scene.add
+            .text(0, -80, 'EXIT TO MAIN MENU?', {
+                fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+                color: '#ff8844',
+                align: 'center',
+            })
+            .setOrigin(0.5);
+        this.uiOverlay.add(confirmText);
+
+        const warningText = this.scene.add
+            .text(0, -30, 'Your progress will be lost!', {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ff4444',
+                align: 'center',
+            })
+            .setOrigin(0.5);
+        this.uiOverlay.add(warningText);
+
+        // Create menu items
+        const menuOptions = [
+            { text: 'NO, CONTINUE PLAYING', y: 20 },
+            { text: 'YES, EXIT TO MENU', y: 70 },
+        ];
+
+        menuOptions.forEach((option, index) => {
+            const menuItem = this.scene.add
+                .text(0, option.y, option.text, {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#ffffff',
+                    align: 'center',
+                })
+                .setOrigin(0.5);
+
+            // Mouse interactions
+            menuItem.setInteractive({ useHandCursor: true });
+            menuItem.on('pointerover', () => {
+                this.selectedIndex = index;
+                this.updateMenuSelection();
+            });
+            menuItem.on('pointerdown', () => {
+                this.menuCallbacks[index]();
+            });
+
+            this.menuItems.push(menuItem);
+            this.uiOverlay!.add(menuItem);
+        });
+
+        // Control hints
+        const controlHint = this.scene.add
+            .text(0, 120, 'W/S to navigate | ENTER to select | ESC to cancel', {
+                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                color: '#888888',
+                align: 'center',
+            })
+            .setOrigin(0.5);
+        this.uiOverlay.add(controlHint);
+
+        this.uiOverlay.setScrollFactor(0);
+
+        // Initial selection
+        this.updateMenuSelection();
+    }
+
     clearScreens(): void {
         if (this.uiOverlay) {
             this.uiOverlay.destroy();
@@ -289,11 +469,19 @@ export class GameUI {
         this.menuItems = [];
         this.menuCallbacks = [];
         this.selectedIndex = 0;
+        this.showingConfirmation = false;
     }
 
     // ESC key handling
     isEscPressed(): boolean {
         return Phaser.Input.Keyboard.JustDown(this.escKey);
+    }
+
+    isPausePressed(): boolean {
+        return (
+            Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+            Phaser.Input.Keyboard.JustDown(this.escKey)
+        );
     }
 
     // Menu navigation methods
@@ -334,9 +522,15 @@ export class GameUI {
             }
         }
 
-        // ESC always goes to menu (second option)
+        // Handle ESC key differently based on context
         if (this.isEscPressed() && this.menuCallbacks.length > 1) {
-            this.menuCallbacks[1](); // Return to menu is always second option
+            if (this.showingConfirmation) {
+                // In confirmation dialog, ESC means "NO, cancel the exit"
+                this.menuCallbacks[0](); // First option is always "NO, CONTINUE PLAYING"
+            } else {
+                // In other menus, ESC means "go to menu" (second option)
+                this.menuCallbacks[1](); // Return to menu is always second option
+            }
         }
     }
 

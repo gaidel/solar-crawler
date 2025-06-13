@@ -326,6 +326,38 @@ export class EnemyManager {
         return this.enemyBullets;
     }
 
+    // Pause spawning (for pause state)
+    pauseSpawning(): void {
+        if (this.asteroidTimer) {
+            this.asteroidTimer.paused = true;
+        }
+        if (this.kamikazeTimer) {
+            this.kamikazeTimer.paused = true;
+        }
+        if (this.gunnerTimer) {
+            this.gunnerTimer.paused = true;
+        }
+        if (this.leaperTimer) {
+            this.leaperTimer.paused = true;
+        }
+    }
+
+    // Resume spawning (after pause state)
+    resumeSpawning(): void {
+        if (this.asteroidTimer) {
+            this.asteroidTimer.paused = false;
+        }
+        if (this.kamikazeTimer) {
+            this.kamikazeTimer.paused = false;
+        }
+        if (this.gunnerTimer) {
+            this.gunnerTimer.paused = false;
+        }
+        if (this.leaperTimer) {
+            this.leaperTimer.paused = false;
+        }
+    }
+
     // Stop spawning (for game over states)
     stopSpawning(): void {
         if (this.asteroidTimer) {

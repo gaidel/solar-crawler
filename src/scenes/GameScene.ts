@@ -171,8 +171,15 @@ export class GameScene extends Phaser.Scene {
         // Update UI (handles menu navigation in game over/victory states)
         this.gameUI.update();
 
+        // Check for pause input during gameplay
+        if (this.gameState === GameState.PLAYING && this.gameUI.isPausePressed()) {
+            this.pauseGame();
+            return;
+        }
+
+        // Stop updating if game is not active
         if (this.gameState !== GameState.PLAYING) {
-            return; // Stop updating if game is not active
+            return;
         }
 
         // Check for victory condition
@@ -287,5 +294,34 @@ export class GameScene extends Phaser.Scene {
 
         // Return to main menu
         this.scene.switch('MainMenuScene');
+    }
+
+    private pauseGame(): void {
+        this.gameState = GameState.PAUSED;
+        
+        // Pause physics
+        this.physics.pause();
+        
+        // Pause enemy spawning
+        this.enemyManager.pauseSpawning();
+        
+        // Show pause menu
+        this.gameUI.showPauseMenu(
+            () => this.resumeGame(),
+            () => this.returnToMenu()
+        );
+    }
+
+    private resumeGame(): void {
+        this.gameState = GameState.PLAYING;
+        
+        // Resume physics
+        this.physics.resume();
+        
+        // Resume enemy spawning
+        this.enemyManager.resumeSpawning();
+        
+        // Clear any UI overlays
+        this.gameUI.clearScreens();
     }
 }
