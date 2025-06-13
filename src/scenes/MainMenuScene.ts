@@ -149,7 +149,7 @@ export class MainMenuScene extends Phaser.Scene {
             if (this.showingSettings) {
                 return;
             }
-            
+
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -161,7 +161,7 @@ export class MainMenuScene extends Phaser.Scene {
             if (this.showingSettings) {
                 return;
             }
-            
+
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -173,7 +173,7 @@ export class MainMenuScene extends Phaser.Scene {
             if (this.showingSettings) {
                 return;
             }
-            
+
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -305,29 +305,29 @@ export class MainMenuScene extends Phaser.Scene {
 
     private showSettings(): void {
         if (!this.gameUI) return;
-        
+
         this.showingSettings = true;
-        
+
         // Hide main menu items
-        this.menuItems.forEach(item => item.setVisible(false));
+        this.menuItems.forEach((item) => item.setVisible(false));
         if (this.title) this.title.setVisible(false);
-        
+
         // Show settings menu
         this.gameUI.showSettingsMenu(() => this.hideSettings());
     }
 
     private hideSettings(): void {
         this.showingSettings = false;
-        
+
         // Show main menu items again
-        this.menuItems.forEach(item => item.setVisible(true));
+        this.menuItems.forEach((item) => item.setVisible(true));
         if (this.title) this.title.setVisible(true);
-        
+
         // Clear GameUI overlays
         if (this.gameUI) {
             this.gameUI.clearScreens();
         }
-        
+
         // Reset menu selection
         this.updateMenuSelection();
     }

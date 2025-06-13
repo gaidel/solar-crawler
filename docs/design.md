@@ -106,6 +106,25 @@ After the game ends, show a simple "You Win!" or "Game Over" screen with restart
 
 ---
 
+## 🎆 Visual Effects
+
+### **Explosion Effects**
+- **Animated explosion sprites** appear when enemies are destroyed
+- **Particle systems** with orange-red particles that spread outward
+- **Scale animation**: Explosions start small and grow larger before fading
+- **Different sizes**: Small (asteroids), Medium (kamikazes/gunners), Large (leapers/player)
+- **Additive blending**: Creates realistic glow and fire effects
+- **Synchronized timing**: Visual effects match audio explosion sounds
+
+### **Effect Specifications**
+- **Duration**: 400ms for sprite animation, 500ms for particles
+- **Colors**: Orange-red gradient (from #ff3300 to #ffcc00)
+- **Behavior**: Particles rotate and spread in all directions
+- **Performance**: Single particle emitter reused for all explosions
+- **Cleanup**: Automatic memory management and sprite disposal
+
+---
+
 ## 🎛️ User Interface & Menus
 
 ### **Main Menu System**

@@ -14,6 +14,7 @@ solar-crawler/
 │   ├── 🖼️ leaper.png
 │   ├── 🖼️ bullet.png
 │   ├── 🖼️ enemy_bullet.png
+│   ├── 🖼️ explosion.png
 │   ├── 🖼️ background.png
 │   ├── 🎵 menu.mp3
 │   ├── 🎵 space-ambient-cinematic-music-345394.mp3
@@ -28,6 +29,7 @@ solar-crawler/
 │   ├── 📄 Player.ts         # Player class
 │   ├── 📄 GameUI.ts         # UI system and input handling
 │   ├── 📄 AudioManager.ts   # Audio system and music management
+│   ├── 📄 ExplosionManager.ts # Visual explosion effects system
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
 │   ├── 📁 enemies/          # Enemy system
@@ -100,6 +102,8 @@ solar-crawler/
 src/
 ├── Player.ts                # Player class  
 ├── GameUI.ts                # UI system and input handling
+├── AudioManager.ts          # Sound management (implemented)
+├── ExplosionManager.ts      # Visual explosion effects (implemented)
 ├── enemies/                 # Enemy system (implemented)
 │   ├── Enemy.ts             # Base enemy interface and class
 │   ├── Asteroid.ts          # Asteroid enemy implementation
@@ -109,7 +113,6 @@ src/
 │   └── EnemyManager.ts      # Enemy management system
 ├── Bullet.ts                # Bullet class (future)
 ├── WaveManager.ts           # Wave progression logic (future)
-├── AudioManager.ts          # Sound management (implemented)
 ├── config/
 │   ├── constants.ts         # Game constants
 │   └── settings.ts          # Game settings (future)
@@ -278,6 +281,70 @@ The volume settings are integrated into the game's UI system:
 - **Selected**: Green text, larger size  
 - **Editing**: Yellow text with brackets `> Master Volume: 65% <`
 - **Real-time preview**: Sound effects play when adjusting SFX volume
+
+---
+
+## 🎆 Explosion Effects System Architecture
+
+### **ExplosionManager.ts** - Visual Explosion Effects Management
+The `ExplosionManager` class provides comprehensive visual explosion effects for the game:
+
+**Features:**
+- **Animated Explosion Sprites** - Uses explosion.png asset with scale-up and fade-out animations
+- **Particle System Integration** - Orange-red particle effects with Phaser 3 particle emitters
+- **Multiple Explosion Sizes** - Different intensities for different enemy types
+- **Additive Blending** - Realistic glow effects using ADD blend mode
+- **Automatic Cleanup** - Proper memory management and resource disposal
+- **Synchronized Effects** - Combines sprite animation with particle effects
+
+**Explosion Types:**
+```typescript
+// Different explosion sizes based on enemy type
+explodeSmall(x, y)   // 0.6x scale - for asteroids
+explodeMedium(x, y)  // 0.8x scale - for kamikazes and gunners  
+explodeLarge(x, y)   // 1.2x scale - for leapers and player death
+```
+
+**Visual Components:**
+1. **Explosion Sprite Animation:**
+   - Starts at 0.1x scale, grows to 1.5x target size
+   - Fades from 90% to 0% alpha over 400ms
+   - Uses Power2 easing for smooth animation
+   - Automatic sprite cleanup after animation
+
+2. **Particle Effects:**
+   - Orange-red gradient particles (programmatically generated)
+   - Random velocities and directions (360° spread)
+   - Particle rotation and scale animation
+   - Configurable quantity based on explosion intensity
+
+**Usage Pattern:**
+```typescript
+// In preload() method
+ExplosionManager.preload(this);
+
+// In create() method
+this.explosionManager = new ExplosionManager(this);
+this.explosionManager.create();
+
+// Trigger explosions
+this.explosionManager.explodeSmall(enemy.x, enemy.y);   // Asteroid
+this.explosionManager.explodeMedium(enemy.x, enemy.y);  // Kamikaze/Gunner
+this.explosionManager.explodeLarge(enemy.x, enemy.y);   // Leaper/Player
+
+// Cleanup
+this.explosionManager.destroy();
+```
+
+**Assets:**
+- **`explosion.png`** - Main explosion sprite texture
+- **Programmatic particles** - Generated orange-red circular textures
+
+**Integration:**
+- Integrated with EnemyManager for automatic explosion triggering
+- Synchronized with AudioManager for combined audio-visual effects
+- Proper cleanup in GameScene destroy method
+- Performance optimized with single particle emitter reuse
 
 ---
 

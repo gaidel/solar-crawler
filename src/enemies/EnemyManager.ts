@@ -11,6 +11,7 @@ import {
     GAME_CONFIG,
 } from '../config/constants';
 import { AudioManager } from '../AudioManager';
+import { ExplosionManager } from '../ExplosionManager';
 
 export class EnemyManager {
     // Asset loading
@@ -28,6 +29,7 @@ export class EnemyManager {
     private leaperGroup!: Phaser.Physics.Arcade.Group;
     private enemyBullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
+    private explosionManager?: ExplosionManager;
 
     private asteroids: Asteroid[] = [];
     private kamikazes: Kamikaze[] = [];
@@ -52,6 +54,11 @@ export class EnemyManager {
         this.gunners.forEach((gunner) => {
             gunner.setAudioManager(audioManager);
         });
+    }
+
+    // Set explosion manager for visual effects
+    setExplosionManager(explosionManager: ExplosionManager): void {
+        this.explosionManager = explosionManager;
     }
 
     create(): void {
@@ -254,6 +261,10 @@ export class EnemyManager {
         for (const asteroid of this.asteroids) {
             if (asteroid.isActive && asteroid.sprite === enemy) {
                 scoreValue = asteroid.scoreValue;
+                // Create explosion effect before destroying enemy
+                if (this.explosionManager) {
+                    this.explosionManager.explodeSmall(enemy.x, enemy.y);
+                }
                 asteroid.onHit();
                 // Play explosion sound
                 if (this.audioManager) {
@@ -267,6 +278,10 @@ export class EnemyManager {
         for (const kamikaze of this.kamikazes) {
             if (kamikaze.isActive && kamikaze.sprite === enemy) {
                 scoreValue = kamikaze.scoreValue;
+                // Create explosion effect before destroying enemy
+                if (this.explosionManager) {
+                    this.explosionManager.explodeMedium(enemy.x, enemy.y);
+                }
                 kamikaze.onHit();
                 // Play explosion sound
                 if (this.audioManager) {
@@ -280,6 +295,10 @@ export class EnemyManager {
         for (const gunner of this.gunners) {
             if (gunner.isActive && gunner.sprite === enemy) {
                 scoreValue = gunner.scoreValue;
+                // Create explosion effect before destroying enemy
+                if (this.explosionManager) {
+                    this.explosionManager.explodeMedium(enemy.x, enemy.y);
+                }
                 gunner.onHit();
                 // Play explosion sound
                 if (this.audioManager) {
@@ -293,6 +312,10 @@ export class EnemyManager {
         for (const leaper of this.leapers) {
             if (leaper.isActive && leaper.sprite === enemy) {
                 scoreValue = leaper.scoreValue;
+                // Create explosion effect before destroying enemy
+                if (this.explosionManager) {
+                    this.explosionManager.explodeLarge(enemy.x, enemy.y);
+                }
                 leaper.onHit();
                 // Play explosion sound
                 if (this.audioManager) {

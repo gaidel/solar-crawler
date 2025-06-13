@@ -23,14 +23,14 @@ export class GameUI {
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedIndex: number = 0;
     private menuCallbacks: (() => void)[] = [];
-    
+
     // Pause system
     private pauseCallbacks: {
         onResume?: () => void;
         onReturnToMenu?: () => void;
     } = {};
     private showingConfirmation = false;
-    
+
     // Settings system
     private showingSettings = false;
     private settingsCallback?: () => void;
@@ -57,7 +57,7 @@ export class GameUI {
         // Create HUD elements
         this.createHUD();
     }
-    
+
     setAudioManager(audioManager: AudioManager): void {
         this.audioManager = audioManager;
     }
@@ -309,9 +309,9 @@ export class GameUI {
         // Reset menu state
         this.menuItems = [];
         this.menuCallbacks = [
-            onResume, 
+            onResume,
             () => this.showSettingsMenu(() => this.showPauseMenu(onResume, onReturnToMenu)),
-            () => this.showExitConfirmation()
+            () => this.showExitConfirmation(),
         ];
         this.selectedIndex = 0; // Default to RESUME
 
@@ -391,8 +391,12 @@ export class GameUI {
         // Reset menu state
         this.menuItems = [];
         this.menuCallbacks = [
-            () => this.showPauseMenu(this.pauseCallbacks.onResume!, this.pauseCallbacks.onReturnToMenu!),
-            this.pauseCallbacks.onReturnToMenu!
+            () =>
+                this.showPauseMenu(
+                    this.pauseCallbacks.onResume!,
+                    this.pauseCallbacks.onReturnToMenu!
+                ),
+            this.pauseCallbacks.onReturnToMenu!,
         ];
         this.selectedIndex = 0; // Default to NO
 
@@ -502,7 +506,7 @@ export class GameUI {
             },
             () => {
                 onBack();
-            }
+            },
         ];
         this.selectedIndex = -1; // No item selected initially
 
@@ -591,7 +595,7 @@ export class GameUI {
         const volumeNames = {
             master: 'Master Volume',
             music: 'Background Music',
-            soundEffects: 'Sound Effects'
+            soundEffects: 'Sound Effects',
         };
 
         const currentValue = settings[type];
@@ -612,9 +616,9 @@ export class GameUI {
             .setOrigin(0.5);
 
         // Remove old hint and add new one
-        const oldHint = this.uiOverlay!.list.find(child => 
-            child instanceof Phaser.GameObjects.Text && 
-            child.text.includes('W/S to navigate')
+        const oldHint = this.uiOverlay!.list.find(
+            (child) =>
+                child instanceof Phaser.GameObjects.Text && child.text.includes('W/S to navigate')
         ) as Phaser.GameObjects.Text;
         if (oldHint) {
             oldHint.destroy();
@@ -721,7 +725,7 @@ export class GameUI {
                 const volumeNames = {
                     master: 'Master Volume',
                     music: 'Background Music',
-                    soundEffects: 'Sound Effects'
+                    soundEffects: 'Sound Effects',
                 };
                 const displayValue = Math.round(newValue * 100);
                 const menuText = `> ${volumeNames[this.volumeEditType]}: ${displayValue}% <`;

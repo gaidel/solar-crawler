@@ -3,11 +3,13 @@ import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
 import { AudioManager } from '../AudioManager';
+import { ExplosionManager } from '../ExplosionManager';
 
 export class GameScene extends Phaser.Scene {
     private player!: Player;
     private gameUI!: GameUI;
     private enemyManager!: EnemyManager;
+    private explosionManager!: ExplosionManager;
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager!: AudioManager;
 
@@ -27,6 +29,7 @@ export class GameScene extends Phaser.Scene {
         // Load assets for game entities
         Player.preload(this);
         EnemyManager.preload(this);
+        ExplosionManager.preload(this);
 
         // Load audio assets
         AudioManager.preload(this);
@@ -73,6 +76,13 @@ export class GameScene extends Phaser.Scene {
         this.enemyManager = new EnemyManager(this);
         this.enemyManager.setAudioManager(this.audioManager);
         this.enemyManager.create();
+
+        // Create explosion manager
+        this.explosionManager = new ExplosionManager(this);
+        this.explosionManager.create();
+
+        // Connect explosion manager to enemy manager
+        this.enemyManager.setExplosionManager(this.explosionManager);
 
         // Set up collisions
         this.setupCollisions();
@@ -237,12 +247,17 @@ export class GameScene extends Phaser.Scene {
 
     private gameOver(): void {
         this.gameState = GameState.GAME_OVER;
-        
+
+        // Create explosion effect at player position
+        if (this.explosionManager) {
+            this.explosionManager.explodeLarge(this.player.getX(), this.player.getY());
+        }
+
         // Play explosion sound when player dies
         if (this.audioManager) {
             this.audioManager.playExplosionSound();
         }
-        
+
         this.gameUI.gameOver(
             this.score,
             (color: number) => this.player.setTint(color),
@@ -299,13 +314,13 @@ export class GameScene extends Phaser.Scene {
 
     private pauseGame(): void {
         this.gameState = GameState.PAUSED;
-        
+
         // Pause physics
         this.physics.pause();
-        
+
         // Pause enemy spawning
         this.enemyManager.pauseSpawning();
-        
+
         // Show pause menu
         this.gameUI.showPauseMenu(
             () => this.resumeGame(),
@@ -315,14 +330,33 @@ export class GameScene extends Phaser.Scene {
 
     private resumeGame(): void {
         this.gameState = GameState.PLAYING;
-        
+
         // Resume physics
         this.physics.resume();
-        
+
         // Resume enemy spawning
         this.enemyManager.resumeSpawning();
-        
+
         // Clear any UI overlays
         this.gameUI.clearScreens();
+    }
+
+    destroy(): void {
+        // Clean up explosion manager
+        if (this.explosionManager) {
+            this.explosionManager.destroy();
+        }
+
+        // Clean up audio manager
+        if (this.audioManager) {
+            this.audioManager.destroy();
+        }
+
+        // Clean up enemy manager
+        if (this.enemyManager) {
+            this.enemyManager.destroy();
+        }
+
+        super.destroy();
     }
 }
