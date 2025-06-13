@@ -7,6 +7,8 @@ export interface PlayerInput {
     action: boolean; // ENTER/SPACE for manual firing
 }
 
+import { AudioManager } from './AudioManager';
+
 export class Player {
     // Asset loading
     static preload(scene: Phaser.Scene): void {
@@ -16,10 +18,16 @@ export class Player {
     private sprite!: Phaser.Physics.Arcade.Sprite;
     private scene: Phaser.Scene;
     private bullets!: Phaser.Physics.Arcade.Group;
+    private audioManager?: AudioManager;
     private lastFired = 0;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+    }
+
+    // Set audio manager for sound effects
+    setAudioManager(audioManager: AudioManager): void {
+        this.audioManager = audioManager;
     }
 
     create(bullets: Phaser.Physics.Arcade.Group): void {
@@ -72,6 +80,11 @@ export class Player {
             bullet.setVelocityX(BULLET_CONFIG.SPEED);
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
+
+            // Play shot sound effect
+            if (this.audioManager) {
+                this.audioManager.playShotSound();
+            }
         }
     }
 

@@ -62,6 +62,7 @@ export class GameScene extends Phaser.Scene {
         // Create player
         this.player = new Player(this);
         this.player.create(this.bullets);
+        this.player.setAudioManager(this.audioManager);
 
         // Create UI system
         this.gameUI = new GameUI(this);
@@ -69,6 +70,7 @@ export class GameScene extends Phaser.Scene {
 
         // Create enemy management system
         this.enemyManager = new EnemyManager(this);
+        this.enemyManager.setAudioManager(this.audioManager);
         this.enemyManager.create();
 
         // Set up collisions
@@ -227,6 +229,12 @@ export class GameScene extends Phaser.Scene {
 
     private gameOver(): void {
         this.gameState = GameState.GAME_OVER;
+        
+        // Play explosion sound when player dies
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound();
+        }
+        
         this.gameUI.gameOver(
             this.score,
             (color: number) => this.player.setTint(color),

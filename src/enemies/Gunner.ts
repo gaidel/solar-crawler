@@ -1,11 +1,13 @@
 import { GUNNER_CONFIG, SCORE_CONFIG } from '../config/constants';
 import { BaseEnemy } from './Enemy';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
+import { AudioManager } from '../AudioManager';
 
 export class Gunner extends BaseEnemy {
     public scoreValue = SCORE_CONFIG.GUNNER;
     private lastFireTime: number = 0;
     private bullets: Phaser.Physics.Arcade.Group;
+    private audioManager?: AudioManager;
 
     constructor(
         scene: Phaser.Scene,
@@ -14,6 +16,11 @@ export class Gunner extends BaseEnemy {
     ) {
         super(scene, group);
         this.bullets = bullets;
+    }
+
+    // Set audio manager for sound effects
+    setAudioManager(audioManager: AudioManager): void {
+        this.audioManager = audioManager;
     }
 
     public static preload(scene: Phaser.Scene): void {
@@ -57,19 +64,28 @@ export class Gunner extends BaseEnemy {
 
     private fireBullet(): void {
         // Get a bullet from the pool (creates new one if needed)
-        const bullet = this.bullets.get(this.sprite.x - 30, this.sprite.y, 'enemy_bullet') as Phaser.Physics.Arcade.Sprite;
-        
+        const bullet = this.bullets.get(
+            this.sprite.x - 30,
+            this.sprite.y,
+            'enemy_bullet'
+        ) as Phaser.Physics.Arcade.Sprite;
+
         if (bullet) {
             bullet.setActive(true);
             bullet.setVisible(true);
             bullet.setScale(GUNNER_CONFIG.BULLET_SCALE);
             bullet.setOrigin(0.5, 0.5);
-            
+
             // Set up circular collision for enemy bullet
             setupCircularCollision(bullet, 0.9);
-            
+
             // Set bullet velocity
             bullet.setVelocity(GUNNER_CONFIG.BULLET_SPEED, 0);
+
+            // Play shot sound effect
+            if (this.audioManager) {
+                this.audioManager.playShotSound();
+            }
         }
     }
 

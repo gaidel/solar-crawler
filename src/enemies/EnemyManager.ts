@@ -10,6 +10,7 @@ import {
     LEAPER_CONFIG,
     GAME_CONFIG,
 } from '../config/constants';
+import { AudioManager } from '../AudioManager';
 
 export class EnemyManager {
     // Asset loading
@@ -26,6 +27,7 @@ export class EnemyManager {
     private gunnerGroup!: Phaser.Physics.Arcade.Group;
     private leaperGroup!: Phaser.Physics.Arcade.Group;
     private enemyBullets!: Phaser.Physics.Arcade.Group;
+    private audioManager?: AudioManager;
 
     private asteroids: Asteroid[] = [];
     private kamikazes: Kamikaze[] = [];
@@ -40,6 +42,16 @@ export class EnemyManager {
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+    }
+
+    // Set audio manager for sound effects
+    setAudioManager(audioManager: AudioManager): void {
+        this.audioManager = audioManager;
+
+        // Set audio manager for all gunners
+        this.gunners.forEach((gunner) => {
+            gunner.setAudioManager(audioManager);
+        });
     }
 
     create(): void {
@@ -91,7 +103,11 @@ export class EnemyManager {
 
         // Initialize gunner pool
         for (let i = 0; i < GUNNER_CONFIG.MAX_POOL_SIZE; i++) {
-            this.gunners.push(new Gunner(this.scene, this.gunnerGroup, this.enemyBullets));
+            const gunner = new Gunner(this.scene, this.gunnerGroup, this.enemyBullets);
+            if (this.audioManager) {
+                gunner.setAudioManager(this.audioManager);
+            }
+            this.gunners.push(gunner);
         }
 
         // Initialize leaper pool
@@ -239,6 +255,10 @@ export class EnemyManager {
             if (asteroid.isActive && asteroid.sprite === enemy) {
                 scoreValue = asteroid.scoreValue;
                 asteroid.onHit();
+                // Play explosion sound
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound();
+                }
                 break;
             }
         }
@@ -248,6 +268,10 @@ export class EnemyManager {
             if (kamikaze.isActive && kamikaze.sprite === enemy) {
                 scoreValue = kamikaze.scoreValue;
                 kamikaze.onHit();
+                // Play explosion sound
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound();
+                }
                 break;
             }
         }
@@ -257,6 +281,10 @@ export class EnemyManager {
             if (gunner.isActive && gunner.sprite === enemy) {
                 scoreValue = gunner.scoreValue;
                 gunner.onHit();
+                // Play explosion sound
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound();
+                }
                 break;
             }
         }
@@ -266,6 +294,10 @@ export class EnemyManager {
             if (leaper.isActive && leaper.sprite === enemy) {
                 scoreValue = leaper.scoreValue;
                 leaper.onHit();
+                // Play explosion sound
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound();
+                }
                 break;
             }
         }

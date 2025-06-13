@@ -13,6 +13,8 @@ export class AudioManager {
     static preload(scene: Phaser.Scene): void {
         scene.load.audio('menuMusic', 'assets/menu.mp3');
         scene.load.audio('gameMusic', 'assets/space-ambient-cinematic-music-345394.mp3');
+        scene.load.audio('shotSound', 'assets/shot.mp3');
+        scene.load.audio('explosionSound', 'assets/explosion.mp3');
     }
 
     // Static method to stop all global audio
@@ -184,6 +186,35 @@ export class AudioManager {
     // Check if music is playing
     isMusicPlaying(): boolean {
         return this.currentMusic ? (this.currentMusic as any).isPlaying : false;
+    }
+
+        // Play sound effects
+    playShotSound(): void {
+        try {
+            const sound = this.scene.sound.add('shotSound', { volume: 0.3 });
+            sound.play();
+            
+            // Clean up sound after it finishes
+            sound.once('complete', () => {
+                sound.destroy();
+            });
+        } catch (error) {
+            console.warn('Could not play shot sound:', error);
+        }
+    }
+
+    playExplosionSound(): void {
+        try {
+            const sound = this.scene.sound.add('explosionSound', { volume: 0.4 });
+            sound.play();
+            
+            // Clean up sound after it finishes
+            sound.once('complete', () => {
+                sound.destroy();
+            });
+        } catch (error) {
+            console.warn('Could not play explosion sound:', error);
+        }
     }
 
     // Cleanup
