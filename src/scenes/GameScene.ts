@@ -86,6 +86,10 @@ export class GameScene extends Phaser.Scene {
 
         // Set up collisions
         this.setupCollisions();
+
+        // Set up cleanup when scene is destroyed
+        this.events.once('shutdown', this.cleanup, this);
+        this.events.once('destroy', this.cleanup, this);
     }
 
     private setupCollisions(): void {
@@ -341,7 +345,7 @@ export class GameScene extends Phaser.Scene {
         this.gameUI.clearScreens();
     }
 
-    destroy(): void {
+    private cleanup(): void {
         // Clean up explosion manager
         if (this.explosionManager) {
             this.explosionManager.destroy();
@@ -356,7 +360,5 @@ export class GameScene extends Phaser.Scene {
         if (this.enemyManager) {
             this.enemyManager.destroy();
         }
-
-        super.destroy();
     }
 }
