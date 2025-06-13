@@ -1,12 +1,96 @@
+// Volume settings interface
+export interface VolumeSettings {
+    master: number;
+    music: number;
+    soundEffects: number;
+}
+
 export class AudioManager {
     private scene: Phaser.Scene;
     private currentMusic?: Phaser.Sound.BaseSound;
     private pendingMusicType?: 'menu' | 'game';
     private autoplayRetryCount: number = 0;
     private maxAutoplayRetries: number = 10;
+    
+    // Volume settings
+    private volumeSettings: VolumeSettings = {
+        master: 0.5,
+        music: 0.5,
+        soundEffects: 0.5
+    };
+    
+    // Base volumes for different audio types
+    private baseMusicVolume = 0.4;
+    private baseSoundEffectVolume = 0.3;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+        this.loadVolumeSettings();
+    }
+    
+    // Load volume settings from localStorage
+    private loadVolumeSettings(): void {
+        try {
+            const saved = localStorage.getItem('solarCrawler_volumeSettings');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                this.volumeSettings = {
+                    master: Math.max(0, Math.min(1, parsed.master || 0.5)),
+                    music: Math.max(0, Math.min(1, parsed.music || 0.5)),
+                    soundEffects: Math.max(0, Math.min(1, parsed.soundEffects || 0.5))
+                };
+            }
+        } catch (error) {
+            console.warn('Failed to load volume settings:', error);
+        }
+    }
+    
+    // Save volume settings to localStorage
+    private saveVolumeSettings(): void {
+        try {
+            localStorage.setItem('solarCrawler_volumeSettings', JSON.stringify(this.volumeSettings));
+        } catch (error) {
+            console.warn('Failed to save volume settings:', error);
+        }
+    }
+    
+    // Get current volume settings
+    getVolumeSettings(): VolumeSettings {
+        return { ...this.volumeSettings };
+    }
+    
+    // Set volume for specific category
+    setMasterVolume(volume: number): void {
+        this.volumeSettings.master = Math.max(0, Math.min(1, volume));
+        this.updateCurrentMusicVolume();
+        this.saveVolumeSettings();
+    }
+    
+    setMusicVolume(volume: number): void {
+        this.volumeSettings.music = Math.max(0, Math.min(1, volume));
+        this.updateCurrentMusicVolume();
+        this.saveVolumeSettings();
+    }
+    
+    setSoundEffectsVolume(volume: number): void {
+        this.volumeSettings.soundEffects = Math.max(0, Math.min(1, volume));
+        this.saveVolumeSettings();
+    }
+    
+    // Calculate effective volume
+    private getEffectiveMusicVolume(): number {
+        return this.baseMusicVolume * this.volumeSettings.master * this.volumeSettings.music;
+    }
+    
+    private getEffectiveSoundEffectVolume(): number {
+        return this.baseSoundEffectVolume * this.volumeSettings.master * this.volumeSettings.soundEffects;
+    }
+    
+    // Update current music volume
+    private updateCurrentMusicVolume(): void {
+        if (this.currentMusic) {
+            (this.currentMusic as any).setVolume(this.getEffectiveMusicVolume());
+        }
     }
 
     // Static method for loading audio assets
@@ -25,13 +109,13 @@ export class AudioManager {
     }
 
     // Try to start music, handle autoplay policy
-    private tryPlayMusic(musicKey: string, volume: number, musicType: 'menu' | 'game'): void {
+    private tryPlayMusic(musicKey: string, musicType: 'menu' | 'game'): void {
         this.stopCurrentMusic();
 
         try {
             this.currentMusic = this.scene.sound.add(musicKey, {
                 loop: true,
-                volume: volume,
+                volume: this.getEffectiveMusicVolume(),
             });
 
             const playPromise = this.currentMusic.play() as any;
@@ -112,9 +196,9 @@ export class AudioManager {
 
             // Direct retry
             if (this.pendingMusicType === 'menu') {
-                this.tryPlayMusic('menuMusic', 0.3, 'menu');
+                this.tryPlayMusic('menuMusic', 'menu');
             } else if (this.pendingMusicType === 'game') {
-                this.tryPlayMusic('gameMusic', 0.4, 'game');
+                this.tryPlayMusic('gameMusic', 'game');
             }
         } catch (error) {
             console.warn('Force play failed:', error);
@@ -124,12 +208,12 @@ export class AudioManager {
 
     // Play menu background music
     playMenuMusic(): void {
-        this.tryPlayMusic('menuMusic', 0.3, 'menu');
+        this.tryPlayMusic('menuMusic', 'menu');
     }
 
     // Play game background music
     playGameMusic(): void {
-        this.tryPlayMusic('gameMusic', 0.4, 'game');
+        this.tryPlayMusic('gameMusic', 'game');
     }
 
     // Retry playing pending music (call this on user interaction)
@@ -191,7 +275,9 @@ export class AudioManager {
         // Play sound effects
     playShotSound(): void {
         try {
-            const sound = this.scene.sound.add('shotSound', { volume: 0.3 });
+            const sound = this.scene.sound.add('shotSound', { 
+                volume: this.getEffectiveSoundEffectVolume() 
+            });
             sound.play();
             
             // Clean up sound after it finishes
@@ -205,7 +291,9 @@ export class AudioManager {
 
     playExplosionSound(): void {
         try {
-            const sound = this.scene.sound.add('explosionSound', { volume: 0.4 });
+            const sound = this.scene.sound.add('explosionSound', { 
+                volume: this.getEffectiveSoundEffectVolume() * 1.3 // Explosion slightly louder
+            });
             sound.play();
             
             // Clean up sound after it finishes

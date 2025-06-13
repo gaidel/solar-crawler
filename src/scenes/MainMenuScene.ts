@@ -1,6 +1,7 @@
 import 'phaser';
 import { GAME_CONFIG, UI_CONFIG } from '../config/constants';
 import { AudioManager } from '../AudioManager';
+import { GameUI } from '../GameUI';
 
 export class MainMenuScene extends Phaser.Scene {
     private backgroundTileSprite?: Phaser.GameObjects.TileSprite;
@@ -10,6 +11,8 @@ export class MainMenuScene extends Phaser.Scene {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private wasdKeys?: { [key: string]: Phaser.Input.Keyboard.Key };
     private audioManager!: AudioManager;
+    private gameUI?: GameUI;
+    private showingSettings: boolean = false;
 
     constructor() {
         super({ key: 'MainMenuScene' });
@@ -32,6 +35,11 @@ export class MainMenuScene extends Phaser.Scene {
         // Initialize audio manager and start menu music
         this.audioManager = new AudioManager(this);
         this.audioManager.playMenuMusic();
+
+        // Initialize GameUI for settings
+        this.gameUI = new GameUI(this);
+        this.gameUI.create();
+        this.gameUI.setAudioManager(this.audioManager);
 
         // Add scene resume handler to restart music when returning from game
         this.scene.scene.events.on('resume', () => {
@@ -86,6 +94,7 @@ export class MainMenuScene extends Phaser.Scene {
         // Menu items
         const menuOptions = [
             { text: 'NEW GAME', action: () => this.startGame() },
+            { text: 'SETTINGS', action: () => this.showSettings() },
             { text: 'CONTROLS', action: () => this.showControls() },
             { text: 'ABOUT', action: () => this.showAbout() },
             { text: 'CREDITS', action: () => this.showCredits() },
@@ -136,6 +145,11 @@ export class MainMenuScene extends Phaser.Scene {
         const escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
         enterKey.on('down', () => {
+            // Don't process input if showing settings
+            if (this.showingSettings) {
+                return;
+            }
+            
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -143,6 +157,11 @@ export class MainMenuScene extends Phaser.Scene {
             this.selectCurrentMenuItem();
         });
         spaceKey.on('down', () => {
+            // Don't process input if showing settings
+            if (this.showingSettings) {
+                return;
+            }
+            
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -150,6 +169,11 @@ export class MainMenuScene extends Phaser.Scene {
             this.selectCurrentMenuItem();
         });
         escKey.on('down', () => {
+            // Don't process input if showing settings
+            if (this.showingSettings) {
+                return;
+            }
+            
             // Try to start music on key press
             if (this.audioManager) {
                 this.audioManager.retryPendingMusic();
@@ -179,6 +203,12 @@ export class MainMenuScene extends Phaser.Scene {
         // Scroll background
         if (this.backgroundTileSprite) {
             this.backgroundTileSprite.tilePositionX += GAME_CONFIG.BACKGROUND_SCROLL_SPEED;
+        }
+
+        // Update GameUI if showing settings
+        if (this.showingSettings && this.gameUI) {
+            this.gameUI.update();
+            return; // Skip main menu navigation while showing settings
         }
 
         // Handle keyboard navigation
@@ -248,12 +278,15 @@ export class MainMenuScene extends Phaser.Scene {
                 this.startGame();
                 break;
             case 1:
-                this.showControls();
+                this.showSettings();
                 break;
             case 2:
-                this.showAbout();
+                this.showControls();
                 break;
             case 3:
+                this.showAbout();
+                break;
+            case 4:
                 this.showCredits();
                 break;
         }
@@ -268,6 +301,35 @@ export class MainMenuScene extends Phaser.Scene {
             this.audioManager.destroy();
         }
         this.scene.start('GameScene');
+    }
+
+    private showSettings(): void {
+        if (!this.gameUI) return;
+        
+        this.showingSettings = true;
+        
+        // Hide main menu items
+        this.menuItems.forEach(item => item.setVisible(false));
+        if (this.title) this.title.setVisible(false);
+        
+        // Show settings menu
+        this.gameUI.showSettingsMenu(() => this.hideSettings());
+    }
+
+    private hideSettings(): void {
+        this.showingSettings = false;
+        
+        // Show main menu items again
+        this.menuItems.forEach(item => item.setVisible(true));
+        if (this.title) this.title.setVisible(true);
+        
+        // Clear GameUI overlays
+        if (this.gameUI) {
+            this.gameUI.clearScreens();
+        }
+        
+        // Reset menu selection
+        this.updateMenuSelection();
     }
 
     private showControls(): void {

@@ -67,6 +67,7 @@ export class GameScene extends Phaser.Scene {
         // Create UI system
         this.gameUI = new GameUI(this);
         this.gameUI.create();
+        this.gameUI.setAudioManager(this.audioManager);
 
         // Create enemy management system
         this.enemyManager = new EnemyManager(this);

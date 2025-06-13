@@ -103,3 +103,35 @@ After the game ends, show a simple "You Win!" or "Game Over" screen with restart
 - **Firing sound** for player shots  
 - **Explosion sound** when an enemy is destroyed  
 - Audio should be minimal but impactful
+
+---
+
+## 🎛️ User Interface & Menus
+
+### **Main Menu System**
+- **Main Menu**: Start Game, Settings, About, Controls, Credits
+- **Navigation**: W/S + Enter for keyboard-only operation
+- **Settings Menu**: Volume controls for Master, Music, and Sound Effects
+- **Consistent visual design** across all menu screens
+
+### **In-Game UI**
+- **HUD Elements**: Score display, Timer, Health status
+- **Pause System**: Enter/ESC to pause game, access settings during gameplay
+- **Settings Integration**: Volume controls accessible from pause menu
+
+### **Volume Settings**
+- **Three-level control**: Master Volume, Background Music, Sound Effects
+- **Persistent settings**: Preferences saved to browser localStorage
+- **Real-time feedback**: Audio preview while adjusting volumes
+- **Intuitive navigation**: W/S to navigate, Enter to edit, ESC to cancel
+
+### **Pause Menu**
+- **Resume Game**: Continue gameplay
+- **Settings**: Access volume controls
+- **Return to Menu**: Exit to main menu with confirmation dialog
+- **Exit confirmation**: "Your progress will be lost!" warning
+
+### **Visual Feedback**
+- **Selected items**: Green text, increased size
+- **Editing mode**: Yellow text with brackets `> Volume: 65% <`
+- **Consistent styling**: Matches game's overall aesthetic

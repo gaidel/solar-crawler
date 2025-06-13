@@ -16,7 +16,9 @@ solar-crawler/
 │   ├── 🖼️ enemy_bullet.png
 │   ├── 🖼️ background.png
 │   ├── 🎵 menu.mp3
-│   └── 🎵 space-ambient-cinematic-music-345394.mp3
+│   ├── 🎵 space-ambient-cinematic-music-345394.mp3
+│   ├── 🎵 shot.mp3
+│   └── 🎵 explosion.mp3
 ├── 📁 docs/                  # Project documentation
 │   ├── 📄 prd.md            # Product Requirements Document
 │   ├── 📄 design.md         # Game Design Document
@@ -204,10 +206,26 @@ The `AudioManager` class provides centralized management of all game audio:
 
 **Features:**
 - **Background Music Management** - Menu and game music with looping
-- **Volume Control** - Adjustable volume levels per audio type
+- **Multi-Level Volume Control** - Master, Music, and Sound Effects volume settings
+- **Persistent Settings** - Volume preferences saved to localStorage
+- **Real-time Audio Processing** - Effective volume = Master × Category × Base Volume
+- **Sound Effects System** - Shot and explosion sounds with proper cleanup
 - **Cleanup & Memory Management** - Proper disposal of audio resources
 - **Error Handling** - Graceful fallback when audio fails
 - **Autoplay Policy Handling** - Progressive retry system for blocked autoplay
+
+**Volume System:**
+```typescript
+interface VolumeSettings {
+    master: number;        // 0.0 to 1.0 (default: 0.5)
+    music: number;         // 0.0 to 1.0 (default: 0.5)  
+    soundEffects: number;  // 0.0 to 1.0 (default: 0.5)
+}
+
+// Effective volume calculation:
+// Music Volume = baseMusicVolume × master × music
+// SFX Volume = baseSoundEffectVolume × master × soundEffects
+```
 
 **Usage Pattern:**
 ```typescript
@@ -218,46 +236,48 @@ AudioManager.preload(this);
 this.audioManager = new AudioManager(this);
 this.audioManager.playMenuMusic(); // or playGameMusic()
 
+// Volume control
+this.audioManager.setMasterVolume(0.7);
+this.audioManager.setMusicVolume(0.5);
+this.audioManager.setSoundEffectsVolume(0.8);
+
 // In destroy() method
 this.audioManager.destroy();
 ```
 
 **Audio Files:**
-- **`menu.mp3`** - Looping background music for menu system (volume: 0.3)
-- **`space-ambient-cinematic-music-345394.mp3`** - Looping background music for gameplay (volume: 0.4)
+- **`menu.mp3`** - Looping background music for menu system
+- **`space-ambient-cinematic-music-345394.mp3`** - Looping background music for gameplay
+- **`shot.mp3`** - Sound effect for player and enemy shooting
+- **`explosion.mp3`** - Sound effect for enemy destruction and player death
 
 **Integration:**
 - All scenes load audio assets via `AudioManager.preload()`
-- MainMenuScene plays menu music automatically  
-- GameScene plays game music automatically
+- MainMenuScene and GameScene play appropriate music automatically  
+- GameUI provides volume settings interface accessible from menus and pause
+- Volume settings persist across game sessions via localStorage
 - Proper cleanup when switching between scenes
 
-### **Browser Autoplay Policy Handling**
+### **GameUI Volume Settings Integration**
 
-Modern browsers block automatic audio playback. The system handles this gracefully:
+The volume settings are integrated into the game's UI system:
 
-**Current Implementation:**
-- **Automatic retry**: 10 attempts with progressive delays (1s, 2s, 3s... up to 10s)
-- **AudioContext resume**: Attempts to resume suspended audio context
-- **User interaction fallback**: Guaranteed to work on first user input
+**Access Points:**
+- **Main Menu** → Settings → Volume Settings
+- **Game Pause Menu** → Settings → Volume Settings
 
-**Development Workarounds:**
-For development, you can disable autoplay restrictions:
+**Navigation:**
+- **W/S** - Navigate between volume categories
+- **Enter** - Start editing selected volume level
+- **W/S (editing mode)** - Adjust volume ±5%
+- **Enter** - Confirm changes
+- **ESC** - Cancel editing or return to previous menu
 
-#### Chrome/Edge:
-```bash
-# Windows
-chrome.exe --autoplay-policy=no-user-gesture-required --disable-features=PreloadMediaEngagementData
-```
-
-#### Site Settings:
-1. Click **🔒 lock icon** in address bar → **Site settings** → Set **Sound** to **Allow**
-
-**Production Behavior:**
-1. Attempts autoplay on scene load
-2. Shows no error if blocked  
-3. Starts music immediately on first user interaction
-4. No additional UI required
+**Visual Feedback:**
+- **Normal state**: White text, normal size
+- **Selected**: Green text, larger size  
+- **Editing**: Yellow text with brackets `> Master Volume: 65% <`
+- **Real-time preview**: Sound effects play when adjusting SFX volume
 
 ---
 
