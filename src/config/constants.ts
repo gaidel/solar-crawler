@@ -52,14 +52,14 @@ export const BULLET_CONFIG = {
 
 export const GUNNER_CONFIG = {
     SCALE: 0.6,
-    SPEED: -250,
+    SPEED: -180, // Slower movement - more time to shoot
     SPAWN_INTERVAL: 5000, // Less frequent than asteroids
     SPAWN_Y_MIN: 100,
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
     FIRE_RATE: 2000, // Fires every 2 seconds
-    BULLET_SPEED: -300,
+    BULLET_SPEED: -400, // Faster bullets
     BULLET_SCALE: 0.15,
 };
 
@@ -72,7 +72,7 @@ export const LEAPER_CONFIG = {
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
     ZIGZAG_AMPLITUDE: 150, // Height of zigzag
-    ZIGZAG_FREQUENCY: 0.005, // Speed of zigzag pattern
+    ZIGZAG_FREQUENCY: 0.002, // Speed of zigzag pattern (slower = longer waves)
 };
 
 export const SCORE_CONFIG = {
