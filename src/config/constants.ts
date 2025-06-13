@@ -50,6 +50,31 @@ export const BULLET_CONFIG = {
     OFFSET_X: 50, // Distance from player center
 };
 
+export const GUNNER_CONFIG = {
+    SCALE: 0.6,
+    SPEED: -250,
+    SPAWN_INTERVAL: 5000, // Less frequent than asteroids
+    SPAWN_Y_MIN: 100,
+    SPAWN_Y_MAX: 620,
+    SPAWN_X: 1380,
+    MAX_POOL_SIZE: 6,
+    FIRE_RATE: 2000, // Fires every 2 seconds
+    BULLET_SPEED: -300,
+    BULLET_SCALE: 0.15,
+};
+
+export const LEAPER_CONFIG = {
+    SCALE: 0.55,
+    SPEED: -280,
+    SPAWN_INTERVAL: 3500, // Moderate frequency
+    SPAWN_Y_MIN: 150,
+    SPAWN_Y_MAX: 570,
+    SPAWN_X: 1380,
+    MAX_POOL_SIZE: 8,
+    ZIGZAG_AMPLITUDE: 150, // Height of zigzag
+    ZIGZAG_FREQUENCY: 0.005, // Speed of zigzag pattern
+};
+
 export const SCORE_CONFIG = {
     ASTEROID: 10,
     KAMIKAZE: 20,

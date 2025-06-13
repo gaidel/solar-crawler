@@ -76,7 +76,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private setupCollisions(): void {
-        // Bullet vs Asteroid collisions
+        // Player bullets vs All enemy types
         this.physics.add.collider(
             this.bullets,
             this.enemyManager.getAsteroidGroup(),
@@ -89,7 +89,6 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        // Bullet vs Kamikaze collisions
         this.physics.add.collider(
             this.bullets,
             this.enemyManager.getKamikazeGroup(),
@@ -102,7 +101,31 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        // Player vs Enemy collisions
+        this.physics.add.collider(
+            this.bullets,
+            this.enemyManager.getGunnerGroup(),
+            (bullet, enemy) =>
+                this.handleEnemyHit(
+                    bullet as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
+            undefined,
+            this
+        );
+
+        this.physics.add.collider(
+            this.bullets,
+            this.enemyManager.getLeaperGroup(),
+            (bullet, enemy) =>
+                this.handleEnemyHit(
+                    bullet as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
+            undefined,
+            this
+        );
+
+        // Player vs All enemy types
         this.physics.add.collider(
             this.player.getSprite(),
             this.enemyManager.getAsteroidGroup(),
@@ -113,6 +136,29 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.collider(
             this.player.getSprite(),
             this.enemyManager.getKamikazeGroup(),
+            this.gameOver,
+            undefined,
+            this
+        );
+        this.physics.add.collider(
+            this.player.getSprite(),
+            this.enemyManager.getGunnerGroup(),
+            this.gameOver,
+            undefined,
+            this
+        );
+        this.physics.add.collider(
+            this.player.getSprite(),
+            this.enemyManager.getLeaperGroup(),
+            this.gameOver,
+            undefined,
+            this
+        );
+
+        // Player vs Enemy bullets
+        this.physics.add.collider(
+            this.player.getSprite(),
+            this.enemyManager.getEnemyBullets(),
             this.gameOver,
             undefined,
             this

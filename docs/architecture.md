@@ -10,7 +10,10 @@ solar-crawler/
 │   ├── 🖼️ player.png
 │   ├── 🖼️ asteroid.png
 │   ├── 🖼️ kamikaze.png
+│   ├── 🖼️ gunner.png
+│   ├── 🖼️ leaper.png
 │   ├── 🖼️ bullet.png
+│   ├── 🖼️ enemy_bullet.png
 │   ├── 🖼️ background.png
 │   ├── 🎵 menu.mp3
 │   └── 🎵 space-ambient-cinematic-music-345394.mp3
@@ -29,6 +32,8 @@ solar-crawler/
 │   │   ├── 📄 Enemy.ts      # Base enemy interface and class
 │   │   ├── 📄 Asteroid.ts   # Asteroid enemy implementation
 │   │   ├── 📄 Kamikaze.ts   # Kamikaze enemy implementation
+│   │   ├── 📄 Gunner.ts     # Gunner enemy implementation
+│   │   ├── 📄 Leaper.ts     # Leaper enemy implementation
 │   │   └── 📄 EnemyManager.ts # Enemy management system
 │   ├── 📁 scenes/           # Phaser scenes
 │   │   ├── 📄 MainMenuScene.ts  # Main menu
@@ -97,9 +102,9 @@ src/
 │   ├── Enemy.ts             # Base enemy interface and class
 │   ├── Asteroid.ts          # Asteroid enemy implementation
 │   ├── Kamikaze.ts          # Kamikaze enemy implementation
-│   ├── EnemyManager.ts      # Enemy management system
-│   ├── Gunner.ts            # Gunner enemy class (future)
-│   └── Leaper.ts            # Leaper enemy class (future)
+│   ├── Gunner.ts            # Gunner enemy class (implemented)
+│   ├── Leaper.ts            # Leaper enemy class (implemented)
+│   └── EnemyManager.ts      # Enemy management system
 ├── Bullet.ts                # Bullet class (future)
 ├── WaveManager.ts           # Wave progression logic (future)
 ├── AudioManager.ts          # Sound management (implemented)

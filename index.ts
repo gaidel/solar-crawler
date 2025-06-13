@@ -17,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { x: 0, y: 0 },
-            debug: false, // Disabled debug for production
+            debug: true, // Enabled debug mode to show colliders
         },
     },
     scene: [MainMenuScene, AboutScene, ControlsScene, CreditsScene, GameScene],

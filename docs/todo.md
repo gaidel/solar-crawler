@@ -15,8 +15,8 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Asteroids | ✅ | ✅ | ✅ Complete |
 | Kamikaze Enemy | ✅ | ✅ | ✅ Complete |
 | Main Menu System | ✅ | ✅ | ✅ Complete |
-| Gunner Enemy | ✅ | ❌ | 🔴 Missing |
-| Leaper Enemy | ✅ | ❌ | 🔴 Missing |
+| Gunner Enemy | ✅ | ✅ | ✅ Complete |
+| Leaper Enemy | ✅ | ✅ | ✅ Complete |
 | Wave System | ✅ | ❌ | 🔴 Missing |
 | Upgrades | ✅ | ❌ | 🔴 Missing |
 | Audio | ✅ | ✅ | ✅ Complete |
@@ -31,14 +31,13 @@ This document tracks development progress, known issues, and upcoming tasks for 
 ### 1. **Missing Core Features**
 - **Wave System**: Game currently spawns enemies infinitely instead of structured waves
 - **Roguelike Elements**: Missing upgrade system between waves
-- **Additional Enemy Types**: 2 of 4 enemy types implemented
 
-### 2. **Incomplete Enemy Types**
-According to design document, should have 4 enemy types:
-- ✅ **Asteroid** (implemented)
+### 2. **Enemy Types** ✅ FIXED
+All 4 enemy types implemented:
+- ✅ **Asteroid** (implemented - straight movement)
 - ✅ **Kamikaze** (implemented - homing enemy)
-- ❌ **Gunner** (missing - should fire projectiles)
-- ❌ **Leaper** (missing - should move in zigzag pattern)
+- ✅ **Gunner** (implemented - fires projectiles)
+- ✅ **Leaper** (implemented - zigzag pattern movement)
 
 ### 3. **Advanced Audio Features Missing**
 - ✅ Background music implemented (menu and game tracks)
@@ -107,15 +106,15 @@ According to design document, should have 4 enemy types:
 - [x] Create enemy spawner system
 - [x] Implement Asteroid (straight movement)
 - [x] Implement Kamikaze (homing movement)
-- [ ] Implement Gunner (fires projectiles)
-- [ ] Implement Leaper (zigzag/sine movement)
+- [x] Implement Gunner (fires projectiles)
+- [x] Implement Leaper (zigzag/sine movement)
 - [x] Handle enemy destruction on bullet hit
 - [x] Detect collision between enemies and player
 
 ### 💥 Projectiles
-- [ ] Add enemy bullet logic for Gunner
-- [ ] Detect collision between enemy bullets and player
-- [ ] Trigger Game Over on enemy projectile hit
+- [x] Add enemy bullet logic for Gunner
+- [x] Detect collision between enemy bullets and player
+- [x] Trigger Game Over on enemy projectile hit
 
 ### 📊 Waves & Progression
 - [ ] Create wave system (timed spawning of enemies)
@@ -156,16 +155,27 @@ According to design document, should have 4 enemy types:
 ## 🎯 Priority Tasks for Next Session
 
 1. **Wave System** - Implement structured waves instead of infinite spawning
-2. **Enemy Classes** - Extract enemy logic into separate classes (Asteroid, Kamikaze)
-3. **Gunner Enemy** - Add projectile-shooting enemy type
-4. **Audio System** - Add basic sound effects (shoot, explosion)
-5. **Leaper Enemy** - Add zigzag movement enemy type
+2. **Upgrade System** - Add roguelike upgrade mechanics between waves
+3. **Sound Effects** - Add shooting and explosion sound effects
+4. **Wave Manager** - Create dedicated WaveManager class for progression logic
+5. **Game Balancing** - Fine-tune enemy spawn rates and difficulty progression
 
 ---
 
 ## 🏗️ Recent Improvements (Current Session)
 
-### ✅ **Audio System Implementation** (LATEST)
+### ✅ **Complete Enemy System Implementation** (LATEST)
+- Implemented Gunner enemy class with projectile shooting mechanics
+- Implemented Leaper enemy class with sinusoidal zigzag movement pattern
+- Added enemy bullet system with proper pooling and collision detection
+- Enhanced EnemyManager to handle all 4 enemy types (Asteroid, Kamikaze, Gunner, Leaper)
+- Updated GameScene collision system for all enemy types and enemy bullets
+- Created placeholder sprites for new enemy types (gunner.png, leaper.png, enemy_bullet.png)
+- Added enemy-specific configuration constants (GUNNER_CONFIG, LEAPER_CONFIG)
+- Enabled debug mode to show colliders for development testing
+- Now all 4 documented enemy types are fully functional
+
+### ✅ **Audio System Implementation** (Previous)
 - Created comprehensive AudioManager for centralized audio control
 - Added background music for menu (menu.mp3) and gameplay (space-ambient-cinematic-music-345394.mp3)
 - Implemented looping audio with volume control and error handling
