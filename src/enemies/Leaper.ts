@@ -4,6 +4,7 @@ import { setupCircularCollision } from '../utils/CollisionHelpers';
 
 export class Leaper extends BaseEnemy {
     public scoreValue = SCORE_CONFIG.LEAPER;
+    public maxHP = LEAPER_CONFIG.MAX_HP;
     private startY: number = 0;
     private startTime: number = 0;
 
@@ -16,6 +17,12 @@ export class Leaper extends BaseEnemy {
     }
 
     spawn(x: number, y: number): void {
+        // Clean up any existing health bar from previous use
+        if (this.healthBar) {
+            this.healthBar.destroy();
+            this.healthBar = null;
+        }
+        
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'leaper') as Phaser.Physics.Arcade.Sprite;
 
@@ -30,13 +37,16 @@ export class Leaper extends BaseEnemy {
             // Set up circular collision
             setupCircularCollision(this.sprite, 0.8);
 
+            // Initialize HP
+            this.currentHP = this.maxHP;
+
             this.isActive = true;
             this.startY = y;
             this.startTime = this.scene.time.now;
         }
     }
 
-    update(playerX: number, playerY: number): void {
+    update(_playerX: number, _playerY: number): void {
         if (!this.isActive || !this.sprite.active) {
             return;
         }
@@ -53,9 +63,12 @@ export class Leaper extends BaseEnemy {
         const yVelocity = yDifference * 3; // Multiplier for smooth movement
 
         this.sprite.setVelocityY(yVelocity);
+
+        // Update health bar position if damaged
+        this.updateHealthBarPosition();
     }
 
-    shouldCleanup(gameWidth: number, gameHeight: number): boolean {
+    shouldCleanup(_gameWidth: number, _gameHeight: number): boolean {
         if (!this.isActive || !this.sprite.active) {
             return false;
         }

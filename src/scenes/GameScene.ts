@@ -93,8 +93,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     private setupCollisions(): void {
-        // Player bullets vs All enemy types
-        this.physics.add.collider(
+        // Player bullets vs All enemy types (using overlap to avoid physics collision)
+        this.physics.add.overlap(
             this.bullets,
             this.enemyManager.getAsteroidGroup(),
             (bullet, enemy) =>
@@ -106,7 +106,7 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.bullets,
             this.enemyManager.getKamikazeGroup(),
             (bullet, enemy) =>
@@ -118,7 +118,7 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.bullets,
             this.enemyManager.getGunnerGroup(),
             (bullet, enemy) =>
@@ -130,7 +130,7 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.bullets,
             this.enemyManager.getLeaperGroup(),
             (bullet, enemy) =>
@@ -172,8 +172,8 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        // Player vs Enemy bullets
-        this.physics.add.collider(
+        // Player vs Enemy bullets (using overlap to avoid physics collision)
+        this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getEnemyBullets(),
             this.gameOver,
@@ -232,6 +232,11 @@ export class GameScene extends Phaser.Scene {
             ) {
                 bullet.setActive(false);
                 bullet.setVisible(false);
+                
+                // Disable physics body to prevent further collisions
+                if (bullet.body) {
+                    bullet.body.enable = false;
+                }
             }
         });
     }
@@ -240,9 +245,19 @@ export class GameScene extends Phaser.Scene {
         bullet: Phaser.Physics.Arcade.Sprite,
         enemy: Phaser.Physics.Arcade.Sprite
     ): void {
-        // Deactivate bullet
+        // Check if bullet is already processed (prevent multiple hits)
+        if (!bullet.active) {
+            return;
+        }
+
+        // Properly deactivate bullet
         bullet.setActive(false);
         bullet.setVisible(false);
+        
+        // Disable physics body to prevent further collisions
+        if (bullet.body) {
+            bullet.body.enable = false;
+        }
 
         // Handle enemy hit and get score value
         const scoreValue = this.enemyManager.handleBulletCollision(enemy);

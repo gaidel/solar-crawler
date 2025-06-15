@@ -1,5 +1,5 @@
 import { GAME_CONFIG, UI_CONFIG } from './config/constants';
-import { AudioManager, VolumeSettings } from './AudioManager';
+import { AudioManager } from './AudioManager';
 
 export enum GameState {
     PLAYING,

@@ -4,6 +4,7 @@ import { setupCircularCollision } from '../utils/CollisionHelpers';
 
 export class Kamikaze extends BaseEnemy {
     public scoreValue = SCORE_CONFIG.KAMIKAZE;
+    public maxHP = KAMIKAZE_CONFIG.MAX_HP;
 
     // Asset loading
     static preload(scene: Phaser.Scene): void {
@@ -11,6 +12,12 @@ export class Kamikaze extends BaseEnemy {
     }
 
     spawn(x: number, y: number): void {
+        // Clean up any existing health bar from previous use
+        if (this.healthBar) {
+            this.healthBar.destroy();
+            this.healthBar = null;
+        }
+        
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'kamikaze') as Phaser.Physics.Arcade.Sprite;
 
@@ -28,6 +35,9 @@ export class Kamikaze extends BaseEnemy {
 
             // Set up collision using dynamic calculation
             setupCircularCollision(this.sprite, 0.9);
+
+            // Initialize HP
+            this.currentHP = this.maxHP;
 
             this.isActive = true;
         }
@@ -58,6 +68,9 @@ export class Kamikaze extends BaseEnemy {
             this.sprite.setVelocityX(0);
             this.sprite.setVelocityY(0);
         }
+
+        // Update health bar position if damaged
+        this.updateHealthBarPosition();
     }
 
     shouldCleanup(gameWidth: number, gameHeight: number): boolean {

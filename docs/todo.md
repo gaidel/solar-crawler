@@ -21,6 +21,7 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Volume Settings | ✅ | ✅ | ✅ Complete |
 | Pause System | ✅ | ✅ | ✅ Complete |
 | Explosion Effects | ✅ | ✅ | ✅ Complete |
+| HP System | ✅ | ✅ | ✅ Complete |
 | Wave System | ✅ | ❌ | 🔴 Missing |
 | Upgrades | ✅ | ❌ | 🔴 Missing |
 | Victory Screen | ✅ | ✅ | ✅ Complete |
@@ -113,6 +114,9 @@ All 4 enemy types implemented:
 - [x] Implement Leaper (zigzag/sine movement)
 - [x] Handle enemy destruction on bullet hit
 - [x] Detect collision between enemies and player
+- [x] Implement HP system with differentiated health values
+- [x] Add visual health bars with color coding
+- [x] Fix object pooling health bar cleanup issues
 
 ### 💥 Projectiles
 - [x] Add enemy bullet logic for Gunner
@@ -153,6 +157,30 @@ All 4 enemy types implemented:
 - [x] Add scoring constants for maintainability
 - [x] Clean up GameScene.ts (reduced from 552 to 484 lines)
 
+### ✅ **HP System & Health Bars Implementation** (LATEST)
+- Implemented comprehensive HP system for all enemy types with damage and health tracking
+- Added visual health bars that appear below enemies when damaged (hidden when at full health)
+- Configured HP values: Asteroids/Leapers = 40 HP (4 hits), Kamikazes/Gunners = 20 HP (2 hits)
+- Player bullets deal 10 damage per hit for consistent damage system
+- Added health bar color coding: Green (60-100% HP), Orange (30-60% HP), Red (0-30% HP)
+- Implemented damage tinting system with 100ms yellow flash on hit for visual feedback
+- Fixed critical object pooling issue where health bars remained attached to reused enemy sprites
+- Added proper health bar cleanup in enemy spawn methods to prevent ghost health bars
+- Enhanced collision system to use overlap detection for bullets to prevent physics momentum transfer
+- Updated all enemy classes (Asteroid, Kamikaze, Gunner, Leaper) with HP system integration
+- Health bars dynamically follow enemy movement and are properly cleaned up on enemy destruction
+
+### ✅ **Explosion Effects System Implementation** (Previous)
+- Created comprehensive ExplosionManager class for visual explosion effects
+- Added animated explosion sprites using explosion.png asset with scale-up and fade-out animation
+- Implemented particle system with orange-red gradient particles for additional visual impact
+- Added different explosion sizes: Small (asteroids), Medium (kamikazes/gunners), Large (leapers/player)
+- Integrated explosion sprites with particle effects for combined visual impact
+- Added proper cleanup and memory management for explosion effects
+- Synchronized explosion effects with existing audio system
+- Used additive blending mode for realistic glow effects
+- Created programmatic particle textures with orange-red color scheme
+
 ---
 
 ## 🎯 Priority Tasks for Next Session
@@ -166,17 +194,6 @@ All 4 enemy types implemented:
 ---
 
 ## 🏗️ Recent Improvements (Current Session)
-
-### ✅ **Explosion Effects System Implementation** (LATEST)
-- Created comprehensive ExplosionManager class for visual explosion effects
-- Added animated explosion sprites using explosion.png asset with scale-up and fade-out animation
-- Implemented particle system with orange-red gradient particles for additional visual impact
-- Added different explosion sizes: Small (asteroids), Medium (kamikazes/gunners), Large (leapers/player)
-- Integrated explosion sprites with particle effects for combined visual impact
-- Added proper cleanup and memory management for explosion effects
-- Synchronized explosion effects with existing audio system
-- Used additive blending mode for realistic glow effects
-- Created programmatic particle textures with orange-red color scheme
 
 ### ✅ **Volume Settings & Pause System Implementation** (Previous)
 - Implemented comprehensive volume settings menu accessible from main menu and pause menu

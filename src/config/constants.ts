@@ -30,6 +30,7 @@ export const ASTEROID_CONFIG = {
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 15, // Enlarged pool to handle simultaneous destructions
+    MAX_HP: 40, // Takes 4 hits to destroy
 };
 
 export const KAMIKAZE_CONFIG = {
@@ -41,6 +42,7 @@ export const KAMIKAZE_CONFIG = {
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
+    MAX_HP: 20, // Takes 2 hits to destroy
 };
 
 export const BULLET_CONFIG = {
@@ -48,6 +50,7 @@ export const BULLET_CONFIG = {
     SPEED: 400,
     MAX_POOL_SIZE: 20,
     OFFSET_X: 50, // Distance from player center
+    DAMAGE: 10, // Player bullet damage
 };
 
 export const GUNNER_CONFIG = {
@@ -61,6 +64,7 @@ export const GUNNER_CONFIG = {
     FIRE_RATE: 2000, // Fires every 2 seconds
     BULLET_SPEED: -400, // Faster bullets
     BULLET_SCALE: 0.15,
+    MAX_HP: 20, // Takes 2 hits to destroy
 };
 
 export const LEAPER_CONFIG = {
@@ -73,6 +77,7 @@ export const LEAPER_CONFIG = {
     MAX_POOL_SIZE: 8,
     ZIGZAG_AMPLITUDE: 150, // Height of zigzag
     ZIGZAG_FREQUENCY: 0.002, // Speed of zigzag pattern (slower = longer waves)
+    MAX_HP: 40, // Takes 4 hits to destroy
 };
 
 export const SCORE_CONFIG = {

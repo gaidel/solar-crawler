@@ -348,6 +348,97 @@ this.explosionManager.destroy();
 
 ---
 
+## ❤️ HP System & Health Bars Architecture
+
+### **Enemy HP System** - Damage and Health Tracking
+The HP system provides comprehensive health management for all enemy types:
+
+**Core Features:**
+- **Differentiated HP Values** - Balanced HP across enemy types
+- **Visual Health Bars** - Dynamic health indicators below enemies
+- **Damage Tinting** - Yellow flash feedback on hit
+- **Object Pooling Integration** - Proper cleanup for reused enemies
+- **Collision System Enhancement** - Overlap detection prevents physics interference
+
+**HP Configuration:**
+```typescript
+// Damage values (constants.ts)
+BULLET_DAMAGE = 10;
+
+// Enemy HP values
+ASTEROID_CONFIG.MAX_HP = 40;   // 4 hits to destroy
+KAMIKAZE_CONFIG.MAX_HP = 20;   // 2 hits to destroy  
+GUNNER_CONFIG.MAX_HP = 20;     // 2 hits to destroy
+LEAPER_CONFIG.MAX_HP = 40;     // 4 hits to destroy
+```
+
+**Health Bar System:**
+- **40x4 pixel bars** positioned below enemy sprites
+- **Color-coded by health percentage:**
+  - Green: 60-100% HP
+  - Orange: 30-60% HP  
+  - Red: 0-30% HP
+- **Hidden when at full health** - Only visible when damaged
+- **Dynamic positioning** - Follows enemy movement via `updateHealthBarPosition()`
+- **Proper cleanup** - Destroyed and recreated when enemies are reused from pool
+
+**Damage System:**
+1. **Overlap Detection** - `physics.add.overlap()` instead of `collider()` prevents momentum transfer
+2. **Bullet Deactivation** - `bullet.body.enable = false` prevents multiple hits from single bullet
+3. **Damage Processing** - `enemy.takeDamage(BULLET_DAMAGE)` returns true if enemy destroyed
+4. **Visual Feedback** - 100ms yellow tint flash on hit
+5. **Health Bar Updates** - Real-time color and width updates
+
+**Object Pooling Integration:**
+```typescript
+// Critical fix: Cleanup old health bars when reusing enemies
+spawn(x: number, y: number): void {
+    // Clean up any existing health bar from previous use
+    if (this.healthBar) {
+        this.healthBar.destroy();
+        this.healthBar = null;
+    }
+    
+    // ... rest of spawn logic
+    this.currentHP = this.maxHP; // Full HP for fresh spawn
+}
+```
+
+**BaseEnemy Class Integration:**
+- **`takeDamage(damage: number): boolean`** - Core damage processing method
+- **`createHealthBar()`** - Creates Phaser Graphics object for health display
+- **`updateHealthBar()`** - Updates position, color, and width based on current HP
+- **`updateHealthBarPosition()`** - Called from enemy update() methods to track movement
+- **Proper cleanup** in `reset()` and `destroy()` methods
+
+**Usage Pattern:**
+```typescript
+// In collision detection (GameScene.ts)
+this.physics.add.overlap(this.bullets, this.enemyManager.getAllEnemies(), 
+    (bullet, enemy) => {
+        bullet.body.enable = false; // Prevent double-hits
+        
+        const enemyDestroyed = enemy.takeDamage(BULLET_DAMAGE);
+        if (enemyDestroyed) {
+            // Trigger explosion and scoring
+            this.explosionManager.explodeSmall(enemy.x, enemy.y);
+            this.addScore(enemy.scoreValue);
+        }
+        
+        bullet.setActive(false);
+        bullet.setVisible(false);
+    }
+);
+```
+
+**Performance Considerations:**
+- Health bars only created when needed (first damage)
+- Graphics objects properly destroyed to prevent memory leaks  
+- Health bar updates only when enemy is damaged (not at full HP)
+- Object pooling cleanup prevents ghost health bars
+
+---
+
 ## 📋 Code Standards
 
 ### Language Policy

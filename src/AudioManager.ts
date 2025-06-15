@@ -296,10 +296,10 @@ export class AudioManager {
         }
     }
 
-    playExplosionSound(): void {
+    playExplosionSound(volumeMultiplier: number = 1.0): void {
         try {
             const sound = this.scene.sound.add('explosionSound', {
-                volume: this.getEffectiveSoundEffectVolume() * 1.3, // Explosion slightly louder
+                volume: this.getEffectiveSoundEffectVolume() * 1.3 * volumeMultiplier, // Explosion slightly louder with optional multiplier
             });
             sound.play();
 

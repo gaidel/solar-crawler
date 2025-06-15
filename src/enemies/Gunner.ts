@@ -5,6 +5,7 @@ import { AudioManager } from '../AudioManager';
 
 export class Gunner extends BaseEnemy {
     public scoreValue = SCORE_CONFIG.GUNNER;
+    public maxHP = GUNNER_CONFIG.MAX_HP;
     private lastFireTime: number = 0;
     private bullets: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
@@ -29,6 +30,12 @@ export class Gunner extends BaseEnemy {
     }
 
     spawn(x: number, y: number): void {
+        // Clean up any existing health bar from previous use
+        if (this.healthBar) {
+            this.healthBar.destroy();
+            this.healthBar = null;
+        }
+        
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'gunner') as Phaser.Physics.Arcade.Sprite;
 
@@ -43,13 +50,16 @@ export class Gunner extends BaseEnemy {
             // Set up circular collision
             setupCircularCollision(this.sprite, 0.8);
 
+            // Initialize HP
+            this.currentHP = this.maxHP;
+
             this.isActive = true;
             // First shot comes faster (500ms instead of full 2000ms)
             this.lastFireTime = this.scene.time.now - GUNNER_CONFIG.FIRE_RATE + 500;
         }
     }
 
-    update(playerX: number, playerY: number): void {
+    update(_playerX: number, _playerY: number): void {
         if (!this.isActive || !this.sprite.active) {
             return;
         }
@@ -60,6 +70,9 @@ export class Gunner extends BaseEnemy {
             this.fireBullet();
             this.lastFireTime = currentTime;
         }
+
+        // Update health bar position if damaged
+        this.updateHealthBarPosition();
     }
 
     private fireBullet(): void {
@@ -89,7 +102,7 @@ export class Gunner extends BaseEnemy {
         }
     }
 
-    shouldCleanup(gameWidth: number, gameHeight: number): boolean {
+    shouldCleanup(_gameWidth: number, _gameHeight: number): boolean {
         if (!this.isActive || !this.sprite.active) {
             return false;
         }

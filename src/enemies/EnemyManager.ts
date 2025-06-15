@@ -1,4 +1,3 @@
-import { Enemy } from './Enemy';
 import { Asteroid } from './Asteroid';
 import { Kamikaze } from './Kamikaze';
 import { Gunner } from './Gunner';
@@ -9,6 +8,7 @@ import {
     GUNNER_CONFIG,
     LEAPER_CONFIG,
     GAME_CONFIG,
+    BULLET_CONFIG,
 } from '../config/constants';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
@@ -254,74 +254,127 @@ export class EnemyManager {
 
     // Handle collisions with bullets
     handleBulletCollision(enemy: Phaser.Physics.Arcade.Sprite): number {
-        // Find which enemy was hit and return its score value
+        // Check if enemy sprite is still active to prevent multiple hits
+        if (!enemy.active) {
+            return 0;
+        }
+
+        // Find which enemy was hit and deal damage
         let scoreValue = 0;
 
         // Check asteroids
         for (const asteroid of this.asteroids) {
             if (asteroid.isActive && asteroid.sprite === enemy) {
-                scoreValue = asteroid.scoreValue;
-                // Create explosion effect before destroying enemy
-                if (this.explosionManager) {
-                    this.explosionManager.explodeSmall(enemy.x, enemy.y);
+                // Save position BEFORE calling takeDamage (which may move the enemy)
+                const explosionX = enemy.x;
+                const explosionY = enemy.y;
+                
+                const destroyed = asteroid.takeDamage(BULLET_CONFIG.DAMAGE);
+                
+                if (destroyed) {
+                    scoreValue = asteroid.scoreValue;
+                    // Create explosion effect when enemy is destroyed (using saved position)
+                    if (this.explosionManager) {
+                        this.explosionManager.explodeSmall(explosionX, explosionY);
+                    }
+                    // Play full explosion sound on destroy
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(); // Full volume for destruction
+                    }
+                } else {
+                    // Play hit sound only if enemy is not destroyed (quieter volume)
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(0.3); // 30% volume for hit sound
+                    }
                 }
-                asteroid.onHit();
-                // Play explosion sound
-                if (this.audioManager) {
-                    this.audioManager.playExplosionSound();
-                }
-                break;
+                return scoreValue; // Return immediately after processing hit
             }
         }
 
         // Check kamikazes
         for (const kamikaze of this.kamikazes) {
             if (kamikaze.isActive && kamikaze.sprite === enemy) {
-                scoreValue = kamikaze.scoreValue;
-                // Create explosion effect before destroying enemy
-                if (this.explosionManager) {
-                    this.explosionManager.explodeMedium(enemy.x, enemy.y);
+                // Save position BEFORE calling takeDamage (which may move the enemy)
+                const explosionX = enemy.x;
+                const explosionY = enemy.y;
+                
+                const destroyed = kamikaze.takeDamage(BULLET_CONFIG.DAMAGE);
+                
+                if (destroyed) {
+                    scoreValue = kamikaze.scoreValue;
+                    // Create explosion effect when enemy is destroyed (using saved position)
+                    if (this.explosionManager) {
+                        this.explosionManager.explodeMedium(explosionX, explosionY);
+                    }
+                    // Play full explosion sound on destroy
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(); // Full volume for destruction
+                    }
+                } else {
+                    // Play hit sound only if enemy is not destroyed (quieter volume)
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(0.3); // 30% volume for hit sound
+                    }
                 }
-                kamikaze.onHit();
-                // Play explosion sound
-                if (this.audioManager) {
-                    this.audioManager.playExplosionSound();
-                }
-                break;
+                return scoreValue; // Return immediately after processing hit
             }
         }
 
         // Check gunners
         for (const gunner of this.gunners) {
             if (gunner.isActive && gunner.sprite === enemy) {
-                scoreValue = gunner.scoreValue;
-                // Create explosion effect before destroying enemy
-                if (this.explosionManager) {
-                    this.explosionManager.explodeMedium(enemy.x, enemy.y);
+                // Save position BEFORE calling takeDamage (which may move the enemy)
+                const explosionX = enemy.x;
+                const explosionY = enemy.y;
+                
+                const destroyed = gunner.takeDamage(BULLET_CONFIG.DAMAGE);
+                
+                if (destroyed) {
+                    scoreValue = gunner.scoreValue;
+                    // Create explosion effect when enemy is destroyed (using saved position)
+                    if (this.explosionManager) {
+                        this.explosionManager.explodeMedium(explosionX, explosionY);
+                    }
+                    // Play full explosion sound on destroy
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(); // Full volume for destruction
+                    }
+                } else {
+                    // Play hit sound only if enemy is not destroyed (quieter volume)
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(0.3); // 30% volume for hit sound
+                    }
                 }
-                gunner.onHit();
-                // Play explosion sound
-                if (this.audioManager) {
-                    this.audioManager.playExplosionSound();
-                }
-                break;
+                return scoreValue; // Return immediately after processing hit
             }
         }
 
         // Check leapers
         for (const leaper of this.leapers) {
             if (leaper.isActive && leaper.sprite === enemy) {
-                scoreValue = leaper.scoreValue;
-                // Create explosion effect before destroying enemy
-                if (this.explosionManager) {
-                    this.explosionManager.explodeLarge(enemy.x, enemy.y);
+                // Save position BEFORE calling takeDamage (which may move the enemy)
+                const explosionX = enemy.x;
+                const explosionY = enemy.y;
+                
+                const destroyed = leaper.takeDamage(BULLET_CONFIG.DAMAGE);
+                
+                if (destroyed) {
+                    scoreValue = leaper.scoreValue;
+                    // Create explosion effect when enemy is destroyed (using saved position)
+                    if (this.explosionManager) {
+                        this.explosionManager.explodeLarge(explosionX, explosionY);
+                    }
+                    // Play full explosion sound on destroy
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(); // Full volume for destruction
+                    }
+                } else {
+                    // Play hit sound only if enemy is not destroyed (quieter volume)
+                    if (this.audioManager) {
+                        this.audioManager.playExplosionSound(0.3); // 30% volume for hit sound
+                    }
                 }
-                leaper.onHit();
-                // Play explosion sound
-                if (this.audioManager) {
-                    this.audioManager.playExplosionSound();
-                }
-                break;
+                return scoreValue; // Return immediately after processing hit
             }
         }
 

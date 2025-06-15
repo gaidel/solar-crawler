@@ -81,6 +81,11 @@ export class Player {
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
 
+            // Re-enable physics body for collision detection
+            if (bullet.body) {
+                bullet.body.enable = true;
+            }
+
             // Play shot sound effect
             if (this.audioManager) {
                 this.audioManager.playShotSound();
