@@ -26,26 +26,61 @@ export const PLAYER_CONFIG = {
 };
 
 export const ASTEROID_CONFIG = {
-    SCALE: 0.5,
-    SPEED: -300,
+    // Common settings
     SPAWN_INTERVAL: 2000, // ms
     SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 15, // Enlarged pool to handle simultaneous destructions
-    MAX_HP: 40, // Takes 4 hits to destroy
+    
+    // Normal asteroid settings
+    NORMAL: {
+        SCALE: 0.5,
+        SPEED: -300,
+        MAX_HP: 40, // Takes 4 hits to destroy
+        COLLISION_DAMAGE: 100, // Damage to player
+        SCORE_VALUE: 10,
+        SPAWN_WEIGHT: 70, // 70% chance to spawn normal asteroid
+    },
+    
+    // Large asteroid settings (2x everything)
+    LARGE: {
+        SCALE: 1.0, // 2x radius
+        SPEED: -150, // 2x slower
+        MAX_HP: 80, // 2x HP (takes 8 hits)
+        COLLISION_DAMAGE: 200, // 2x damage (still instant kill but for consistency)
+        SCORE_VALUE: 20, // 2x score
+        SPAWN_WEIGHT: 30, // 30% chance to spawn large asteroid
+    },
 };
 
 export const KAMIKAZE_CONFIG = {
-    SCALE: 0.5, // Scale for new sprite 170x120 -> 85x60
-    SPEED: -200, // No longer used, kept for compatibility
-    HOMING_SPEED: 180, // Total movement speed towards player
+    // Common settings
     SPAWN_INTERVAL: 4000, // Less frequent than asteroids
     SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
-    MAX_HP: 20, // Takes 2 hits to destroy
+    
+    // Normal kamikaze settings
+    NORMAL: {
+        SCALE: 0.5, // Scale for new sprite 170x120 -> 85x60
+        HOMING_SPEED: 180, // Total movement speed towards player
+        MAX_HP: 20, // Takes 2 hits to destroy
+        COLLISION_DAMAGE: 50, // Damage to player
+        SCORE_VALUE: 20,
+        SPAWN_WEIGHT: 70, // 70% chance to spawn normal kamikaze
+    },
+    
+    // Fast kamikaze settings (2x speed, 0.5x HP and damage, 0.5x size)
+    FAST: {
+        SCALE: 0.25, // 0.5x size (half of normal kamikaze)
+        HOMING_SPEED: 360, // 2x speed
+        MAX_HP: 10, // 0.5x HP (takes 1 hit)
+        COLLISION_DAMAGE: 25, // 0.5x damage
+        SCORE_VALUE: 15, // Slightly less score due to easier to kill
+        SPAWN_WEIGHT: 30, // 30% chance to spawn fast kamikaze
+    },
 };
 
 export const BULLET_CONFIG = {
@@ -57,44 +92,106 @@ export const BULLET_CONFIG = {
 };
 
 export const GUNNER_CONFIG = {
-    SCALE: 0.6,
-    SPEED: -180, // Slower movement - more time to shoot
+    // Common settings
     SPAWN_INTERVAL: 5000, // Less frequent than asteroids
     SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
     FIRE_RATE: 2000, // Fires every 2 seconds
-    BULLET_SPEED: -400, // Faster bullets
-    BULLET_SCALE: 0.15,
-    MAX_HP: 20, // Takes 2 hits to destroy
+    
+    // Normal gunner settings
+    NORMAL: {
+        SCALE: 0.6,
+        SPEED: -180, // Slower movement - more time to shoot
+        MAX_HP: 20, // Takes 2 hits to destroy
+        COLLISION_DAMAGE: 50, // Damage to player
+        SCORE_VALUE: 15,
+        BULLET_SPEED: -400, // Faster bullets
+        BULLET_SCALE: 0.15,
+        SPAWN_WEIGHT: 70, // 70% chance to spawn normal gunner
+    },
+    
+    // Large gunner settings (2x everything)
+    LARGE: {
+        SCALE: 1.2, // 2x size
+        SPEED: -90, // 2x slower
+        MAX_HP: 40, // 2x HP (takes 4 hits)
+        COLLISION_DAMAGE: 100, // 2x damage
+        SCORE_VALUE: 30, // 2x score
+        BULLET_SPEED: -400, // Same bullet speed
+        BULLET_SCALE: 0.3, // 2x bullet size
+        SPAWN_WEIGHT: 30, // 30% chance to spawn large gunner
+    },
 };
 
 export const LEAPER_CONFIG = {
-    SCALE: 0.55,
-    SPEED: -280,
+    // Common settings
     SPAWN_INTERVAL: 3500, // Moderate frequency
     SPAWN_Y_MIN: 110, // Below HUD area with extra space for zigzag
     SPAWN_Y_MAX: 570,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
-    ZIGZAG_AMPLITUDE: 150, // Height of zigzag
-    ZIGZAG_FREQUENCY: 0.002, // Speed of zigzag pattern (slower = longer waves)
-    MAX_HP: 40, // Takes 4 hits to destroy
+    
+    // Normal leaper settings
+    NORMAL: {
+        SCALE: 0.55,
+        SPEED: -280,
+        MAX_HP: 40, // Takes 4 hits to destroy
+        COLLISION_DAMAGE: 80, // Damage to player
+        SCORE_VALUE: 25,
+        ZIGZAG_AMPLITUDE: 150, // Height of zigzag
+        ZIGZAG_FREQUENCY: 0.002, // Speed of zigzag pattern (slower = longer waves)
+        SPAWN_WEIGHT: 40, // 40% chance to spawn normal leaper
+    },
+    
+    // Wide leaper settings (2x amplitude)
+    WIDE: {
+        SCALE: 0.55,
+        SPEED: -280,
+        MAX_HP: 40, // Same HP
+        COLLISION_DAMAGE: 80, // Same damage
+        SCORE_VALUE: 25, // Same score
+        ZIGZAG_AMPLITUDE: 300, // 2x amplitude - wider zigzag
+        ZIGZAG_FREQUENCY: 0.002, // Same frequency
+        SPAWN_WEIGHT: 30, // 30% chance to spawn wide leaper
+    },
+    
+    // Slow leaper settings (0.5x frequency = 2x period)
+    SLOW: {
+        SCALE: 0.55,
+        SPEED: -280,
+        MAX_HP: 40, // Same HP
+        COLLISION_DAMAGE: 80, // Same damage
+        SCORE_VALUE: 25, // Same score
+        ZIGZAG_AMPLITUDE: 150, // Same amplitude
+        ZIGZAG_FREQUENCY: 0.001, // 0.5x frequency - slower, longer waves
+        SPAWN_WEIGHT: 30, // 30% chance to spawn slow leaper
+    },
 };
 
 export const SCORE_CONFIG = {
-    ASTEROID: 10,
-    KAMIKAZE: 20,
-    GUNNER: 15,
-    LEAPER: 25,
+    ASTEROID_NORMAL: 10,
+    ASTEROID_LARGE: 20,
+    KAMIKAZE_NORMAL: 20,
+    KAMIKAZE_FAST: 15,
+    GUNNER_NORMAL: 15,
+    GUNNER_LARGE: 30,
+    LEAPER_NORMAL: 25,
+    LEAPER_WIDE: 25,
+    LEAPER_SLOW: 25,
 };
 
 export const DAMAGE_CONFIG = {
     // Damage dealt TO player
     ENEMY_BULLET: 30,
-    KAMIKAZE_COLLISION: 50,
-    GUNNER_COLLISION: 50,
-    LEAPER_COLLISION: 80,
-    ASTEROID_COLLISION: 100, // Instant kill
+    KAMIKAZE_NORMAL_COLLISION: 50,
+    KAMIKAZE_FAST_COLLISION: 25,
+    GUNNER_NORMAL_COLLISION: 50,
+    GUNNER_LARGE_COLLISION: 100,
+    LEAPER_NORMAL_COLLISION: 80,
+    LEAPER_WIDE_COLLISION: 80,
+    LEAPER_SLOW_COLLISION: 80,
+    ASTEROID_NORMAL_COLLISION: 100, // Instant kill
+    ASTEROID_LARGE_COLLISION: 200, // Still instant kill but higher value
 };

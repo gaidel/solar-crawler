@@ -161,6 +161,7 @@ export class EnemyManager {
         const asteroid = this.asteroids.find((a) => !a.isActive);
         if (asteroid) {
             const y = Phaser.Math.Between(ASTEROID_CONFIG.SPAWN_Y_MIN, ASTEROID_CONFIG.SPAWN_Y_MAX);
+            // Let asteroid choose its type randomly based on spawn weights
             asteroid.spawn(ASTEROID_CONFIG.SPAWN_X, y);
         }
     }
@@ -288,7 +289,13 @@ export class EnemyManager {
                     scoreValue = asteroid.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
-                        this.explosionManager.explodeSmall(explosionX, explosionY);
+                        // Use different explosion sizes based on asteroid type
+                        const asteroidType = asteroid.getType();
+                        if (asteroidType === 'large') {
+                            this.explosionManager.explodeMedium(explosionX, explosionY);
+                        } else {
+                            this.explosionManager.explodeSmall(explosionX, explosionY);
+                        }
                     }
                     // Play full explosion sound on destroy
                     if (this.audioManager) {
@@ -317,7 +324,13 @@ export class EnemyManager {
                     scoreValue = kamikaze.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
-                        this.explosionManager.explodeMedium(explosionX, explosionY);
+                        // Use different explosion sizes based on kamikaze type
+                        const kamikazeType = kamikaze.getType();
+                        if (kamikazeType === 'fast') {
+                            this.explosionManager.explodeSmall(explosionX, explosionY);
+                        } else {
+                            this.explosionManager.explodeMedium(explosionX, explosionY);
+                        }
                     }
                     // Play full explosion sound on destroy
                     if (this.audioManager) {
@@ -346,7 +359,13 @@ export class EnemyManager {
                     scoreValue = gunner.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
-                        this.explosionManager.explodeMedium(explosionX, explosionY);
+                        // Use different explosion sizes based on gunner type
+                        const gunnerType = gunner.getType();
+                        if (gunnerType === 'large') {
+                            this.explosionManager.explodeLarge(explosionX, explosionY);
+                        } else {
+                            this.explosionManager.explodeMedium(explosionX, explosionY);
+                        }
                     }
                     // Play full explosion sound on destroy
                     if (this.audioManager) {
@@ -399,16 +418,32 @@ export class EnemyManager {
         return this.asteroidGroup;
     }
 
+    getAsteroids(): Asteroid[] {
+        return this.asteroids;
+    }
+
     getKamikazeGroup(): Phaser.Physics.Arcade.Group {
         return this.kamikazeGroup;
+    }
+
+    getKamikazes(): Kamikaze[] {
+        return this.kamikazes;
     }
 
     getGunnerGroup(): Phaser.Physics.Arcade.Group {
         return this.gunnerGroup;
     }
 
+    getGunners(): Gunner[] {
+        return this.gunners;
+    }
+
     getLeaperGroup(): Phaser.Physics.Arcade.Group {
         return this.leaperGroup;
+    }
+
+    getLeapers(): Leaper[] {
+        return this.leapers;
     }
 
     getEnemyBullets(): Phaser.Physics.Arcade.Group {

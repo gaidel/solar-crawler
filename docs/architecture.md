@@ -348,92 +348,66 @@ this.explosionManager.destroy();
 
 ---
 
-## ❤️ HP System & Health Bars Architecture
+## 🌌 Asteroid Variety System Architecture
 
-### **Enemy HP System** - Damage and Health Tracking
-The HP system provides comprehensive health management for all enemy types:
+### **Asteroid Subtypes** - Dynamic Enemy Variation
+The asteroid system provides two distinct subtypes with differentiated gameplay characteristics:
 
 **Core Features:**
-- **Differentiated HP Values** - Balanced HP across enemy types
-- **Visual Health Bars** - Dynamic health indicators below enemies
-- **Damage Tinting** - Yellow flash feedback on hit
-- **Object Pooling Integration** - Proper cleanup for reused enemies
-- **Collision System Enhancement** - Overlap detection prevents physics interference
+- **Weighted Random Selection** - 70% normal, 30% large asteroid spawn rates
+- **Dynamic Damage System** - Collision damage varies by asteroid type
+- **Scalable Configuration** - Nested configuration structure for easy expansion
+- **Type Safety** - AsteroidType enum prevents type confusion
+- **Visual Differentiation** - Different explosion sizes based on asteroid type
 
-**HP Configuration:**
+**Asteroid Types Configuration:**
 ```typescript
-// Damage values (constants.ts)
-BULLET_DAMAGE = 10;
-
-// Enemy HP values
-ASTEROID_CONFIG.MAX_HP = 40;   // 4 hits to destroy
-KAMIKAZE_CONFIG.MAX_HP = 20;   // 2 hits to destroy  
-GUNNER_CONFIG.MAX_HP = 20;     // 2 hits to destroy
-LEAPER_CONFIG.MAX_HP = 40;     // 4 hits to destroy
+export const ASTEROID_CONFIG = {
+    // Common settings
+    SPAWN_INTERVAL: 2000,
+    MAX_POOL_SIZE: 15,
+    
+    // Normal asteroid settings
+    NORMAL: {
+        SCALE: 0.5,           // Standard size
+        SPEED: -300,          // Standard speed
+        MAX_HP: 40,           // 4 hits to destroy
+        COLLISION_DAMAGE: 100, // Instant kill damage
+        SCORE_VALUE: 10,      // Standard score
+        SPAWN_WEIGHT: 70,     // 70% spawn chance
+    },
+    
+    // Large asteroid settings (2x characteristics)
+    LARGE: {
+        SCALE: 1.0,           // 2x radius
+        SPEED: -150,          // 2x slower (half speed)
+        MAX_HP: 80,           // 2x HP (8 hits to destroy)
+        COLLISION_DAMAGE: 200, // 2x damage
+        SCORE_VALUE: 20,      // 2x score
+        SPAWN_WEIGHT: 30,     // 30% spawn chance
+    },
+};
 ```
 
-**Health Bar System:**
-- **40x4 pixel bars** positioned below enemy sprites
-- **Color-coded by health percentage:**
-  - Green: 60-100% HP
-  - Orange: 30-60% HP  
-  - Red: 0-30% HP
-- **Hidden when at full health** - Only visible when damaged
-- **Dynamic positioning** - Follows enemy movement via `updateHealthBarPosition()`
-- **Proper cleanup** - Destroyed and recreated when enemies are reused from pool
-
-**Damage System:**
-1. **Overlap Detection** - `physics.add.overlap()` instead of `collider()` prevents momentum transfer
-2. **Bullet Deactivation** - `bullet.body.enable = false` prevents multiple hits from single bullet
-3. **Damage Processing** - `enemy.takeDamage(BULLET_DAMAGE)` returns true if enemy destroyed
-4. **Visual Feedback** - 100ms yellow tint flash on hit
-5. **Health Bar Updates** - Real-time color and width updates
-
-**Object Pooling Integration:**
+**Dynamic Type Selection:**
 ```typescript
-// Critical fix: Cleanup old health bars when reusing enemies
-spawn(x: number, y: number): void {
-    // Clean up any existing health bar from previous use
-    if (this.healthBar) {
-        this.healthBar.destroy();
-        this.healthBar = null;
-    }
-    // ... rest of spawn logic
+export enum AsteroidType {
+    NORMAL = 'normal',
+    LARGE = 'large'
 }
+
+// Weighted random selection in spawn()
+const random = Math.random() * 100;
+this.asteroidType = random < ASTEROID_CONFIG.NORMAL.SPAWN_WEIGHT 
+    ? AsteroidType.NORMAL 
+    : AsteroidType.LARGE;
 ```
 
-**BaseEnemy Class Integration:**
-- **`takeDamage(damage: number): boolean`** - Core damage processing method
-- **`createHealthBar()`** - Creates Phaser Graphics object for health display
-- **`updateHealthBar()`** - Updates position, color, and width based on current HP
-- **`updateHealthBarPosition()`** - Called from enemy update() methods to track movement
-- **Proper cleanup** in `reset()` and `destroy()` methods
-
-**Usage Pattern:**
-```typescript
-// In collision detection (GameScene.ts)
-this.physics.add.overlap(this.bullets, this.enemyManager.getAllEnemies(), 
-    (bullet, enemy) => {
-        bullet.body.enable = false; // Prevent double-hits
-        
-        const enemyDestroyed = enemy.takeDamage(BULLET_DAMAGE);
-        if (enemyDestroyed) {
-            // Trigger explosion and scoring
-            this.explosionManager.explodeSmall(enemy.x, enemy.y);
-            this.addScore(enemy.scoreValue);
-        }
-        
-        bullet.setActive(false);
-        bullet.setVisible(false);
-    }
-);
-```
-
-**Performance Considerations:**
-- Health bars only created when needed (first damage)
-- Graphics objects properly destroyed to prevent memory leaks  
-- Health bar updates only when enemy is damaged (not at full HP)
-- Object pooling cleanup prevents ghost health bars
+**Gameplay Balance:**
+- **Normal Asteroids**: Fast, weak, frequent - standard threat level
+- **Large Asteroids**: Slow, tanky, rare - high-value targets requiring sustained fire
+- **Risk/Reward**: Large asteroids are more dangerous but provide double score
+- **Visual Feedback**: Different explosion sizes help players identify asteroid types
 
 ---
 

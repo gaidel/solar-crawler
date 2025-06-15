@@ -4,6 +4,10 @@ import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
+import { Asteroid } from '../enemies/Asteroid';
+import { Kamikaze } from '../enemies/Kamikaze';
+import { Gunner } from '../enemies/Gunner';
+import { Leaper } from '../enemies/Leaper';
 
 export class GameScene extends Phaser.Scene {
     private player!: Player;
@@ -146,28 +150,28 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getAsteroidGroup(),
-            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.ASTEROID_COLLISION),
+            (player, enemy) => this.handlePlayerAsteroidCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getKamikazeGroup(),
-            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.KAMIKAZE_COLLISION),
+            (player, enemy) => this.handlePlayerKamikazeCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getGunnerGroup(),
-            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.GUNNER_COLLISION),
+            (player, enemy) => this.handlePlayerGunnerCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getLeaperGroup(),
-            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.LEAPER_COLLISION),
+            (player, enemy) => this.handlePlayerLeaperCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
             undefined,
             this
         );
@@ -270,6 +274,131 @@ export class GameScene extends Phaser.Scene {
         this.score += scoreValue;
     }
 
+    private handlePlayerAsteroidCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Find the asteroid object to get its collision damage
+        const asteroid = this.enemyManager.getAsteroids().find(a => a.sprite === enemySprite);
+        if (!asteroid) {
+            return;
+        }
+
+        // Player takes damage based on asteroid type
+        const damage = asteroid.getCollisionDamage();
+        const playerDestroyed = this.player.takeDamage(damage);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Destroy the enemy
+        enemySprite.setActive(false);
+        enemySprite.setVisible(false);
+        
+        // Create explosion at enemy position - size based on asteroid type
+        if (this.explosionManager) {
+            const asteroidType = asteroid.getType();
+            if (asteroidType === 'large') {
+                this.explosionManager.explodeMedium(enemySprite.x, enemySprite.y);
+            } else {
+                this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
+            }
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
+    private handlePlayerKamikazeCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Find the kamikaze object to get its collision damage
+        const kamikaze = this.enemyManager.getKamikazes().find(k => k.sprite === enemySprite);
+        if (!kamikaze) {
+            return;
+        }
+
+        // Player takes damage based on kamikaze type
+        const damage = kamikaze.getCollisionDamage();
+        const playerDestroyed = this.player.takeDamage(damage);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Destroy the enemy
+        enemySprite.setActive(false);
+        enemySprite.setVisible(false);
+        
+        // Create explosion at enemy position - size based on kamikaze type
+        if (this.explosionManager) {
+            const kamikazeType = kamikaze.getType();
+            if (kamikazeType === 'fast') {
+                this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
+            } else {
+                this.explosionManager.explodeMedium(enemySprite.x, enemySprite.y);
+            }
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
+    private handlePlayerLeaperCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Find the leaper object to get its collision damage
+        const leaper = this.enemyManager.getLeapers().find(l => l.sprite === enemySprite);
+        if (!leaper) {
+            return;
+        }
+
+        // Player takes damage based on leaper type
+        const damage = leaper.getCollisionDamage();
+        const playerDestroyed = this.player.takeDamage(damage);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Destroy the enemy
+        enemySprite.setActive(false);
+        enemySprite.setVisible(false);
+        
+        // Create explosion at enemy position - size based on leaper type
+        if (this.explosionManager) {
+            // All leaper types are the same size, so use large explosion
+            this.explosionManager.explodeLarge(enemySprite.x, enemySprite.y);
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
     private handlePlayerEnemyCollision(
         playerSprite: Phaser.Physics.Arcade.Sprite,
         enemySprite: Phaser.Physics.Arcade.Sprite,
@@ -333,8 +462,54 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    private handlePlayerGunnerCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Find the gunner object to get its collision damage
+        const gunner = this.enemyManager.getGunners().find(g => g.sprite === enemySprite);
+        if (!gunner) {
+            return;
+        }
+
+        // Player takes damage based on gunner type
+        const damage = gunner.getCollisionDamage();
+        const playerDestroyed = this.player.takeDamage(damage);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Destroy the enemy
+        enemySprite.setActive(false);
+        enemySprite.setVisible(false);
+        
+        // Create explosion at enemy position - size based on gunner type
+        if (this.explosionManager) {
+            const gunnerType = gunner.getType();
+            if (gunnerType === 'large') {
+                this.explosionManager.explodeMedium(enemySprite.x, enemySprite.y);
+            } else {
+                this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
+            }
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
     private gameOver(): void {
         this.gameState = GameState.GAME_OVER;
+
+        // Update HP display to show 0 HP before showing game over screen
+        this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
 
         // Create explosion effect at player position
         if (this.explosionManager) {
@@ -358,6 +533,10 @@ export class GameScene extends Phaser.Scene {
 
     private victory(): void {
         this.gameState = GameState.VICTORY;
+        
+        // Update HP display to show current HP on victory screen
+        this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
+        
         this.gameUI.victory(
             this.score,
             (color: number) => this.player.setTint(color),
