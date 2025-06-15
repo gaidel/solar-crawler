@@ -1,4 +1,4 @@
-import { BULLET_CONFIG, GAME_CONFIG } from '../config/constants';
+import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG } from '../config/constants';
 import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
@@ -142,41 +142,41 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
-        // Player vs All enemy types
-        this.physics.add.collider(
+        // Player vs All enemy types (using overlap to prevent physics momentum)
+        this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getAsteroidGroup(),
-            this.gameOver,
+            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.ASTEROID_COLLISION),
             undefined,
             this
         );
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getKamikazeGroup(),
-            this.gameOver,
+            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.KAMIKAZE_COLLISION),
             undefined,
             this
         );
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getGunnerGroup(),
-            this.gameOver,
+            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.GUNNER_COLLISION),
             undefined,
             this
         );
-        this.physics.add.collider(
+        this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getLeaperGroup(),
-            this.gameOver,
+            (player, enemy) => this.handlePlayerEnemyCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite, DAMAGE_CONFIG.LEAPER_COLLISION),
             undefined,
             this
         );
 
-        // Player vs Enemy bullets (using overlap to avoid physics collision)
+        // Player vs Enemy bullets
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getEnemyBullets(),
-            this.gameOver,
+            (player, bullet) => this.handlePlayerBulletCollision(player as Phaser.Physics.Arcade.Sprite, bullet as Phaser.Physics.Arcade.Sprite),
             undefined,
             this
         );
@@ -218,9 +218,15 @@ export class GameScene extends Phaser.Scene {
         // Update HUD
         const timeLeft = Math.max(0, GAME_CONFIG.WIN_TIME - elapsedTime);
         this.gameUI.updateHUD(this.score, timeLeft);
+        
+        // Update player HP display
+        this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
 
         // Clean up bullets
         this.cleanupBullets();
+        
+        // Force cleanup of enemy bullets to prevent stuck bullets
+        // this.enemyManager.forceCleanupBullets();
     }
 
     private cleanupBullets(): void {
@@ -262,6 +268,69 @@ export class GameScene extends Phaser.Scene {
         // Handle enemy hit and get score value
         const scoreValue = this.enemyManager.handleBulletCollision(enemy);
         this.score += scoreValue;
+    }
+
+    private handlePlayerEnemyCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite,
+        damage: number
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Player takes damage
+        const playerDestroyed = this.player.takeDamage(damage);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Destroy the enemy (except for bullets)
+        enemySprite.setActive(false);
+        enemySprite.setVisible(false);
+        
+        // Create small explosion at enemy position
+        if (this.explosionManager) {
+            this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
+    private handlePlayerBulletCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        bulletSprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if bullet is already inactive
+        if (!bulletSprite.active) {
+            return;
+        }
+
+        // Player takes damage from enemy bullet
+        const playerDestroyed = this.player.takeDamage(DAMAGE_CONFIG.ENEMY_BULLET);
+        
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
+        }
+        
+        // Properly destroy the bullet (simple approach)
+        bulletSprite.setActive(false);
+        bulletSprite.setVisible(false);
+        
+        // Disable physics body
+        if (bulletSprite.body) {
+            bulletSprite.body.enable = false;
+        }
+        
+        if (playerDestroyed) {
+            this.gameOver();
+        }
     }
 
     private gameOver(): void {

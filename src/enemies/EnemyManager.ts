@@ -86,8 +86,7 @@ export class EnemyManager {
         // Create enemy bullets group
         this.enemyBullets = this.scene.physics.add.group({
             defaultKey: 'enemy_bullet',
-            maxSize: 50,
-            runChildUpdate: true,
+            maxSize: 20,
         });
 
         // Create enemy instances for pooling
@@ -245,9 +244,23 @@ export class EnemyManager {
 
     private cleanupEnemyBullets(): void {
         this.enemyBullets.getChildren().forEach((bullet) => {
-            if (bullet instanceof Phaser.Physics.Arcade.Sprite && bullet.active && bullet.x < -50) {
-                bullet.setActive(false);
-                bullet.setVisible(false);
+            if (bullet instanceof Phaser.Physics.Arcade.Sprite) {
+                // Clean up bullets that are off-screen (left side) or too far right
+                if (bullet.active && (bullet.x < -50 || bullet.x > GAME_CONFIG.WIDTH + 100)) {
+                    bullet.setActive(false);
+                    bullet.setVisible(false);
+                    if (bullet.body) {
+                        bullet.body.enable = false;
+                    }
+                }
+                
+                // Clean up inactive bullets that are still visible (this shouldn't happen but let's be safe)
+                if (!bullet.active && bullet.visible) {
+                    bullet.setVisible(false);
+                    if (bullet.body) {
+                        bullet.body.enable = false;
+                    }
+                }
             }
         });
     }

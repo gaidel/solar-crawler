@@ -76,18 +76,36 @@ export class Gunner extends BaseEnemy {
     }
 
     private fireBullet(): void {
-        // Get a bullet from the pool (creates new one if needed)
-        const bullet = this.bullets.get(
-            this.sprite.x - 30,
-            this.sprite.y,
-            'enemy_bullet'
-        ) as Phaser.Physics.Arcade.Sprite;
+        // First try to find an inactive bullet to reuse
+        let bullet: Phaser.Physics.Arcade.Sprite | null = null;
+        
+        this.bullets.getChildren().forEach((child) => {
+            if (!bullet && child instanceof Phaser.Physics.Arcade.Sprite && !child.active) {
+                bullet = child;
+            }
+        });
+        
+        // If no inactive bullet found, try to get one from the pool
+        if (!bullet) {
+            bullet = this.bullets.get(
+                this.sprite.x - 30,
+                this.sprite.y,
+                'enemy_bullet'
+            ) as Phaser.Physics.Arcade.Sprite;
+        }
 
         if (bullet) {
+            // Reset bullet position and properties
+            bullet.setPosition(this.sprite.x - 30, this.sprite.y);
             bullet.setActive(true);
             bullet.setVisible(true);
             bullet.setScale(GUNNER_CONFIG.BULLET_SCALE);
             bullet.setOrigin(0.5, 0.5);
+
+            // Enable physics body if it was disabled
+            if (bullet.body) {
+                bullet.body.enable = true;
+            }
 
             // Set up circular collision for enemy bullet
             setupCircularCollision(bullet, 0.9);

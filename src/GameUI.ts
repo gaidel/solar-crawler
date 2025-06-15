@@ -78,13 +78,41 @@ export class GameUI {
         this.escKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
     }
 
+    private playerHPBar?: Phaser.GameObjects.Graphics;
+    private playerHPText?: Phaser.GameObjects.Text;
+    private playerHPValueText?: Phaser.GameObjects.Text;
+
     private createHUD(): void {
-        // Score and timer display
-        this.scoreText = this.scene.add.text(20, 20, 'Score: 0  Time: 60s', {
+        // Score and timer display (right side)
+        this.scoreText = this.scene.add.text(GAME_CONFIG.WIDTH - 20, 10, 'Score: 0  Time: 60s', {
+            fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+            color: '#ffffff',
+            align: 'right'
+        });
+        this.scoreText.setOrigin(1, 0); // Right-aligned
+        this.scoreText.setScrollFactor(0);
+
+        // Player HP label (left side)
+        this.playerHPText = this.scene.add.text(20, 10, 'HP:', {
             fontSize: UI_CONFIG.FONT_SIZE_SMALL,
             color: '#ffffff',
         });
-        this.scoreText.setScrollFactor(0);
+        this.playerHPText.setScrollFactor(0);
+
+        // Player HP bar
+        this.playerHPBar = this.scene.add.graphics();
+        this.playerHPBar.setScrollFactor(0);
+
+        // HP value text inside the bar
+        this.playerHPValueText = this.scene.add.text(0, 0, '100/100', {
+            fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+            color: '#ffffff',
+            fontStyle: 'bold'
+        });
+        this.playerHPValueText.setOrigin(0.5, 0.5); // Center the text
+        this.playerHPValueText.setScrollFactor(0);
+
+        this.updatePlayerHPBar(100, 100); // Initialize with full HP
     }
 
     // Input handling methods
@@ -106,6 +134,54 @@ export class GameUI {
     // HUD update methods
     updateHUD(score: number, timeLeft: number): void {
         this.scoreText.setText(`Score: ${score}  Time: ${Math.ceil(timeLeft / 1000)}s`);
+    }
+
+    updatePlayerHP(currentHP: number, maxHP: number): void {
+        // Update HP value text inside the bar
+        if (this.playerHPValueText) {
+            this.playerHPValueText.setText(`${currentHP}/${maxHP}`);
+        }
+        
+        // Update HP bar
+        this.updatePlayerHPBar(currentHP, maxHP);
+    }
+
+    private updatePlayerHPBar(currentHP: number, maxHP: number): void {
+        if (!this.playerHPBar || !this.playerHPValueText) return;
+
+        const barWidth = 180; // Made 1.5x longer
+        const barHeight = 20; // Height to fit text
+        const barX = 70; // Position after "HP:" text (moved right again)
+        const barY = 8; // Align with HP text
+
+        // Clear previous drawing
+        this.playerHPBar.clear();
+
+        // Background (dark red - missing health)
+        this.playerHPBar.fillStyle(0x330000, 0.8);
+        this.playerHPBar.fillRect(barX, barY, barWidth, barHeight);
+
+        // Foreground (current health)
+        const healthPercentage = currentHP / maxHP;
+        const healthWidth = barWidth * healthPercentage;
+        
+        // Color changes based on health percentage
+        let healthColor = 0x00ff00; // Green
+        if (healthPercentage < 0.3) {
+            healthColor = 0xff0000; // Red
+        } else if (healthPercentage < 0.6) {
+            healthColor = 0xffaa00; // Orange
+        }
+
+        this.playerHPBar.fillStyle(healthColor, 0.9);
+        this.playerHPBar.fillRect(barX, barY, healthWidth, barHeight);
+
+        // Border
+        this.playerHPBar.lineStyle(1, 0xffffff, 0.8);
+        this.playerHPBar.strokeRect(barX, barY, barWidth, barHeight);
+
+        // Position the HP value text in the center of the bar
+        this.playerHPValueText.setPosition(barX + barWidth / 2, barY + barHeight / 2);
     }
 
     // Update method for menu navigation (called from GameScene)
@@ -830,6 +906,22 @@ export class GameUI {
         this.clearScreens();
         if (this.scoreText) {
             this.scoreText.destroy();
+        }
+        
+        // Clean up HP bar
+        if (this.playerHPBar) {
+            this.playerHPBar.destroy();
+            this.playerHPBar = undefined;
+        }
+        
+        if (this.playerHPText) {
+            this.playerHPText.destroy();
+            this.playerHPText = undefined;
+        }
+        
+        if (this.playerHPValueText) {
+            this.playerHPValueText.destroy();
+            this.playerHPValueText = undefined;
         }
     }
 }

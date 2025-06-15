@@ -20,6 +20,11 @@ export class Player {
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
     private lastFired = 0;
+    
+    // HP System
+    private maxHP: number = 100;
+    private currentHP: number = 100;
+    private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -41,7 +46,8 @@ export class Player {
             'player'
         ) as Phaser.Physics.Arcade.Sprite;
 
-        this.sprite.setCollideWorldBounds(true);
+        // Disable default world bounds collision, we'll handle it manually
+        this.sprite.setCollideWorldBounds(false);
         this.sprite.setScale(PLAYER_CONFIG.SCALE);
         this.sprite.setOrigin(0.5, 0.5);
 
@@ -57,6 +63,24 @@ export class Player {
             this.sprite.setVelocityY(PLAYER_CONFIG.SPEED);
         } else {
             this.sprite.setVelocityY(0);
+        }
+
+        // Enforce movement boundaries (avoid HUD area and screen edges)
+        if (this.sprite.y < PLAYER_CONFIG.MOVEMENT_Y_MIN) {
+            this.sprite.y = PLAYER_CONFIG.MOVEMENT_Y_MIN;
+            this.sprite.setVelocityY(0);
+        }
+        if (this.sprite.y > PLAYER_CONFIG.MOVEMENT_Y_MAX) {
+            this.sprite.y = PLAYER_CONFIG.MOVEMENT_Y_MAX;
+            this.sprite.setVelocityY(0);
+        }
+        
+        // Horizontal boundaries
+        if (this.sprite.x < 0) {
+            this.sprite.x = 0;
+        }
+        if (this.sprite.x > this.scene.physics.world.bounds.width) {
+            this.sprite.x = this.scene.physics.world.bounds.width;
         }
 
         // Auto-fire bullets OR manual fire on action key
@@ -106,12 +130,57 @@ export class Player {
         return this.sprite.y;
     }
 
+    // HP System methods
+    takeDamage(damage: number): boolean {
+        this.currentHP -= damage;
+        
+        // Visual feedback for damage (red flash)
+        this.sprite.setTint(0xff0000); // Red tint
+        
+        // Clear any existing damage flash timer to prevent conflicts
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+        }
+        
+        // Create new timer to restore original color (200ms for player)
+        this.damageFlashTimer = this.scene.time.delayedCall(200, () => {
+            if (this.sprite && this.sprite.active) {
+                this.sprite.clearTint();
+            }
+            this.damageFlashTimer = null;
+        });
+
+        if (this.currentHP <= 0) {
+            this.currentHP = 0;
+            return true; // Player destroyed
+        }
+        return false; // Player still alive
+    }
+
+    getCurrentHP(): number {
+        return this.currentHP;
+    }
+
+    getMaxHP(): number {
+        return this.maxHP;
+    }
+
+    getHPPercentage(): number {
+        return this.currentHP / this.maxHP;
+    }
+
     // Game state methods
     setTint(color: number): void {
         this.sprite.setTint(color);
     }
 
     destroy(): void {
+        // Clear damage flash timer if it exists
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+            this.damageFlashTimer = null;
+        }
+        
         if (this.sprite) {
             this.sprite.destroy();
         }

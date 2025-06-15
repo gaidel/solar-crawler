@@ -12,21 +12,24 @@ export const UI_CONFIG = {
     FONT_SIZE_SMALL: '24px',
     BUTTON_PADDING: 20,
     OVERLAY_ALPHA: 0.7,
+    HUD_HEIGHT: 40, // Reserved space at top for HUD
 };
 
 export const PLAYER_CONFIG = {
     START_X: 100,
-    START_Y: 360,
+    START_Y: 400, // Moved down to avoid HUD area
     SCALE: 0.8,
     SPEED: 300,
     FIRE_RATE: 300, // ms between shots
+    MOVEMENT_Y_MIN: 60, // Can't move above HUD area
+    MOVEMENT_Y_MAX: 680, // Can't move below screen
 };
 
 export const ASTEROID_CONFIG = {
     SCALE: 0.5,
     SPEED: -300,
     SPAWN_INTERVAL: 2000, // ms
-    SPAWN_Y_MIN: 100,
+    SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 15, // Enlarged pool to handle simultaneous destructions
@@ -38,7 +41,7 @@ export const KAMIKAZE_CONFIG = {
     SPEED: -200, // No longer used, kept for compatibility
     HOMING_SPEED: 180, // Total movement speed towards player
     SPAWN_INTERVAL: 4000, // Less frequent than asteroids
-    SPAWN_Y_MIN: 100,
+    SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
@@ -57,7 +60,7 @@ export const GUNNER_CONFIG = {
     SCALE: 0.6,
     SPEED: -180, // Slower movement - more time to shoot
     SPAWN_INTERVAL: 5000, // Less frequent than asteroids
-    SPAWN_Y_MIN: 100,
+    SPAWN_Y_MIN: 60, // Below HUD area
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
@@ -71,7 +74,7 @@ export const LEAPER_CONFIG = {
     SCALE: 0.55,
     SPEED: -280,
     SPAWN_INTERVAL: 3500, // Moderate frequency
-    SPAWN_Y_MIN: 150,
+    SPAWN_Y_MIN: 110, // Below HUD area with extra space for zigzag
     SPAWN_Y_MAX: 570,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
@@ -85,4 +88,13 @@ export const SCORE_CONFIG = {
     KAMIKAZE: 20,
     GUNNER: 15,
     LEAPER: 25,
+};
+
+export const DAMAGE_CONFIG = {
+    // Damage dealt TO player
+    ENEMY_BULLET: 30,
+    KAMIKAZE_COLLISION: 50,
+    GUNNER_COLLISION: 50,
+    LEAPER_COLLISION: 80,
+    ASTEROID_COLLISION: 100, // Instant kill
 };

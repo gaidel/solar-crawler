@@ -398,9 +398,7 @@ spawn(x: number, y: number): void {
         this.healthBar.destroy();
         this.healthBar = null;
     }
-    
     // ... rest of spawn logic
-    this.currentHP = this.maxHP; // Full HP for fresh spawn
 }
 ```
 
@@ -436,6 +434,129 @@ this.physics.add.overlap(this.bullets, this.enemyManager.getAllEnemies(),
 - Graphics objects properly destroyed to prevent memory leaks  
 - Health bar updates only when enemy is damaged (not at full HP)
 - Object pooling cleanup prevents ghost health bars
+
+---
+
+## 🎯 Enemy Bullet System Architecture
+
+### **Bullet Pooling & Management** - Optimized Projectile System
+The enemy bullet system provides efficient projectile management for Gunner enemies:
+
+**Core Features:**
+- **Object Pooling** - Reuses inactive bullets to prevent memory allocation
+- **Explicit State Management** - Clear active/inactive bullet tracking
+- **Optimized Cleanup** - Multi-boundary cleanup system
+- **Physics Integration** - Proper collision detection with cleanup
+- **Debug Statistics** - Development tools for troubleshooting
+
+**Bullet Pool Configuration:**
+```typescript
+// EnemyManager.ts - Optimized settings
+this.enemyBullets = this.scene.physics.add.group({
+    defaultKey: 'enemy_bullet',
+    maxSize: 20,  // Reduced from 50 for better control
+    // runChildUpdate removed - manual update management
+});
+```
+
+**Bullet Lifecycle Management:**
+1. **Creation/Reuse** - `Gunner.fireBullet()` first searches for inactive bullets
+2. **Activation** - Explicit position reset and physics body re-enabling
+3. **Movement** - Horizontal velocity with collision detection
+4. **Cleanup** - Multiple cleanup triggers for reliability
+
+**Advanced Pooling Logic:**
+```typescript
+// Gunner.ts - Explicit bullet reuse
+private fireBullet(): void {
+    // First try to find an inactive bullet to reuse
+    let bullet: Phaser.Physics.Arcade.Sprite | null = null;
+    
+    this.bullets.getChildren().forEach((child) => {
+        if (!bullet && child instanceof Phaser.Physics.Arcade.Sprite && !child.active) {
+            bullet = child;
+        }
+    });
+    
+    // If no inactive bullet found, get from pool
+    if (!bullet) {
+        bullet = this.bullets.get(x, y, 'enemy_bullet');
+    }
+    
+    if (bullet) {
+        // Reset bullet state completely
+        bullet.setPosition(x, y);
+        bullet.setActive(true);
+        bullet.setVisible(true);
+        if (bullet.body) {
+            bullet.body.enable = true;  // Re-enable physics
+        }
+    }
+}
+```
+
+**Multi-Level Cleanup System:**
+```typescript
+// EnemyManager.ts - Comprehensive cleanup
+private cleanupEnemyBullets(): void {
+    this.enemyBullets.getChildren().forEach((bullet) => {
+        if (bullet instanceof Phaser.Physics.Arcade.Sprite) {
+            // Cleanup off-screen bullets (both directions)
+            if (bullet.active && (bullet.x < -50 || bullet.x > GAME_CONFIG.WIDTH + 100)) {
+                bullet.setActive(false);
+                bullet.setVisible(false);
+                if (bullet.body) bullet.body.enable = false;
+            }
+            
+            // Safety cleanup for inactive but visible bullets
+            if (!bullet.active && bullet.visible) {
+                bullet.setVisible(false);
+                if (bullet.body) bullet.body.enable = false;
+            }
+        }
+    });
+}
+```
+
+**Collision Handling:**
+```typescript
+// GameScene.ts - Player-bullet collision
+private handlePlayerBulletCollision(player, bullet): void {
+    if (!bullet.active) return;  // Prevent double-processing
+    
+    // Player damage logic
+    const playerDestroyed = this.player.takeDamage(DAMAGE_CONFIG.ENEMY_BULLET);
+    
+    // Simple bullet cleanup (no aggressive positioning)
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    if (bullet.body) bullet.body.enable = false;
+}
+```
+
+**Debug & Monitoring:**
+```typescript
+// Development tool for bullet statistics
+getBulletStats(): { total: number; active: number; visible: number } {
+    let total = 0, active = 0, visible = 0;
+    this.enemyBullets.getChildren().forEach((bullet) => {
+        if (bullet instanceof Phaser.Physics.Arcade.Sprite) {
+            total++;
+            if (bullet.active) active++;
+            if (bullet.visible) visible++;
+        }
+    });
+    return { total, active, visible };
+}
+```
+
+**Key Optimizations:**
+- **Reduced Pool Size** - From 50 to 20 bullets maximum
+- **Manual Update Management** - Removed `runChildUpdate: true` for better control
+- **Explicit Reuse Logic** - Search inactive bullets before creating new ones
+- **Multi-Boundary Cleanup** - Handle bullets going off-screen in both directions
+- **State Consistency** - Ensure active/visible/physics states are synchronized
+- **Simple Destruction** - Avoid complex positioning that can cause visual artifacts
 
 ---
 
