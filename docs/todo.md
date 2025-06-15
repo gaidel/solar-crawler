@@ -23,7 +23,7 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | Explosion Effects | ✅ | ✅ | ✅ Complete |
 | HP System | ✅ | ✅ | ✅ Complete |
 | Enemy Bullet System | ✅ | ✅ | ✅ Complete |
-| Wave System | ✅ | ❌ | 🔴 Missing |
+| Wave System | ✅ | ✅ | ✅ Complete |
 | Upgrades | ✅ | ❌ | 🔴 Missing |
 | Victory Screen | ✅ | ✅ | ✅ Complete |
 | Game Over Screen | ✅ | ✅ | ✅ Complete |
@@ -34,7 +34,6 @@ This document tracks development progress, known issues, and upcoming tasks for 
 ## 🔴 Critical Issues
 
 ### 1. **Missing Core Features**
-- **Wave System**: Game currently spawns enemies infinitely instead of structured waves
 - **Roguelike Elements**: Missing upgrade system between waves
 
 ### 2. **Enemy Types** ✅ FIXED
@@ -125,9 +124,9 @@ All 4 enemy types implemented:
 - [x] Trigger Game Over on enemy projectile hit
 
 ### 📊 Waves & Progression
-- [ ] Create wave system (timed spawning of enemies)
-- [ ] Define 8 waves with increasing variety
-- [ ] Track wave count and advance to next wave
+- [x] Create wave system (timed spawning of enemies)
+- [x] Define 8 waves with increasing variety
+- [x] Track wave count and advance to next wave
 - [x] Trigger Victory screen after surviving time limit
 
 ### 🔊 Audio & Effects
@@ -317,21 +316,62 @@ All 4 enemy types implemented:
 
 ### ✅ **Kamikaze Variety System** (Previous)
 
+### ✅ **Wave System Implementation** (Latest)
+- Implemented 8-wave progression system with 1-minute duration per wave
+- Added TOTAL_WAVES (8) and WAVE_DURATION (60000ms) constants for easy configuration
+- Enhanced HUD to display current wave progress: "Wave: X/8 Score: XXX Time: XXs"
+- Created wave completion system with intermediate victory screens
+- **Wave Victory Screen**: Shows "WAVE X CLEARED!" with options to continue or return to menu
+- **Final Victory Screen**: Shows "ALL WAVES CLEARED! COMPLETE VICTORY!" after wave 8
+- Added wave state tracking: currentWave and waveStartTime in GameScene
+- Implemented startNextWave() method for seamless wave transitions
+- Enhanced restart() method to properly reset wave progression
+- Updated GameUI with showWaveVictory() and showFinalVictory() methods
+- Added hideOverlays() method for clean UI state management
+- Wave system maintains player HP and score progression between waves
+- Enemy spawning pauses during wave transition screens and resumes on wave start
+- Music management: stops during victory screens, resumes on wave continuation
+
 ---
 
 ## 🎯 Priority Tasks for Next Session
 
-1. **Wave System** - Implement structured waves instead of infinite spawning
-2. **Upgrade System** - Add roguelike upgrade mechanics between waves
-3. **Wave Manager** - Create dedicated WaveManager class for progression logic
-4. **Game Balancing** - Fine-tune enemy spawn rates and difficulty progression
-5. **Performance Optimization** - Monitor and optimize bullet pooling and enemy management
+1. **Upgrade System** - Add roguelike upgrade mechanics between waves
+2. **Game Balancing** - Fine-tune enemy spawn rates and difficulty progression  
+3. **Performance Optimization** - Monitor and optimize bullet pooling and enemy management
+4. **Polish & Effects** - Enhance visual feedback and game juice
+5. **Additional Content** - Consider more enemy varieties or wave mechanics
 
 ---
 
 ## 🏗️ Recent Improvements (Current Session)
 
-### ✅ **Asteroid Variety System** (Latest)
+### ✅ **Wave-Based Enemy Spawning System** (Latest)
+- Implemented progressive wave system with 8 waves of 30-second duration each
+- **Wave 1**: Asteroids only (learning basic mechanics)
+- **Wave 2**: Asteroids + Leapers (unpredictable movement patterns)
+- **Wave 3**: Asteroids + Leapers + Kamikazes (homing threats)
+- **Wave 4-8**: All enemy types including Gunners (full chaos with bullets)
+- Added wave tracking in EnemyManager with setCurrentWave() method
+- Enhanced startSpawning() to conditionally create timers based on current wave
+- Updated GameScene to pass wave information to EnemyManager
+- Wave transitions preserve player HP and score while resetting enemy positions
+- Progressive difficulty curve allows players to learn each enemy type gradually
+
+### ✅ **Player HP Preservation Between Waves** (Previous)
+- Modified Player.resetPosition() method to preserve HP between waves
+- Removed HP restoration from wave transitions for increased difficulty
+- Players must manage health strategically across all 8 waves
+- Enhanced challenge: no healing between waves makes each hit meaningful
+
+### ✅ **Invisible Enemy Collider Fix** (Previous)
+- Fixed critical bug where enemy physics bodies remained active after wave transitions
+- Added physics body disabling in BaseEnemy.reset() method
+- Added physics body enabling in all enemy spawn() methods
+- Prevents player bullets from disappearing due to invisible enemy colliders
+- Ensures clean wave transitions without phantom collision detection
+
+### ✅ **Asteroid Variety System** (Previous)
 - Implemented two asteroid subtypes: Normal and Large asteroids with differentiated characteristics
 - **Normal Asteroids**: 0.5x scale, -300 speed, 40 HP (4 hits), 100 damage, 10 score, 70% spawn rate
 - **Large Asteroids**: 1.0x scale, -150 speed, 80 HP (8 hits), 200 damage, 20 score, 30% spawn rate

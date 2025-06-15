@@ -30,7 +30,7 @@ export abstract class BaseEnemy implements Enemy {
     protected healthBar: Phaser.GameObjects.Graphics | null = null;
 
     // Static method for loading assets - to be implemented by subclasses
-    static preload(scene: Phaser.Scene): void {
+    static preload(_scene: Phaser.Scene): void {
         // Base implementation does nothing - subclasses should override
     }
 
@@ -71,7 +71,7 @@ export abstract class BaseEnemy implements Enemy {
         // Foreground (green - current health)
         const healthPercentage = this.currentHP / this.maxHP;
         const healthWidth = barWidth * healthPercentage;
-        
+
         // Color changes based on health percentage
         let healthColor = 0x00ff00; // Green
         if (healthPercentage < 0.3) {
@@ -120,12 +120,12 @@ export abstract class BaseEnemy implements Enemy {
 
         // Visual feedback for damage (bright yellow flash)
         this.sprite.setTint(0xffff00); // Bright yellow tint
-        
+
         // Clear any existing damage flash timer to prevent conflicts
         if (this.damageFlashTimer) {
             this.damageFlashTimer.remove();
         }
-        
+
         // Create new timer to restore original color (100ms for quick flash)
         this.damageFlashTimer = this.scene.time.delayedCall(100, () => {
             if (this.sprite && this.sprite.active) {
@@ -172,7 +172,7 @@ export abstract class BaseEnemy implements Enemy {
     reset(): void {
         this.isActive = false;
         this.currentHP = 0; // Reset HP to 0 when inactive
-        
+
         // Clear damage flash timer if it exists
         if (this.damageFlashTimer) {
             this.damageFlashTimer.remove();
@@ -183,11 +183,16 @@ export abstract class BaseEnemy implements Enemy {
         if (this.healthBar) {
             this.healthBar.setVisible(false);
         }
-        
+
         if (this.sprite) {
             this.sprite.setActive(false);
             this.sprite.setVisible(false);
             this.sprite.clearTint(); // Clear any damage tint
+
+            // Disable physics body to prevent collisions with invisible enemies
+            if (this.sprite.body) {
+                this.sprite.body.enable = false;
+            }
         }
     }
 
@@ -203,7 +208,7 @@ export abstract class BaseEnemy implements Enemy {
             this.healthBar.destroy();
             this.healthBar = null;
         }
-        
+
         if (this.sprite) {
             this.sprite.destroy();
         }

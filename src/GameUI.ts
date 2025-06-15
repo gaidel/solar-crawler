@@ -87,7 +87,7 @@ export class GameUI {
         this.scoreText = this.scene.add.text(GAME_CONFIG.WIDTH - 20, 10, 'Score: 0  Time: 60s', {
             fontSize: UI_CONFIG.FONT_SIZE_SMALL,
             color: '#ffffff',
-            align: 'right'
+            align: 'right',
         });
         this.scoreText.setOrigin(1, 0); // Right-aligned
         this.scoreText.setScrollFactor(0);
@@ -107,7 +107,7 @@ export class GameUI {
         this.playerHPValueText = this.scene.add.text(0, 0, '100/100', {
             fontSize: UI_CONFIG.FONT_SIZE_SMALL,
             color: '#ffffff',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
         });
         this.playerHPValueText.setOrigin(0.5, 0.5); // Center the text
         this.playerHPValueText.setScrollFactor(0);
@@ -132,8 +132,15 @@ export class GameUI {
     }
 
     // HUD update methods
-    updateHUD(score: number, timeLeft: number): void {
-        this.scoreText.setText(`Score: ${score}  Time: ${Math.ceil(timeLeft / 1000)}s`);
+    updateHUD(score: number, timeLeft: number, currentWave?: number, totalWaves?: number): void {
+        let timeText = `Score: ${score}  Time: ${Math.ceil(timeLeft / 1000)}s`;
+
+        // Add wave information if provided
+        if (currentWave !== undefined && totalWaves !== undefined) {
+            timeText = `Wave: ${currentWave}/${totalWaves}  ${timeText}`;
+        }
+
+        this.scoreText.setText(timeText);
     }
 
     updatePlayerHP(currentHP: number, maxHP: number): void {
@@ -141,7 +148,7 @@ export class GameUI {
         if (this.playerHPValueText) {
             this.playerHPValueText.setText(`${currentHP}/${maxHP}`);
         }
-        
+
         // Update HP bar
         this.updatePlayerHPBar(currentHP, maxHP);
     }
@@ -164,7 +171,7 @@ export class GameUI {
         // Foreground (current health)
         const healthPercentage = currentHP / maxHP;
         const healthWidth = barWidth * healthPercentage;
-        
+
         // Color changes based on health percentage
         let healthColor = 0x00ff00; // Green
         if (healthPercentage < 0.3) {
@@ -284,15 +291,14 @@ export class GameUI {
         // Reset menu state
         this.menuItems = [];
         this.menuCallbacks = [onRestart, onReturnToMenu];
-        this.selectedIndex = 0; // Default to PLAY AGAIN
 
         // Create overlay
-        this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
+        this.uiOverlay = this.scene.add.container(0, 0);
 
         // Semi-transparent background
         const overlay = this.scene.add.rectangle(
-            0,
-            0,
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2,
             GAME_CONFIG.WIDTH,
             GAME_CONFIG.HEIGHT,
             0x000000,
@@ -300,78 +306,242 @@ export class GameUI {
         );
         this.uiOverlay.add(overlay);
 
-        // Victory text
-        const victoryText = this.scene.add
-            .text(0, -120, 'VICTORY!', {
+        // Victory title
+        const title = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 150,
+            'VICTORY!',
+            {
                 fontSize: UI_CONFIG.FONT_SIZE_LARGE,
-                color: '#44ff44',
-                align: 'center',
-            })
-            .setOrigin(0.5);
-        this.uiOverlay.add(victoryText);
+                color: '#00ff00',
+                fontStyle: 'bold',
+            }
+        );
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
 
-        // Congratulations text
-        const congratsText = this.scene.add
-            .text(0, -60, 'You survived the solar crawler!', {
+        // Score display
+        const scoreDisplay = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 80,
+            `Final Score: ${score}`,
+            {
                 fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
                 color: '#ffffff',
-                align: 'center',
-            })
-            .setOrigin(0.5);
-        this.uiOverlay.add(congratsText);
+            }
+        );
+        scoreDisplay.setOrigin(0.5);
+        this.uiOverlay.add(scoreDisplay);
 
-        // Final score
-        const finalScoreText = this.scene.add
-            .text(0, -20, `Final Score: ${score}`, {
+        // Menu options
+        const restartText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 20,
+            'Play Again',
+            {
                 fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
                 color: '#ffffff',
-                align: 'center',
-            })
-            .setOrigin(0.5);
-        this.uiOverlay.add(finalScoreText);
+            }
+        );
+        restartText.setOrigin(0.5);
+        this.uiOverlay.add(restartText);
+        this.menuItems.push(restartText);
 
-        // Create menu items
-        const menuOptions = [
-            { text: 'PLAY AGAIN', y: 30 },
-            { text: 'RETURN TO MENU', y: 80 },
-        ];
+        const menuText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 80,
+            'Return to Menu',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        menuText.setOrigin(0.5);
+        this.uiOverlay.add(menuText);
+        this.menuItems.push(menuText);
 
-        menuOptions.forEach((option, index) => {
-            const menuItem = this.scene.add
-                .text(0, option.y, option.text, {
-                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
-                    color: '#ffffff',
-                    align: 'center',
-                })
-                .setOrigin(0.5);
+        // Set initial selection
+        this.selectedIndex = 0;
+        this.updateMenuSelection();
+    }
 
-            // Mouse interactions
-            menuItem.setInteractive({ useHandCursor: true });
-            menuItem.on('pointerover', () => {
-                this.selectedIndex = index;
-                this.updateMenuSelection();
-            });
-            menuItem.on('pointerdown', () => {
-                this.menuCallbacks[index]();
-            });
+    showWaveVictory(
+        wave: number,
+        score: number,
+        onNextWave: () => void,
+        onReturnToMenu: () => void
+    ): void {
+        this.clearScreens();
 
-            this.menuItems.push(menuItem);
-            this.uiOverlay!.add(menuItem);
-        });
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onNextWave, onReturnToMenu];
 
-        // Control hints
-        const controlHint = this.scene.add
-            .text(0, 120, 'W/S to navigate | ENTER to select | ESC for menu', {
-                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
-                color: '#888888',
-                align: 'center',
-            })
-            .setOrigin(0.5);
-        this.uiOverlay.add(controlHint);
+        // Create overlay
+        this.uiOverlay = this.scene.add.container(0, 0);
 
-        this.uiOverlay.setScrollFactor(0);
+        // Semi-transparent background
+        const overlay = this.scene.add.rectangle(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2,
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            0x000000,
+            UI_CONFIG.OVERLAY_ALPHA
+        );
+        this.uiOverlay.add(overlay);
 
-        // No initial selection - user must navigate first
+        // Wave completion title
+        const title = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 150,
+            `WAVE ${wave} CLEARED!`,
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+                color: '#00ff00',
+                fontStyle: 'bold',
+            }
+        );
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
+
+        // Score display
+        const scoreDisplay = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 80,
+            `Score: ${score}`,
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        scoreDisplay.setOrigin(0.5);
+        this.uiOverlay.add(scoreDisplay);
+
+        // Menu options
+        const nextWaveText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 20,
+            'Continue to Next Wave',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        nextWaveText.setOrigin(0.5);
+        this.uiOverlay.add(nextWaveText);
+        this.menuItems.push(nextWaveText);
+
+        const menuText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 80,
+            'Return to Menu',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        menuText.setOrigin(0.5);
+        this.uiOverlay.add(menuText);
+        this.menuItems.push(menuText);
+
+        // Set initial selection
+        this.selectedIndex = 0;
+        this.updateMenuSelection();
+    }
+
+    showFinalVictory(score: number, onRestart: () => void, onReturnToMenu: () => void): void {
+        this.clearScreens();
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onRestart, onReturnToMenu];
+
+        // Create overlay
+        this.uiOverlay = this.scene.add.container(0, 0);
+
+        // Semi-transparent background
+        const overlay = this.scene.add.rectangle(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2,
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            0x000000,
+            UI_CONFIG.OVERLAY_ALPHA
+        );
+        this.uiOverlay.add(overlay);
+
+        // Final victory title
+        const title = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 150,
+            'ALL WAVES CLEARED!',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+                color: '#ffff00',
+                fontStyle: 'bold',
+            }
+        );
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
+
+        // Subtitle
+        const subtitle = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 100,
+            'COMPLETE VICTORY!',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#00ff00',
+                fontStyle: 'bold',
+            }
+        );
+        subtitle.setOrigin(0.5);
+        this.uiOverlay.add(subtitle);
+
+        // Score display
+        const scoreDisplay = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 50,
+            `Final Score: ${score}`,
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        scoreDisplay.setOrigin(0.5);
+        this.uiOverlay.add(scoreDisplay);
+
+        // Menu options
+        const restartText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 20,
+            'Play Again',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        restartText.setOrigin(0.5);
+        this.uiOverlay.add(restartText);
+        this.menuItems.push(restartText);
+
+        const menuText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 80,
+            'Return to Menu',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        menuText.setOrigin(0.5);
+        this.uiOverlay.add(menuText);
+        this.menuItems.push(menuText);
+
+        // Set initial selection
+        this.selectedIndex = 0;
+        this.updateMenuSelection();
     }
 
     showPauseMenu(onResume: () => void, onReturnToMenu: () => void): void {
@@ -902,23 +1072,27 @@ export class GameUI {
         this.showVictoryScreen(score, onRestart, onReturnToMenu);
     }
 
+    hideOverlays(): void {
+        this.clearScreens();
+    }
+
     destroy(): void {
         this.clearScreens();
         if (this.scoreText) {
             this.scoreText.destroy();
         }
-        
+
         // Clean up HP bar
         if (this.playerHPBar) {
             this.playerHPBar.destroy();
             this.playerHPBar = undefined;
         }
-        
+
         if (this.playerHPText) {
             this.playerHPText.destroy();
             this.playerHPText = undefined;
         }
-        
+
         if (this.playerHPValueText) {
             this.playerHPValueText.destroy();
             this.playerHPValueText = undefined;

@@ -1,10 +1,10 @@
 import { BaseEnemy } from './Enemy';
-import { ASTEROID_CONFIG, SCORE_CONFIG } from '../config/constants';
+import { ASTEROID_CONFIG } from '../config/constants';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 
 export enum AsteroidType {
     NORMAL = 'normal',
-    LARGE = 'large'
+    LARGE = 'large',
 }
 
 export class Asteroid extends BaseEnemy {
@@ -33,27 +33,29 @@ export class Asteroid extends BaseEnemy {
             this.healthBar.destroy();
             this.healthBar = null;
         }
-        
+
         // Determine asteroid type (random if not specified)
         if (type) {
             this.asteroidType = type;
         } else {
             // Weighted random selection
             const random = Math.random() * 100;
-            this.asteroidType = random < ASTEROID_CONFIG.NORMAL.SPAWN_WEIGHT 
-                ? AsteroidType.NORMAL 
-                : AsteroidType.LARGE;
+            this.asteroidType =
+                random < ASTEROID_CONFIG.NORMAL.SPAWN_WEIGHT
+                    ? AsteroidType.NORMAL
+                    : AsteroidType.LARGE;
         }
-        
+
         // Set properties based on type
-        const config = this.asteroidType === AsteroidType.NORMAL 
-            ? ASTEROID_CONFIG.NORMAL 
-            : ASTEROID_CONFIG.LARGE;
-            
+        const config =
+            this.asteroidType === AsteroidType.NORMAL
+                ? ASTEROID_CONFIG.NORMAL
+                : ASTEROID_CONFIG.LARGE;
+
         this.scoreValue = config.SCORE_VALUE;
         this.maxHP = config.MAX_HP;
         this.collisionDamage = config.COLLISION_DAMAGE;
-        
+
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'asteroid') as Phaser.Physics.Arcade.Sprite;
 
@@ -64,6 +66,11 @@ export class Asteroid extends BaseEnemy {
             this.sprite.setScale(config.SCALE);
             this.sprite.setVelocityX(config.SPEED);
             this.sprite.setVelocityY(0);
+
+            // Enable physics body for collisions
+            if (this.sprite.body) {
+                this.sprite.body.enable = true;
+            }
 
             // Set up collision using dynamic calculation
             setupCircularCollision(this.sprite, 0.9);
@@ -78,7 +85,7 @@ export class Asteroid extends BaseEnemy {
     update(_playerX: number, _playerY: number): void {
         // Asteroids don't need special update logic - they just move straight
         // Physics handles the movement based on velocity set in spawn()
-        
+
         // Update health bar position if damaged
         this.updateHealthBarPosition();
     }

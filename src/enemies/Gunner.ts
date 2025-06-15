@@ -1,11 +1,11 @@
-import { GUNNER_CONFIG, SCORE_CONFIG } from '../config/constants';
+import { GUNNER_CONFIG } from '../config/constants';
 import { BaseEnemy } from './Enemy';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 import { AudioManager } from '../AudioManager';
 
 export enum GunnerType {
     NORMAL = 'normal',
-    LARGE = 'large'
+    LARGE = 'large',
 }
 
 export class Gunner extends BaseEnemy {
@@ -51,29 +51,27 @@ export class Gunner extends BaseEnemy {
             this.healthBar.destroy();
             this.healthBar = null;
         }
-        
+
         // Determine gunner type (random if not specified)
         if (type) {
             this.gunnerType = type;
         } else {
             // Weighted random selection
             const random = Math.random() * 100;
-            this.gunnerType = random < GUNNER_CONFIG.NORMAL.SPAWN_WEIGHT 
-                ? GunnerType.NORMAL 
-                : GunnerType.LARGE;
+            this.gunnerType =
+                random < GUNNER_CONFIG.NORMAL.SPAWN_WEIGHT ? GunnerType.NORMAL : GunnerType.LARGE;
         }
-        
+
         // Set properties based on type
-        const config = this.gunnerType === GunnerType.NORMAL 
-            ? GUNNER_CONFIG.NORMAL 
-            : GUNNER_CONFIG.LARGE;
-            
+        const config =
+            this.gunnerType === GunnerType.NORMAL ? GUNNER_CONFIG.NORMAL : GUNNER_CONFIG.LARGE;
+
         this.scoreValue = config.SCORE_VALUE;
         this.maxHP = config.MAX_HP;
         this.collisionDamage = config.COLLISION_DAMAGE;
         this.bulletSpeed = config.BULLET_SPEED;
         this.bulletScale = config.BULLET_SCALE;
-        
+
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'gunner') as Phaser.Physics.Arcade.Sprite;
 
@@ -84,6 +82,11 @@ export class Gunner extends BaseEnemy {
             this.sprite.setScale(config.SCALE);
             this.sprite.setVelocityX(config.SPEED);
             this.sprite.setVelocityY(0);
+
+            // Enable physics body for collisions
+            if (this.sprite.body) {
+                this.sprite.body.enable = true;
+            }
 
             // Set up circular collision
             setupCircularCollision(this.sprite, 0.8);
@@ -116,13 +119,13 @@ export class Gunner extends BaseEnemy {
     private fireBullet(): void {
         // First try to find an inactive bullet to reuse
         let bullet: Phaser.Physics.Arcade.Sprite | null = null;
-        
+
         this.bullets.getChildren().forEach((child) => {
             if (!bullet && child instanceof Phaser.Physics.Arcade.Sprite && !child.active) {
                 bullet = child;
             }
         });
-        
+
         // If no inactive bullet found, try to get one from the pool
         if (!bullet) {
             bullet = this.bullets.get(

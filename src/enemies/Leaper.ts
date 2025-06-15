@@ -1,11 +1,11 @@
-import { LEAPER_CONFIG, SCORE_CONFIG } from '../config/constants';
+import { LEAPER_CONFIG } from '../config/constants';
 import { BaseEnemy } from './Enemy';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 
 export enum LeaperType {
     NORMAL = 'normal',
     WIDE = 'wide',
-    SLOW = 'slow'
+    SLOW = 'slow',
 }
 
 export class Leaper extends BaseEnemy {
@@ -39,7 +39,7 @@ export class Leaper extends BaseEnemy {
             this.healthBar.destroy();
             this.healthBar = null;
         }
-        
+
         // Determine leaper type (random if not specified)
         if (type) {
             this.leaperType = type;
@@ -48,26 +48,30 @@ export class Leaper extends BaseEnemy {
             const random = Math.random() * 100;
             if (random < LEAPER_CONFIG.NORMAL.SPAWN_WEIGHT) {
                 this.leaperType = LeaperType.NORMAL;
-            } else if (random < LEAPER_CONFIG.NORMAL.SPAWN_WEIGHT + LEAPER_CONFIG.WIDE.SPAWN_WEIGHT) {
+            } else if (
+                random <
+                LEAPER_CONFIG.NORMAL.SPAWN_WEIGHT + LEAPER_CONFIG.WIDE.SPAWN_WEIGHT
+            ) {
                 this.leaperType = LeaperType.WIDE;
             } else {
                 this.leaperType = LeaperType.SLOW;
             }
         }
-        
+
         // Set properties based on type
-        const config = this.leaperType === LeaperType.NORMAL 
-            ? LEAPER_CONFIG.NORMAL 
-            : this.leaperType === LeaperType.WIDE
-            ? LEAPER_CONFIG.WIDE
-            : LEAPER_CONFIG.SLOW;
-            
+        const config =
+            this.leaperType === LeaperType.NORMAL
+                ? LEAPER_CONFIG.NORMAL
+                : this.leaperType === LeaperType.WIDE
+                  ? LEAPER_CONFIG.WIDE
+                  : LEAPER_CONFIG.SLOW;
+
         this.scoreValue = config.SCORE_VALUE;
         this.maxHP = config.MAX_HP;
         this.collisionDamage = config.COLLISION_DAMAGE;
         this.zigzagAmplitude = config.ZIGZAG_AMPLITUDE;
         this.zigzagFrequency = config.ZIGZAG_FREQUENCY;
-        
+
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'leaper') as Phaser.Physics.Arcade.Sprite;
 
@@ -78,6 +82,11 @@ export class Leaper extends BaseEnemy {
             this.sprite.setScale(config.SCALE);
             this.sprite.setVelocityX(config.SPEED);
             this.sprite.setVelocityY(0);
+
+            // Enable physics body for collisions
+            if (this.sprite.body) {
+                this.sprite.body.enable = true;
+            }
 
             // Set up circular collision
             setupCircularCollision(this.sprite, 0.8);
@@ -98,8 +107,7 @@ export class Leaper extends BaseEnemy {
 
         // Calculate zigzag Y position using sine wave with type-specific parameters
         const elapsedTime = this.scene.time.now - this.startTime;
-        const zigzagOffset =
-            Math.sin(elapsedTime * this.zigzagFrequency) * this.zigzagAmplitude;
+        const zigzagOffset = Math.sin(elapsedTime * this.zigzagFrequency) * this.zigzagAmplitude;
         const targetY = this.startY + zigzagOffset;
 
         // Set Y velocity to move towards target Y position

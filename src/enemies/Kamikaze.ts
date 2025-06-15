@@ -1,10 +1,10 @@
 import { BaseEnemy } from './Enemy';
-import { KAMIKAZE_CONFIG, SCORE_CONFIG } from '../config/constants';
+import { KAMIKAZE_CONFIG } from '../config/constants';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 
 export enum KamikazeType {
     NORMAL = 'normal',
-    FAST = 'fast'
+    FAST = 'fast',
 }
 
 export class Kamikaze extends BaseEnemy {
@@ -35,28 +35,30 @@ export class Kamikaze extends BaseEnemy {
             this.healthBar.destroy();
             this.healthBar = null;
         }
-        
+
         // Determine kamikaze type (random if not specified)
         if (type) {
             this.kamikazeType = type;
         } else {
             // Weighted random selection
             const random = Math.random() * 100;
-            this.kamikazeType = random < KAMIKAZE_CONFIG.NORMAL.SPAWN_WEIGHT 
-                ? KamikazeType.NORMAL 
-                : KamikazeType.FAST;
+            this.kamikazeType =
+                random < KAMIKAZE_CONFIG.NORMAL.SPAWN_WEIGHT
+                    ? KamikazeType.NORMAL
+                    : KamikazeType.FAST;
         }
-        
+
         // Set properties based on type
-        const config = this.kamikazeType === KamikazeType.NORMAL 
-            ? KAMIKAZE_CONFIG.NORMAL 
-            : KAMIKAZE_CONFIG.FAST;
-            
+        const config =
+            this.kamikazeType === KamikazeType.NORMAL
+                ? KAMIKAZE_CONFIG.NORMAL
+                : KAMIKAZE_CONFIG.FAST;
+
         this.scoreValue = config.SCORE_VALUE;
         this.maxHP = config.MAX_HP;
         this.collisionDamage = config.COLLISION_DAMAGE;
         this.homingSpeed = config.HOMING_SPEED;
-        
+
         // Get sprite from group
         this.sprite = this.group.get(x, y, 'kamikaze') as Phaser.Physics.Arcade.Sprite;
 
@@ -69,9 +71,14 @@ export class Kamikaze extends BaseEnemy {
             this.sprite.setVelocityX(0); // Start without movement, homing system will handle it
             this.sprite.setVelocityY(0);
 
+            // Enable physics body for collisions
+            if (this.sprite.body) {
+                this.sprite.body.enable = true;
+            }
+
             // Clear tint to show original sprite colors
             this.sprite.clearTint();
-            
+
             // Add visual indicator for fast kamikaze (slight red tint)
             if (this.kamikazeType === KamikazeType.FAST) {
                 this.sprite.setTint(0xffaaaa); // Light red tint for fast kamikaze

@@ -4,6 +4,8 @@ export const GAME_CONFIG = {
     HEIGHT: 720,
     WIN_TIME: 60000, // Victory time in milliseconds (1 minute)
     BACKGROUND_SCROLL_SPEED: 2,
+    TOTAL_WAVES: 8, // Total number of waves to complete the game
+    WAVE_DURATION: 30000, // Duration of each wave in milliseconds (30 seconds for debugging)
 };
 
 export const UI_CONFIG = {
@@ -32,7 +34,7 @@ export const ASTEROID_CONFIG = {
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 15, // Enlarged pool to handle simultaneous destructions
-    
+
     // Normal asteroid settings
     NORMAL: {
         SCALE: 0.5,
@@ -42,7 +44,7 @@ export const ASTEROID_CONFIG = {
         SCORE_VALUE: 10,
         SPAWN_WEIGHT: 70, // 70% chance to spawn normal asteroid
     },
-    
+
     // Large asteroid settings (2x everything)
     LARGE: {
         SCALE: 1.0, // 2x radius
@@ -61,7 +63,7 @@ export const KAMIKAZE_CONFIG = {
     SPAWN_Y_MAX: 620,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
-    
+
     // Normal kamikaze settings
     NORMAL: {
         SCALE: 0.5, // Scale for new sprite 170x120 -> 85x60
@@ -71,7 +73,7 @@ export const KAMIKAZE_CONFIG = {
         SCORE_VALUE: 20,
         SPAWN_WEIGHT: 70, // 70% chance to spawn normal kamikaze
     },
-    
+
     // Fast kamikaze settings (2x speed, 0.5x HP and damage, 0.5x size)
     FAST: {
         SCALE: 0.25, // 0.5x size (half of normal kamikaze)
@@ -99,7 +101,7 @@ export const GUNNER_CONFIG = {
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
     FIRE_RATE: 2000, // Fires every 2 seconds
-    
+
     // Normal gunner settings
     NORMAL: {
         SCALE: 0.6,
@@ -111,7 +113,7 @@ export const GUNNER_CONFIG = {
         BULLET_SCALE: 0.15,
         SPAWN_WEIGHT: 70, // 70% chance to spawn normal gunner
     },
-    
+
     // Large gunner settings (2x everything)
     LARGE: {
         SCALE: 1.2, // 2x size
@@ -132,7 +134,7 @@ export const LEAPER_CONFIG = {
     SPAWN_Y_MAX: 570,
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 8,
-    
+
     // Normal leaper settings
     NORMAL: {
         SCALE: 0.55,
@@ -144,7 +146,7 @@ export const LEAPER_CONFIG = {
         ZIGZAG_FREQUENCY: 0.002, // Speed of zigzag pattern (slower = longer waves)
         SPAWN_WEIGHT: 40, // 40% chance to spawn normal leaper
     },
-    
+
     // Wide leaper settings (2x amplitude)
     WIDE: {
         SCALE: 0.55,
@@ -156,7 +158,7 @@ export const LEAPER_CONFIG = {
         ZIGZAG_FREQUENCY: 0.002, // Same frequency
         SPAWN_WEIGHT: 30, // 30% chance to spawn wide leaper
     },
-    
+
     // Slow leaper settings (0.5x frequency = 2x period)
     SLOW: {
         SCALE: 0.55,

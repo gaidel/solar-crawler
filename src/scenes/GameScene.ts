@@ -4,10 +4,6 @@ import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
-import { Asteroid } from '../enemies/Asteroid';
-import { Kamikaze } from '../enemies/Kamikaze';
-import { Gunner } from '../enemies/Gunner';
-import { Leaper } from '../enemies/Leaper';
 
 export class GameScene extends Phaser.Scene {
     private player!: Player;
@@ -21,6 +17,8 @@ export class GameScene extends Phaser.Scene {
     private gameState: GameState = GameState.PLAYING;
     private startTime: number = 0;
     private score: number = 0;
+    private currentWave: number = 1;
+    private waveStartTime: number = 0;
 
     constructor() {
         super({ key: 'GameScene' });
@@ -44,6 +42,8 @@ export class GameScene extends Phaser.Scene {
         this.gameState = GameState.PLAYING;
         this.startTime = this.time.now;
         this.score = 0;
+        this.currentWave = 1;
+        this.waveStartTime = this.time.now;
 
         // Initialize audio manager and start game music
         this.audioManager = new AudioManager(this);
@@ -79,6 +79,7 @@ export class GameScene extends Phaser.Scene {
         // Create enemy management system
         this.enemyManager = new EnemyManager(this);
         this.enemyManager.setAudioManager(this.audioManager);
+        this.enemyManager.setCurrentWave(this.currentWave);
         this.enemyManager.create();
 
         // Create explosion manager
@@ -150,28 +151,44 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getAsteroidGroup(),
-            (player, enemy) => this.handlePlayerAsteroidCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
+            (player, enemy) =>
+                this.handlePlayerAsteroidCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getKamikazeGroup(),
-            (player, enemy) => this.handlePlayerKamikazeCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
+            (player, enemy) =>
+                this.handlePlayerKamikazeCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getGunnerGroup(),
-            (player, enemy) => this.handlePlayerGunnerCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
+            (player, enemy) =>
+                this.handlePlayerGunnerCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
             undefined,
             this
         );
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getLeaperGroup(),
-            (player, enemy) => this.handlePlayerLeaperCollision(player as Phaser.Physics.Arcade.Sprite, enemy as Phaser.Physics.Arcade.Sprite),
+            (player, enemy) =>
+                this.handlePlayerLeaperCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
             undefined,
             this
         );
@@ -180,7 +197,11 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.overlap(
             this.player.getSprite(),
             this.enemyManager.getEnemyBullets(),
-            (player, bullet) => this.handlePlayerBulletCollision(player as Phaser.Physics.Arcade.Sprite, bullet as Phaser.Physics.Arcade.Sprite),
+            (player, bullet) =>
+                this.handlePlayerBulletCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    bullet as Phaser.Physics.Arcade.Sprite
+                ),
             undefined,
             this
         );
@@ -201,10 +222,10 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        // Check for victory condition
-        const elapsedTime = this.time.now - this.startTime;
-        if (elapsedTime >= GAME_CONFIG.WIN_TIME) {
-            this.victory();
+        // Check for victory condition (wave completion)
+        const waveElapsedTime = this.time.now - this.waveStartTime;
+        if (waveElapsedTime >= GAME_CONFIG.WAVE_DURATION) {
+            this.completeWave();
             return;
         }
 
@@ -219,16 +240,16 @@ export class GameScene extends Phaser.Scene {
         // Update enemy manager with player position
         this.enemyManager.update(this.player.getX(), this.player.getY());
 
-        // Update HUD
-        const timeLeft = Math.max(0, GAME_CONFIG.WIN_TIME - elapsedTime);
-        this.gameUI.updateHUD(this.score, timeLeft);
-        
+        // Update HUD with wave information
+        const waveTimeLeft = Math.max(0, GAME_CONFIG.WAVE_DURATION - waveElapsedTime);
+        this.gameUI.updateHUD(this.score, waveTimeLeft, this.currentWave, GAME_CONFIG.TOTAL_WAVES);
+
         // Update player HP display
         this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
 
         // Clean up bullets
         this.cleanupBullets();
-        
+
         // Force cleanup of enemy bullets to prevent stuck bullets
         // this.enemyManager.forceCleanupBullets();
     }
@@ -242,7 +263,7 @@ export class GameScene extends Phaser.Scene {
             ) {
                 bullet.setActive(false);
                 bullet.setVisible(false);
-                
+
                 // Disable physics body to prevent further collisions
                 if (bullet.body) {
                     bullet.body.enable = false;
@@ -263,7 +284,7 @@ export class GameScene extends Phaser.Scene {
         // Properly deactivate bullet
         bullet.setActive(false);
         bullet.setVisible(false);
-        
+
         // Disable physics body to prevent further collisions
         if (bullet.body) {
             bullet.body.enable = false;
@@ -284,7 +305,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Find the asteroid object to get its collision damage
-        const asteroid = this.enemyManager.getAsteroids().find(a => a.sprite === enemySprite);
+        const asteroid = this.enemyManager.getAsteroids().find((a) => a.sprite === enemySprite);
         if (!asteroid) {
             return;
         }
@@ -292,16 +313,16 @@ export class GameScene extends Phaser.Scene {
         // Player takes damage based on asteroid type
         const damage = asteroid.getCollisionDamage();
         const playerDestroyed = this.player.takeDamage(damage);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Destroy the enemy
         enemySprite.setActive(false);
         enemySprite.setVisible(false);
-        
+
         // Create explosion at enemy position - size based on asteroid type
         if (this.explosionManager) {
             const asteroidType = asteroid.getType();
@@ -311,7 +332,7 @@ export class GameScene extends Phaser.Scene {
                 this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
             }
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -327,7 +348,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Find the kamikaze object to get its collision damage
-        const kamikaze = this.enemyManager.getKamikazes().find(k => k.sprite === enemySprite);
+        const kamikaze = this.enemyManager.getKamikazes().find((k) => k.sprite === enemySprite);
         if (!kamikaze) {
             return;
         }
@@ -335,16 +356,16 @@ export class GameScene extends Phaser.Scene {
         // Player takes damage based on kamikaze type
         const damage = kamikaze.getCollisionDamage();
         const playerDestroyed = this.player.takeDamage(damage);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Destroy the enemy
         enemySprite.setActive(false);
         enemySprite.setVisible(false);
-        
+
         // Create explosion at enemy position - size based on kamikaze type
         if (this.explosionManager) {
             const kamikazeType = kamikaze.getType();
@@ -354,7 +375,7 @@ export class GameScene extends Phaser.Scene {
                 this.explosionManager.explodeMedium(enemySprite.x, enemySprite.y);
             }
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -370,7 +391,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Find the leaper object to get its collision damage
-        const leaper = this.enemyManager.getLeapers().find(l => l.sprite === enemySprite);
+        const leaper = this.enemyManager.getLeapers().find((l) => l.sprite === enemySprite);
         if (!leaper) {
             return;
         }
@@ -378,22 +399,22 @@ export class GameScene extends Phaser.Scene {
         // Player takes damage based on leaper type
         const damage = leaper.getCollisionDamage();
         const playerDestroyed = this.player.takeDamage(damage);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Destroy the enemy
         enemySprite.setActive(false);
         enemySprite.setVisible(false);
-        
+
         // Create explosion at enemy position - size based on leaper type
         if (this.explosionManager) {
             // All leaper types are the same size, so use large explosion
             this.explosionManager.explodeLarge(enemySprite.x, enemySprite.y);
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -411,21 +432,21 @@ export class GameScene extends Phaser.Scene {
 
         // Player takes damage
         const playerDestroyed = this.player.takeDamage(damage);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Destroy the enemy (except for bullets)
         enemySprite.setActive(false);
         enemySprite.setVisible(false);
-        
+
         // Create small explosion at enemy position
         if (this.explosionManager) {
             this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -442,21 +463,21 @@ export class GameScene extends Phaser.Scene {
 
         // Player takes damage from enemy bullet
         const playerDestroyed = this.player.takeDamage(DAMAGE_CONFIG.ENEMY_BULLET);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Properly destroy the bullet (simple approach)
         bulletSprite.setActive(false);
         bulletSprite.setVisible(false);
-        
+
         // Disable physics body
         if (bulletSprite.body) {
             bulletSprite.body.enable = false;
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -472,7 +493,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Find the gunner object to get its collision damage
-        const gunner = this.enemyManager.getGunners().find(g => g.sprite === enemySprite);
+        const gunner = this.enemyManager.getGunners().find((g) => g.sprite === enemySprite);
         if (!gunner) {
             return;
         }
@@ -480,16 +501,16 @@ export class GameScene extends Phaser.Scene {
         // Player takes damage based on gunner type
         const damage = gunner.getCollisionDamage();
         const playerDestroyed = this.player.takeDamage(damage);
-        
+
         // Play hit sound
         if (this.audioManager) {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
-        
+
         // Destroy the enemy
         enemySprite.setActive(false);
         enemySprite.setVisible(false);
-        
+
         // Create explosion at enemy position - size based on gunner type
         if (this.explosionManager) {
             const gunnerType = gunner.getType();
@@ -499,7 +520,7 @@ export class GameScene extends Phaser.Scene {
                 this.explosionManager.explodeSmall(enemySprite.x, enemySprite.y);
             }
         }
-        
+
         if (playerDestroyed) {
             this.gameOver();
         }
@@ -531,20 +552,93 @@ export class GameScene extends Phaser.Scene {
         );
     }
 
-    private victory(): void {
+    private completeWave(): void {
+        if (this.currentWave >= GAME_CONFIG.TOTAL_WAVES) {
+            // Final victory after completing all waves
+            this.finalVictory();
+        } else {
+            // Wave completed, start next wave
+            this.waveVictory();
+        }
+    }
+
+    private waveVictory(): void {
         this.gameState = GameState.VICTORY;
-        
-        // Update HP display to show current HP on victory screen
+
+        // Update HP bar to show current HP on wave completion screen
         this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
-        
-        this.gameUI.victory(
+
+        // Pause physics to prevent movement and collisions
+        this.physics.pause();
+
+        // Stop enemy spawning
+        this.enemyManager.stopSpawning();
+
+        // Show wave completion message
+        this.gameUI.showWaveVictory(
+            this.currentWave,
             this.score,
-            (color: number) => this.player.setTint(color),
-            () => this.physics.pause(),
-            () => this.enemyManager.stopSpawning(),
-            () => this.restart(),
-            () => this.returnToMenu()
+            () => {
+                this.startNextWave();
+            },
+            () => {
+                this.returnToMenu();
+            }
         );
+    }
+
+    private finalVictory(): void {
+        this.gameState = GameState.VICTORY;
+
+        // Update HP bar to show current HP on final victory screen
+        this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
+
+        // Pause physics to prevent movement and collisions
+        this.physics.pause();
+
+        // Stop enemy spawning
+        this.enemyManager.stopSpawning();
+
+        // Show final victory message
+        this.gameUI.showFinalVictory(
+            this.score,
+            () => {
+                this.restart();
+            },
+            () => {
+                this.returnToMenu();
+            }
+        );
+    }
+
+    private startNextWave(): void {
+        this.currentWave++;
+        this.waveStartTime = this.time.now;
+        this.gameState = GameState.PLAYING;
+
+        // Clear UI overlays and menus
+        this.gameUI.hideOverlays();
+
+        // Reset player position and state (preserve HP between waves)
+        this.player.resetPosition();
+
+        // Clear all enemies from screen
+        this.enemyManager.reset();
+
+        // Update enemy manager with new wave number
+        this.enemyManager.setCurrentWave(this.currentWave);
+
+        // Resume physics
+        this.physics.resume();
+
+        // Restart enemy spawning (recreate timers based on new wave)
+        this.enemyManager.restartSpawning();
+    }
+
+    private victory(): void {
+        // This method is now only used for backwards compatibility
+        // The actual victory logic is handled by completeWave()
+        this.finalVictory();
     }
 
     private restart(): void {

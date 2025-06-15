@@ -42,6 +42,9 @@ export class EnemyManager {
     private gunnerTimer!: Phaser.Time.TimerEvent;
     private leaperTimer!: Phaser.Time.TimerEvent;
 
+    // Current wave for wave-based spawning
+    private currentWave: number = 1;
+
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
     }
@@ -123,7 +126,7 @@ export class EnemyManager {
     }
 
     private startSpawning(): void {
-        // Start asteroid spawning timer
+        // Always spawn asteroids (available from wave 1)
         this.asteroidTimer = this.scene.time.addEvent({
             delay: ASTEROID_CONFIG.SPAWN_INTERVAL,
             callback: this.spawnAsteroid,
@@ -131,29 +134,35 @@ export class EnemyManager {
             loop: true,
         });
 
-        // Start kamikaze spawning timer
-        this.kamikazeTimer = this.scene.time.addEvent({
-            delay: KAMIKAZE_CONFIG.SPAWN_INTERVAL,
-            callback: this.spawnKamikaze,
-            callbackScope: this,
-            loop: true,
-        });
+        // Start leaper spawning from wave 2
+        if (this.currentWave >= 2) {
+            this.leaperTimer = this.scene.time.addEvent({
+                delay: LEAPER_CONFIG.SPAWN_INTERVAL,
+                callback: this.spawnLeaper,
+                callbackScope: this,
+                loop: true,
+            });
+        }
 
-        // Start gunner spawning timer
-        this.gunnerTimer = this.scene.time.addEvent({
-            delay: GUNNER_CONFIG.SPAWN_INTERVAL,
-            callback: this.spawnGunner,
-            callbackScope: this,
-            loop: true,
-        });
+        // Start kamikaze spawning from wave 3
+        if (this.currentWave >= 3) {
+            this.kamikazeTimer = this.scene.time.addEvent({
+                delay: KAMIKAZE_CONFIG.SPAWN_INTERVAL,
+                callback: this.spawnKamikaze,
+                callbackScope: this,
+                loop: true,
+            });
+        }
 
-        // Start leaper spawning timer
-        this.leaperTimer = this.scene.time.addEvent({
-            delay: LEAPER_CONFIG.SPAWN_INTERVAL,
-            callback: this.spawnLeaper,
-            callbackScope: this,
-            loop: true,
-        });
+        // Start gunner spawning from wave 4
+        if (this.currentWave >= 4) {
+            this.gunnerTimer = this.scene.time.addEvent({
+                delay: GUNNER_CONFIG.SPAWN_INTERVAL,
+                callback: this.spawnGunner,
+                callbackScope: this,
+                loop: true,
+            });
+        }
     }
 
     private spawnAsteroid(): void {
@@ -254,7 +263,7 @@ export class EnemyManager {
                         bullet.body.enable = false;
                     }
                 }
-                
+
                 // Clean up inactive bullets that are still visible (this shouldn't happen but let's be safe)
                 if (!bullet.active && bullet.visible) {
                     bullet.setVisible(false);
@@ -282,9 +291,9 @@ export class EnemyManager {
                 // Save position BEFORE calling takeDamage (which may move the enemy)
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
-                
+
                 const destroyed = asteroid.takeDamage(BULLET_CONFIG.DAMAGE);
-                
+
                 if (destroyed) {
                     scoreValue = asteroid.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
@@ -317,9 +326,9 @@ export class EnemyManager {
                 // Save position BEFORE calling takeDamage (which may move the enemy)
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
-                
+
                 const destroyed = kamikaze.takeDamage(BULLET_CONFIG.DAMAGE);
-                
+
                 if (destroyed) {
                     scoreValue = kamikaze.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
@@ -352,9 +361,9 @@ export class EnemyManager {
                 // Save position BEFORE calling takeDamage (which may move the enemy)
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
-                
+
                 const destroyed = gunner.takeDamage(BULLET_CONFIG.DAMAGE);
-                
+
                 if (destroyed) {
                     scoreValue = gunner.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
@@ -387,9 +396,9 @@ export class EnemyManager {
                 // Save position BEFORE calling takeDamage (which may move the enemy)
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
-                
+
                 const destroyed = leaper.takeDamage(BULLET_CONFIG.DAMAGE);
-                
+
                 if (destroyed) {
                     scoreValue = leaper.scoreValue;
                     // Create explosion effect when enemy is destroyed (using saved position)
@@ -482,6 +491,11 @@ export class EnemyManager {
         }
     }
 
+    // Restart spawning (after stop spawning - recreates timers based on current wave)
+    restartSpawning(): void {
+        this.startSpawning();
+    }
+
     // Stop spawning (for game over states)
     stopSpawning(): void {
         if (this.asteroidTimer) {
@@ -519,5 +533,10 @@ export class EnemyManager {
         this.kamikazes = [];
         this.gunners = [];
         this.leapers = [];
+    }
+
+    // Set current wave for wave-based enemy spawning
+    setCurrentWave(wave: number): void {
+        this.currentWave = wave;
     }
 }

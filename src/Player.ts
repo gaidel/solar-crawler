@@ -20,7 +20,7 @@ export class Player {
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
     private lastFired = 0;
-    
+
     // HP System
     private maxHP: number = 100;
     private currentHP: number = 100;
@@ -74,7 +74,7 @@ export class Player {
             this.sprite.y = PLAYER_CONFIG.MOVEMENT_Y_MAX;
             this.sprite.setVelocityY(0);
         }
-        
+
         // Horizontal boundaries
         if (this.sprite.x < 0) {
             this.sprite.x = 0;
@@ -133,15 +133,15 @@ export class Player {
     // HP System methods
     takeDamage(damage: number): boolean {
         this.currentHP -= damage;
-        
+
         // Visual feedback for damage (red flash)
         this.sprite.setTint(0xff0000); // Red tint
-        
+
         // Clear any existing damage flash timer to prevent conflicts
         if (this.damageFlashTimer) {
             this.damageFlashTimer.remove();
         }
-        
+
         // Create new timer to restore original color (200ms for player)
         this.damageFlashTimer = this.scene.time.delayedCall(200, () => {
             if (this.sprite && this.sprite.active) {
@@ -174,13 +174,52 @@ export class Player {
         this.sprite.setTint(color);
     }
 
+    reset(): void {
+        // Reset position
+        this.sprite.setPosition(PLAYER_CONFIG.START_X, PLAYER_CONFIG.START_Y);
+        this.sprite.setVelocity(0, 0);
+
+        // Reset HP
+        this.currentHP = this.maxHP;
+
+        // Clear any visual effects
+        this.sprite.clearTint();
+
+        // Clear damage flash timer if it exists
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+            this.damageFlashTimer = null;
+        }
+
+        // Reset firing timer
+        this.lastFired = 0;
+    }
+
+    resetPosition(): void {
+        // Reset position only (preserve HP between waves)
+        this.sprite.setPosition(PLAYER_CONFIG.START_X, PLAYER_CONFIG.START_Y);
+        this.sprite.setVelocity(0, 0);
+
+        // Clear any visual effects
+        this.sprite.clearTint();
+
+        // Clear damage flash timer if it exists
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+            this.damageFlashTimer = null;
+        }
+
+        // Reset firing timer
+        this.lastFired = 0;
+    }
+
     destroy(): void {
         // Clear damage flash timer if it exists
         if (this.damageFlashTimer) {
             this.damageFlashTimer.remove();
             this.damageFlashTimer = null;
         }
-        
+
         if (this.sprite) {
             this.sprite.destroy();
         }
