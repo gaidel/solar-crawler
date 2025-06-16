@@ -8,6 +8,18 @@ export const GAME_CONFIG = {
     WAVE_DURATION: 30000, // Duration of each wave in milliseconds (30 seconds for debugging)
 };
 
+// Wave difficulty modifiers for spawn frequency
+export const WAVE_MODIFIERS = {
+    1: 1.0, // Normal frequency (100%)
+    2: 1.0, // Normal frequency (100%)
+    3: 1.0, // Normal frequency (100%)
+    4: 1.0, // Normal frequency (100%)
+    5: 1.1, // +10% spawn frequency (90% interval)
+    6: 1.2, // +20% spawn frequency (83% interval)
+    7: 1.5, // +50% spawn frequency (67% interval)
+    8: 1.5, // +50% spawn frequency (67% interval)
+};
+
 export const UI_CONFIG = {
     FONT_SIZE_LARGE: '48px',
     FONT_SIZE_MEDIUM: '32px',

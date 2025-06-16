@@ -169,6 +169,12 @@ export class Player {
         return this.currentHP / this.maxHP;
     }
 
+    // Restore full health (cheat/debug method)
+    restoreFullHealth(): void {
+        this.currentHP = this.maxHP;
+        console.log('[CHEAT] Player health restored to full (100 HP)');
+    }
+
     // Game state methods
     setTint(color: number): void {
         this.sprite.setTint(color);

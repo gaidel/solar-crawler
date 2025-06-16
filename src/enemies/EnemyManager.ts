@@ -9,6 +9,7 @@ import {
     LEAPER_CONFIG,
     GAME_CONFIG,
     BULLET_CONFIG,
+    WAVE_MODIFIERS,
 } from '../config/constants';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
@@ -128,7 +129,7 @@ export class EnemyManager {
     private startSpawning(): void {
         // Always spawn asteroids (available from wave 1)
         this.asteroidTimer = this.scene.time.addEvent({
-            delay: ASTEROID_CONFIG.SPAWN_INTERVAL,
+            delay: this.getModifiedSpawnInterval(ASTEROID_CONFIG.SPAWN_INTERVAL),
             callback: this.spawnAsteroid,
             callbackScope: this,
             loop: true,
@@ -137,7 +138,7 @@ export class EnemyManager {
         // Start leaper spawning from wave 2
         if (this.currentWave >= 2) {
             this.leaperTimer = this.scene.time.addEvent({
-                delay: LEAPER_CONFIG.SPAWN_INTERVAL,
+                delay: this.getModifiedSpawnInterval(LEAPER_CONFIG.SPAWN_INTERVAL),
                 callback: this.spawnLeaper,
                 callbackScope: this,
                 loop: true,
@@ -147,7 +148,7 @@ export class EnemyManager {
         // Start kamikaze spawning from wave 3
         if (this.currentWave >= 3) {
             this.kamikazeTimer = this.scene.time.addEvent({
-                delay: KAMIKAZE_CONFIG.SPAWN_INTERVAL,
+                delay: this.getModifiedSpawnInterval(KAMIKAZE_CONFIG.SPAWN_INTERVAL),
                 callback: this.spawnKamikaze,
                 callbackScope: this,
                 loop: true,
@@ -157,7 +158,7 @@ export class EnemyManager {
         // Start gunner spawning from wave 4
         if (this.currentWave >= 4) {
             this.gunnerTimer = this.scene.time.addEvent({
-                delay: GUNNER_CONFIG.SPAWN_INTERVAL,
+                delay: this.getModifiedSpawnInterval(GUNNER_CONFIG.SPAWN_INTERVAL),
                 callback: this.spawnGunner,
                 callbackScope: this,
                 loop: true,
@@ -538,5 +539,21 @@ export class EnemyManager {
     // Set current wave for wave-based enemy spawning
     setCurrentWave(wave: number): void {
         this.currentWave = wave;
+    }
+
+    // Get spawn interval with wave-based frequency modifier
+    private getModifiedSpawnInterval(baseInterval: number): number {
+        const modifier = WAVE_MODIFIERS[this.currentWave as keyof typeof WAVE_MODIFIERS] || 1.0;
+        // Higher modifier = more frequent spawning = shorter interval
+        const modifiedInterval = Math.round(baseInterval / modifier);
+
+        // Debug: Log spawn frequency changes for waves 5+
+        if (this.currentWave >= 5 && modifier > 1.0) {
+            console.log(
+                `Wave ${this.currentWave}: Spawn frequency increased by ${Math.round((modifier - 1) * 100)}% (${baseInterval}ms -> ${modifiedInterval}ms)`
+            );
+        }
+
+        return modifiedInterval;
     }
 }

@@ -316,7 +316,31 @@ All 4 enemy types implemented:
 
 ### ✅ **Kamikaze Variety System** (Previous)
 
-### ✅ **Wave System Implementation** (Latest)
+### ✅ **Debug Cheats System** (Latest)
+- Implemented comprehensive cheat system for easier testing and debugging
+- **V Key**: Skip to 10 seconds remaining in current wave (wave completion testing)
+- **H Key**: Restore player health to full (100 HP) for damage system testing
+- **Debug Mode Only**: Cheats only work when `debug: true` is enabled in Phaser config
+- Added cheat key initialization in GameScene.setupDebugCheats()
+- Added cheat handling in GameScene.handleDebugCheats() during update loop
+- Enhanced Player class with restoreFullHealth() method for health restoration
+- Console logging for cheat activation to track testing actions
+- Automatic cheat availability detection based on physics debug graphics presence
+
+### ✅ **Enhanced Wave System with Difficulty Scaling** (Previous)
+- Implemented escalating difficulty system with spawn frequency modifiers
+- **Wave 1-4**: Progressive enemy introduction with normal spawn rates
+- **Wave 5**: All enemies with +10% spawn frequency (90% interval)
+- **Wave 6**: All enemies with +20% spawn frequency (83% interval)  
+- **Wave 7**: All enemies with +50% spawn frequency (67% interval)
+- **Wave 8**: All enemies with +50% spawn frequency (final challenge)
+- Added WAVE_MODIFIERS configuration in constants.ts
+- Enhanced EnemyManager with getModifiedSpawnInterval() method
+- Updated all enemy spawn timers to use wave-based frequency modifiers
+- Added debug logging to show spawn frequency changes for waves 5+
+- Maintained wave-based enemy type introduction alongside difficulty scaling
+
+### ✅ **Wave System Implementation** (Previous)
 - Implemented 8-wave progression system with 1-minute duration per wave
 - Added TOTAL_WAVES (8) and WAVE_DURATION (60000ms) constants for easy configuration
 - Enhanced HUD to display current wave progress: "Wave: X/8 Score: XXX Time: XXs"

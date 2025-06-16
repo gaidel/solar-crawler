@@ -113,12 +113,17 @@ Each enemy type has multiple subtypes with different characteristics:
 - **8 Total Waves** with 30-second duration each
 - **Progressive Enemy Introduction** for learning curve
 - **HP Persistence** between waves (no healing)
+- **Escalating Difficulty** with increased spawn frequency in later waves
 
 ### **Enemy Availability by Wave**
 - **Wave 1**: Asteroids only (learning basic mechanics)
 - **Wave 2**: Asteroids + Leapers (unpredictable movement)
 - **Wave 3**: Asteroids + Leapers + Kamikazes (homing threats)
-- **Wave 4-8**: All enemy types (full chaos with Gunner bullets)
+- **Wave 4**: All enemy types (full chaos with Gunner bullets)
+- **Wave 5**: All enemy types with +10% spawn frequency
+- **Wave 6**: All enemy types with +20% spawn frequency
+- **Wave 7**: All enemy types with +50% spawn frequency
+- **Wave 8**: All enemy types with +50% spawn frequency (final challenge)
 
 ### **Wave Transitions**
 - **Wave Completion**: "WAVE X CLEARED!" screen with continue/menu options

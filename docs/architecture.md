@@ -185,7 +185,7 @@ src/
 ### **Pre-commit checklist:**
 - [ ] All files end with newline
 - [ ] No trailing spaces or inconsistent indentation  
-- [ ] No console.log statements in production code
+- [ ] No console.log statements in production code (except debug/cheat logging)
 - [ ] All imports are organized correctly
 - [ ] Constants used instead of magic numbers
 - [ ] Documentation updated if needed
@@ -468,6 +468,51 @@ getBulletStats(): { total: number; active: number; visible: number } {
 - **Multi-Boundary Cleanup** - Handle bullets going off-screen in both directions
 - **State Consistency** - Ensure active/visible/physics states are synchronized
 - **Simple Destruction** - Avoid complex positioning that can cause visual artifacts
+
+---
+
+## 🐛 Debug & Testing System
+
+### **Debug Cheats** - Development Testing Tools
+The game includes a comprehensive cheat system for easier testing and debugging:
+
+**Activation Requirements:**
+- Cheats only work when `debug: true` is enabled in Phaser configuration (`index.ts`)
+- Automatic detection via `this.physics.world.debugGraphic` presence
+- Only active during `GameState.PLAYING` state
+
+**Available Cheats:**
+- **V Key**: Skip to 10 seconds remaining in current wave
+  - Useful for testing wave transitions and completion screens
+  - Console logs the action with wave number
+- **H Key**: Restore player health to full (100 HP)
+  - Useful for testing damage systems without dying
+  - Console logs the health restoration
+
+**Implementation:**
+```typescript
+// GameScene.ts
+private setupDebugCheats(): void {
+    if (this.physics.world.debugGraphic) {
+        this.vKey = this.input.keyboard!.addKey(KeyCodes.V);
+        this.hKey = this.input.keyboard!.addKey(KeyCodes.H);
+    }
+}
+
+private handleDebugCheats(): void {
+    if (!this.physics.world.debugGraphic || this.gameState !== GameState.PLAYING) {
+        return;
+    }
+    // Process V and H key inputs...
+}
+```
+
+**Benefits:**
+- **Faster Testing**: No need to play through entire waves to test features
+- **Damage Testing**: Test HP system without repeated deaths
+- **Wave Testing**: Quickly test wave transitions and victory screens
+- **Debug Safety**: Only available in debug builds
+- **Development Feedback**: Console logging for all cheat actions
 
 ---
 

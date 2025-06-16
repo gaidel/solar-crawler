@@ -20,6 +20,10 @@ export class GameScene extends Phaser.Scene {
     private currentWave: number = 1;
     private waveStartTime: number = 0;
 
+    // Debug/Cheat keys (only work when debug mode is enabled)
+    private vKey?: Phaser.Input.Keyboard.Key;
+    private hKey?: Phaser.Input.Keyboard.Key;
+
     constructor() {
         super({ key: 'GameScene' });
     }
@@ -91,6 +95,9 @@ export class GameScene extends Phaser.Scene {
 
         // Set up collisions
         this.setupCollisions();
+
+        // Set up debug cheats (only when debug mode is enabled)
+        this.setupDebugCheats();
 
         // Set up cleanup when scene is destroyed
         this.events.once('shutdown', this.cleanup, this);
@@ -246,6 +253,9 @@ export class GameScene extends Phaser.Scene {
 
         // Update player HP display
         this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
+
+        // Check for debug cheats
+        this.handleDebugCheats();
 
         // Clean up bullets
         this.cleanupBullets();
@@ -700,6 +710,48 @@ export class GameScene extends Phaser.Scene {
 
         // Clear any UI overlays
         this.gameUI.clearScreens();
+    }
+
+    // Debug/Cheat system
+    private setupDebugCheats(): void {
+        // Only set up cheats when debug mode is enabled
+        if (this.physics.world.debugGraphic) {
+            this.vKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.V);
+            this.hKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+
+            console.log('[DEBUG] Cheats enabled:');
+            console.log('  V - Skip to 10 seconds remaining in current wave');
+            console.log('  H - Restore player health to full');
+        }
+    }
+
+    private handleDebugCheats(): void {
+        // Only process cheats when debug mode is enabled and during gameplay
+        if (!this.physics.world.debugGraphic || this.gameState !== GameState.PLAYING) {
+            return;
+        }
+
+        // V key - Skip to 10 seconds remaining in current wave
+        if (this.vKey && Phaser.Input.Keyboard.JustDown(this.vKey)) {
+            this.skipToWaveEnd();
+        }
+
+        // H key - Restore full health
+        if (this.hKey && Phaser.Input.Keyboard.JustDown(this.hKey)) {
+            this.restorePlayerHealth();
+        }
+    }
+
+    private skipToWaveEnd(): void {
+        const tenSecondsInMs = 10 * 1000;
+        const targetWaveTime = GAME_CONFIG.WAVE_DURATION - tenSecondsInMs;
+        this.waveStartTime = this.time.now - targetWaveTime;
+
+        console.log(`[CHEAT] Skipped to 10 seconds remaining in wave ${this.currentWave}`);
+    }
+
+    private restorePlayerHealth(): void {
+        this.player.restoreFullHealth();
     }
 
     private cleanup(): void {
