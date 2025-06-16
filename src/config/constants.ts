@@ -34,9 +34,10 @@ export const PLAYER_CONFIG = {
     START_Y: 400, // Moved down to avoid HUD area
     SCALE: 0.8,
     SPEED: 300,
-    FIRE_RATE: 300, // ms between shots
+    BASE_FIRE_RATE: 600, // Base fire rate (slow) - upgraded to 300ms with rate-of-fire upgrade
     MOVEMENT_Y_MIN: 60, // Can't move above HUD area
     MOVEMENT_Y_MAX: 680, // Can't move below screen
+    BASE_MAX_HP: 100, // Base max HP - upgraded to 200 with health upgrade
 };
 
 export const ASTEROID_CONFIG = {
@@ -102,7 +103,7 @@ export const BULLET_CONFIG = {
     SPEED: 400,
     MAX_POOL_SIZE: 20,
     OFFSET_X: 50, // Distance from player center
-    DAMAGE: 10, // Player bullet damage
+    BASE_DAMAGE: 5, // Base damage - upgraded to 10 with damage upgrade
 };
 
 export const GUNNER_CONFIG = {
@@ -209,3 +210,57 @@ export const DAMAGE_CONFIG = {
     ASTEROID_NORMAL_COLLISION: 100, // Instant kill
     ASTEROID_LARGE_COLLISION: 200, // Still instant kill but higher value
 };
+
+// Upgrade system configuration
+export const UPGRADE_CONFIG = {
+    // Upgrade types
+    DAMAGE: 'damage',
+    HEALTH: 'health',
+    RATE_OF_FIRE: 'rate_of_fire',
+    SHIELD: 'shield',
+
+    // Upgrade effects
+    DAMAGE_MULTIPLIER: 2, // Double damage (5 -> 10)
+    HEALTH_MULTIPLIER: 2, // Double max HP (100 -> 200)
+    FIRE_RATE_MULTIPLIER: 2, // Double fire rate (600ms -> 300ms)
+    SHIELD_DAMAGE_REDUCTION: 0.5, // Reduce incoming damage by half (round up)
+
+    // UI Configuration
+    ICON_SCALE: 0.6, // Scale for 128x128 icons
+    SELECTION_SCALE: 0.7, // Larger scale when selected
+} as const;
+
+// Define upgrade data structure
+export interface UpgradeData {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+}
+
+export const UPGRADE_DEFINITIONS: UpgradeData[] = [
+    {
+        id: UPGRADE_CONFIG.DAMAGE,
+        name: 'Damage Boost',
+        description: 'Double your bullet damage',
+        icon: 'upgrade-damage',
+    },
+    {
+        id: UPGRADE_CONFIG.HEALTH,
+        name: 'Health Boost',
+        description: 'Double your maximum health',
+        icon: 'upgrade-health',
+    },
+    {
+        id: UPGRADE_CONFIG.RATE_OF_FIRE,
+        name: 'Rate of Fire',
+        description: 'Double your firing speed',
+        icon: 'upgrade-rate-of-fire',
+    },
+    {
+        id: UPGRADE_CONFIG.SHIELD,
+        name: 'Shield',
+        description: 'Reduce incoming damage by half',
+        icon: 'upgrade-shield',
+    },
+];

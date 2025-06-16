@@ -277,7 +277,10 @@ export class EnemyManager {
     }
 
     // Handle collisions with bullets
-    handleBulletCollision(enemy: Phaser.Physics.Arcade.Sprite): number {
+    handleBulletCollision(
+        enemy: Phaser.Physics.Arcade.Sprite,
+        bulletDamage: number = BULLET_CONFIG.BASE_DAMAGE
+    ): number {
         // Check if enemy sprite is still active to prevent multiple hits
         if (!enemy.active) {
             return 0;
@@ -293,7 +296,7 @@ export class EnemyManager {
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
 
-                const destroyed = asteroid.takeDamage(BULLET_CONFIG.DAMAGE);
+                const destroyed = asteroid.takeDamage(bulletDamage);
 
                 if (destroyed) {
                     scoreValue = asteroid.scoreValue;
@@ -328,7 +331,7 @@ export class EnemyManager {
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
 
-                const destroyed = kamikaze.takeDamage(BULLET_CONFIG.DAMAGE);
+                const destroyed = kamikaze.takeDamage(bulletDamage);
 
                 if (destroyed) {
                     scoreValue = kamikaze.scoreValue;
@@ -363,7 +366,7 @@ export class EnemyManager {
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
 
-                const destroyed = gunner.takeDamage(BULLET_CONFIG.DAMAGE);
+                const destroyed = gunner.takeDamage(bulletDamage);
 
                 if (destroyed) {
                     scoreValue = gunner.scoreValue;
@@ -398,7 +401,7 @@ export class EnemyManager {
                 const explosionX = enemy.x;
                 const explosionY = enemy.y;
 
-                const destroyed = leaper.takeDamage(BULLET_CONFIG.DAMAGE);
+                const destroyed = leaper.takeDamage(bulletDamage);
 
                 if (destroyed) {
                     scoreValue = leaper.scoreValue;

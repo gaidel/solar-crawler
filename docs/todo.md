@@ -24,7 +24,7 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | HP System | ✅ | ✅ | ✅ Complete |
 | Enemy Bullet System | ✅ | ✅ | ✅ Complete |
 | Wave System | ✅ | ✅ | ✅ Complete |
-| Upgrades | ✅ | ❌ | 🔴 Missing |
+| Upgrades | ✅ | ✅ | ✅ Complete |
 | Victory Screen | ✅ | ✅ | ✅ Complete |
 | Game Over Screen | ✅ | ✅ | ✅ Complete |
 | Code Quality | ✅ | ✅ | ✅ Complete |
@@ -316,7 +316,24 @@ All 4 enemy types implemented:
 
 ### ✅ **Kamikaze Variety System** (Previous)
 
-### ✅ **Debug Cheats System** (Latest)
+### ✅ **Upgrade System Implementation** (Latest)
+- Implemented complete roguelike upgrade system for player progression
+- **Four Upgrade Types**: Damage Boost, Health Boost, Rate of Fire, Shield
+- **Damage Boost**: Double bullet damage (5 -> 10) - base damage reduced to create upgrade value
+- **Health Boost**: Double maximum health (50 -> 100) - base health reduced to create upgrade value
+- **Rate of Fire**: Double firing speed (600ms -> 300ms) - base fire rate slowed to create upgrade value
+- **Shield**: Reduce incoming damage by 50% (rounded up) - advanced defensive upgrade
+- **Post-Wave 1 Selection**: Upgrade screen appears only after completing first wave
+- **Visual Upgrade Interface**: Icons (128x128), names, descriptions with keyboard navigation
+- **Persistent Effects**: Upgrades carry over between waves, reset only on game restart
+- Created UpgradeManager class for centralized upgrade logic and state management
+- Enhanced Player class with upgrade-aware damage, health, and fire rate calculations
+- Updated EnemyManager to use dynamic bullet damage from player upgrades
+- Added GameUI.showUpgradeScreen() with W/S navigation and Enter selection
+- Integrated upgrade icons loading via UpgradeManager.preload()
+- Added comprehensive console logging for upgrade tracking and debugging
+
+### ✅ **Debug Cheats System** (Previous)
 - Implemented comprehensive cheat system for easier testing and debugging
 - **V Key**: Skip to 10 seconds remaining in current wave (wave completion testing)
 - **H Key**: Restore player health to full (100 HP) for damage system testing

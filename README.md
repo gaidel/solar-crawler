@@ -16,6 +16,7 @@ The ship moves vertically while the background scrolls horizontally. Your object
 - **Auto-fire system**: Ship fires automatically while moving
 - **8-Wave progression**: Survive increasingly difficult waves (30 seconds each)
 - **Escalating difficulty**: Later waves feature faster enemy spawn rates
+- **Upgrade system**: Choose upgrades after Wave 1 to enhance your ship
 - **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)
 - **Main Menu**: Navigate game options, view controls, about, and credits
 - **Background Music**: Dynamic audio experience with menu and gameplay tracks

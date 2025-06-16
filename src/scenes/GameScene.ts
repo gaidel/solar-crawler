@@ -4,6 +4,7 @@ import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
+import { UpgradeManager } from '../UpgradeManager';
 
 export class GameScene extends Phaser.Scene {
     private player!: Player;
@@ -12,6 +13,7 @@ export class GameScene extends Phaser.Scene {
     private explosionManager!: ExplosionManager;
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager!: AudioManager;
+    private upgradeManager!: UpgradeManager;
 
     // Game state
     private gameState: GameState = GameState.PLAYING;
@@ -36,6 +38,7 @@ export class GameScene extends Phaser.Scene {
         Player.preload(this);
         EnemyManager.preload(this);
         ExplosionManager.preload(this);
+        UpgradeManager.preload(this);
 
         // Load audio assets
         AudioManager.preload(this);
@@ -52,6 +55,9 @@ export class GameScene extends Phaser.Scene {
         // Initialize audio manager and start game music
         this.audioManager = new AudioManager(this);
         this.audioManager.playGameMusic();
+
+        // Initialize upgrade manager
+        this.upgradeManager = new UpgradeManager();
 
         // Add background
         const bg = this.add.tileSprite(
@@ -74,6 +80,7 @@ export class GameScene extends Phaser.Scene {
         this.player = new Player(this);
         this.player.create(this.bullets);
         this.player.setAudioManager(this.audioManager);
+        this.player.setUpgradeManager(this.upgradeManager);
 
         // Create UI system
         this.gameUI = new GameUI(this);
@@ -301,7 +308,8 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Handle enemy hit and get score value
-        const scoreValue = this.enemyManager.handleBulletCollision(enemy);
+        const bulletDamage = this.player.getBulletDamage();
+        const scoreValue = this.enemyManager.handleBulletCollision(enemy, bulletDamage);
         this.score += scoreValue;
     }
 
@@ -584,17 +592,22 @@ export class GameScene extends Phaser.Scene {
         // Stop enemy spawning
         this.enemyManager.stopSpawning();
 
-        // Show wave completion message
-        this.gameUI.showWaveVictory(
-            this.currentWave,
-            this.score,
-            () => {
-                this.startNextWave();
-            },
-            () => {
-                this.returnToMenu();
-            }
-        );
+        // Show upgrade screen only after wave 1
+        if (this.currentWave === 1) {
+            this.showUpgradeSelection();
+        } else {
+            // Show normal wave completion message for other waves
+            this.gameUI.showWaveVictory(
+                this.currentWave,
+                this.score,
+                () => {
+                    this.startNextWave();
+                },
+                () => {
+                    this.returnToMenu();
+                }
+            );
+        }
     }
 
     private finalVictory(): void {
@@ -663,6 +676,11 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.destroy();
         }
 
+        // Reset upgrades
+        if (this.upgradeManager) {
+            this.upgradeManager.reset();
+        }
+
         // Restart the scene
         this.scene.restart();
     }
@@ -677,6 +695,11 @@ export class GameScene extends Phaser.Scene {
         // Clean up local audio manager
         if (this.audioManager) {
             this.audioManager.destroy();
+        }
+
+        // Reset upgrades
+        if (this.upgradeManager) {
+            this.upgradeManager.reset();
         }
 
         // Return to main menu
@@ -752,6 +775,29 @@ export class GameScene extends Phaser.Scene {
 
     private restorePlayerHealth(): void {
         this.player.restoreFullHealth();
+    }
+
+    // Upgrade system
+    private showUpgradeSelection(): void {
+        console.log('[UPGRADE] Showing upgrade selection screen');
+        this.gameUI.showUpgradeScreen((upgradeId: string) => {
+            this.applyUpgrade(upgradeId);
+        });
+    }
+
+    private applyUpgrade(upgradeId: string): void {
+        console.log(`[UPGRADE] Player selected upgrade: ${upgradeId}`);
+
+        // Apply the upgrade
+        this.upgradeManager.applyUpgrade(upgradeId);
+
+        // Update player stats based on new upgrades
+        this.player.updateStatsFromUpgrades();
+
+        console.log(`[UPGRADE] Current upgrades: ${this.upgradeManager.getUpgradeStatus()}`);
+
+        // Continue to next wave
+        this.startNextWave();
     }
 
     private cleanup(): void {

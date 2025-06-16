@@ -30,6 +30,7 @@ solar-crawler/
 │   ├── 📄 GameUI.ts         # UI system and input handling
 │   ├── 📄 AudioManager.ts   # Audio system and music management
 │   ├── 📄 ExplosionManager.ts # Visual explosion effects system
+│   ├── 📄 UpgradeManager.ts # Upgrade system and player progression
 │   ├── 📁 config/           # Configuration and constants
 │   │   └── 📄 constants.ts  # Game constants and helpers
 │   ├── 📁 enemies/          # Enemy system

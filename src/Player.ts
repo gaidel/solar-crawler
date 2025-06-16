@@ -1,5 +1,6 @@
 import { PLAYER_CONFIG, BULLET_CONFIG } from './config/constants';
 import { setupCircularCollision } from './utils/CollisionHelpers';
+import { UpgradeManager } from './UpgradeManager';
 
 export interface PlayerInput {
     moveUp: boolean;
@@ -19,11 +20,12 @@ export class Player {
     private scene: Phaser.Scene;
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
+    private upgradeManager?: UpgradeManager;
     private lastFired = 0;
 
     // HP System
-    private maxHP: number = 100;
-    private currentHP: number = 100;
+    private maxHP: number = PLAYER_CONFIG.BASE_MAX_HP;
+    private currentHP: number = PLAYER_CONFIG.BASE_MAX_HP;
     private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
 
     constructor(scene: Phaser.Scene) {
@@ -33,6 +35,12 @@ export class Player {
     // Set audio manager for sound effects
     setAudioManager(audioManager: AudioManager): void {
         this.audioManager = audioManager;
+    }
+
+    // Set upgrade manager for upgrade effects
+    setUpgradeManager(upgradeManager: UpgradeManager): void {
+        this.upgradeManager = upgradeManager;
+        this.updateStatsFromUpgrades();
     }
 
     create(bullets: Phaser.Physics.Arcade.Group): void {
@@ -84,10 +92,14 @@ export class Player {
         }
 
         // Auto-fire bullets OR manual fire on action key
+        const fireRate = this.upgradeManager
+            ? this.upgradeManager.calculateFireRate(PLAYER_CONFIG.BASE_FIRE_RATE)
+            : PLAYER_CONFIG.BASE_FIRE_RATE;
+
         if (time > this.lastFired && (true || input.action)) {
             // Auto-fire always enabled
             this.fireBullet();
-            this.lastFired = time + PLAYER_CONFIG.FIRE_RATE;
+            this.lastFired = time + fireRate;
         }
     }
 
@@ -130,9 +142,21 @@ export class Player {
         return this.sprite.y;
     }
 
+    // Get current bullet damage based on upgrades
+    getBulletDamage(): number {
+        return this.upgradeManager
+            ? this.upgradeManager.calculateDamage(BULLET_CONFIG.BASE_DAMAGE)
+            : BULLET_CONFIG.BASE_DAMAGE;
+    }
+
     // HP System methods
     takeDamage(damage: number): boolean {
-        this.currentHP -= damage;
+        // Apply shield damage reduction if available
+        const actualDamage = this.upgradeManager
+            ? this.upgradeManager.calculateIncomingDamage(damage)
+            : damage;
+
+        this.currentHP -= actualDamage;
 
         // Visual feedback for damage (red flash)
         this.sprite.setTint(0xff0000); // Red tint
@@ -175,6 +199,23 @@ export class Player {
         console.log('[CHEAT] Player health restored to full (100 HP)');
     }
 
+    // Update player stats based on current upgrades
+    updateStatsFromUpgrades(): void {
+        if (!this.upgradeManager) return;
+
+        const oldMaxHP = this.maxHP;
+        this.maxHP = this.upgradeManager.calculateMaxHP(PLAYER_CONFIG.BASE_MAX_HP);
+
+        // If health upgrade was applied, increase current HP proportionally
+        if (this.maxHP > oldMaxHP) {
+            const hpIncrease = this.maxHP - oldMaxHP;
+            this.currentHP += hpIncrease;
+            console.log(
+                `[UPGRADE] Health increased from ${oldMaxHP} to ${this.maxHP} (current: ${this.currentHP})`
+            );
+        }
+    }
+
     // Game state methods
     setTint(color: number): void {
         this.sprite.setTint(color);
@@ -185,7 +226,10 @@ export class Player {
         this.sprite.setPosition(PLAYER_CONFIG.START_X, PLAYER_CONFIG.START_Y);
         this.sprite.setVelocity(0, 0);
 
-        // Reset HP
+        // Reset HP (upgrades should persist between waves)
+        this.maxHP = this.upgradeManager
+            ? this.upgradeManager.calculateMaxHP(PLAYER_CONFIG.BASE_MAX_HP)
+            : PLAYER_CONFIG.BASE_MAX_HP;
         this.currentHP = this.maxHP;
 
         // Clear any visual effects

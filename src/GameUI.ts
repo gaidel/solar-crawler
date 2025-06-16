@@ -1,4 +1,10 @@
-import { GAME_CONFIG, UI_CONFIG } from './config/constants';
+import {
+    GAME_CONFIG,
+    UI_CONFIG,
+    UPGRADE_DEFINITIONS,
+    UPGRADE_CONFIG,
+    UpgradeData,
+} from './config/constants';
 import { AudioManager } from './AudioManager';
 
 export enum GameState {
@@ -23,6 +29,7 @@ export class GameUI {
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedIndex: number = 0;
     private menuCallbacks: (() => void)[] = [];
+    private upgradeIconFrames: Phaser.GameObjects.Graphics[] = [];
 
     // Pause system
     private pauseCallbacks: {
@@ -544,6 +551,140 @@ export class GameUI {
         this.updateMenuSelection();
     }
 
+    showUpgradeScreen(onUpgradeSelected: (upgradeId: string) => void): void {
+        // Clear any existing overlays
+        this.clearScreens();
+
+        // Create dark overlay
+        const overlay = this.scene.add.graphics();
+        overlay.fillStyle(0x000000, UI_CONFIG.OVERLAY_ALPHA);
+        overlay.fillRect(0, 0, GAME_CONFIG.WIDTH, GAME_CONFIG.HEIGHT);
+        overlay.setScrollFactor(0);
+
+        // Container for upgrade screen
+        this.uiOverlay = this.scene.add.container(0, 0);
+        this.uiOverlay.add(overlay);
+        this.uiOverlay.setScrollFactor(0);
+
+        // Title
+        const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 120, 'CHOOSE YOUR UPGRADE', {
+            fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+            color: '#ffffff',
+            align: 'center',
+        });
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
+
+        // Subtitle
+        const subtitle = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            180,
+            'Select one upgrade to enhance your ship',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                color: '#cccccc',
+                align: 'center',
+            }
+        );
+        subtitle.setOrigin(0.5);
+        this.uiOverlay.add(subtitle);
+
+        // Additional solid background for upgrade menu area
+        const menuBackground = this.scene.add.graphics();
+        menuBackground.fillStyle(0x000000, 0.9); // More opaque background for menu area
+        const menuAreaY = 200; // Start well above first upgrade item
+        const menuAreaHeight = 420; // Cover all upgrade items
+        menuBackground.fillRect(
+            GAME_CONFIG.WIDTH / 2 - 400, // Left edge
+            menuAreaY, // Top edge
+            800, // Width
+            menuAreaHeight // Height
+        );
+        this.uiOverlay.add(menuBackground);
+
+        // Create upgrade items
+        this.menuItems = [];
+        this.menuCallbacks = [];
+        this.upgradeIconFrames = [];
+
+        const startY = 260;
+        const itemSpacing = 90;
+
+        UPGRADE_DEFINITIONS.forEach((upgrade, index) => {
+            const y = startY + index * itemSpacing;
+            const iconX = GAME_CONFIG.WIDTH / 2 - 200;
+
+            // Upgrade icon
+            const icon = this.scene.add.image(iconX, y, upgrade.icon);
+            icon.setScale(UPGRADE_CONFIG.ICON_SCALE);
+            this.uiOverlay.add(icon);
+
+            // Icon frame (border around icon)
+            const iconSize = 128 * UPGRADE_CONFIG.ICON_SCALE; // Calculate actual icon size
+            const frameThickness = 3;
+            const frameOffset = iconSize / 2 + frameThickness / 2;
+
+            const iconFrame = this.scene.add.graphics();
+            iconFrame.lineStyle(frameThickness, 0x666666, 1); // Default gray color
+            iconFrame.strokeRect(
+                iconX - frameOffset,
+                y - frameOffset,
+                iconSize + frameThickness,
+                iconSize + frameThickness
+            );
+            this.uiOverlay.add(iconFrame);
+            this.upgradeIconFrames.push(iconFrame);
+
+            // Upgrade name
+            const nameText = this.scene.add.text(
+                GAME_CONFIG.WIDTH / 2 - 100,
+                y - 20,
+                upgrade.name,
+                {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#ffffff',
+                    fontStyle: 'bold',
+                }
+            );
+            nameText.setOrigin(0, 0.5);
+            this.uiOverlay.add(nameText);
+
+            // Upgrade description
+            const descText = this.scene.add.text(
+                GAME_CONFIG.WIDTH / 2 - 100,
+                y + 15,
+                upgrade.description,
+                {
+                    fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                    color: '#cccccc',
+                }
+            );
+            descText.setOrigin(0, 0.5);
+            this.uiOverlay.add(descText);
+
+            // Store for menu navigation
+            this.menuItems.push(nameText);
+            this.menuCallbacks.push(() => onUpgradeSelected(upgrade.id));
+        });
+
+        // Instructions
+        const instructions = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT - 80,
+            'W/S to navigate, ENTER to select',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                color: '#888888',
+                align: 'center',
+            }
+        );
+        instructions.setOrigin(0.5);
+        this.uiOverlay.add(instructions);
+
+        this.selectedIndex = 0;
+        this.updateMenuSelection();
+    }
+
     showPauseMenu(onResume: () => void, onReturnToMenu: () => void): void {
         this.clearScreens();
         this.showingConfirmation = false;
@@ -901,6 +1042,7 @@ export class GameUI {
         // Clear menu state
         this.menuItems = [];
         this.menuCallbacks = [];
+        this.upgradeIconFrames = [];
         this.selectedIndex = 0;
         this.showingConfirmation = false;
         this.showingSettings = false;
@@ -926,9 +1068,45 @@ export class GameUI {
             if (this.selectedIndex !== -1 && index === this.selectedIndex) {
                 item.setColor('#00ff00');
                 item.setScale(1.1);
+
+                // Update upgrade icon frame color if available
+                if (this.upgradeIconFrames[index]) {
+                    this.upgradeIconFrames[index].clear();
+                    const iconSize = 128 * UPGRADE_CONFIG.ICON_SCALE;
+                    const frameThickness = 4; // Slightly thicker when selected
+                    const frameOffset = iconSize / 2 + frameThickness / 2;
+                    const iconX = GAME_CONFIG.WIDTH / 2 - 200;
+                    const y = 260 + index * 90; // Match positions from showUpgradeScreen
+
+                    this.upgradeIconFrames[index].lineStyle(frameThickness, 0x00ff00, 1); // Green when selected
+                    this.upgradeIconFrames[index].strokeRect(
+                        iconX - frameOffset,
+                        y - frameOffset,
+                        iconSize + frameThickness,
+                        iconSize + frameThickness
+                    );
+                }
             } else {
                 item.setColor('#ffffff');
                 item.setScale(1.0);
+
+                // Update upgrade icon frame color if available
+                if (this.upgradeIconFrames[index]) {
+                    this.upgradeIconFrames[index].clear();
+                    const iconSize = 128 * UPGRADE_CONFIG.ICON_SCALE;
+                    const frameThickness = 3; // Normal thickness
+                    const frameOffset = iconSize / 2 + frameThickness / 2;
+                    const iconX = GAME_CONFIG.WIDTH / 2 - 200;
+                    const y = 260 + index * 90; // Match positions from showUpgradeScreen
+
+                    this.upgradeIconFrames[index].lineStyle(frameThickness, 0x666666, 1); // Gray when not selected
+                    this.upgradeIconFrames[index].strokeRect(
+                        iconX - frameOffset,
+                        y - frameOffset,
+                        iconSize + frameThickness,
+                        iconSize + frameThickness
+                    );
+                }
             }
         });
     }
