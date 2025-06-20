@@ -13,6 +13,8 @@ import {
 } from '../config/constants';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
+import { Player } from '../Player';
+import { UpgradeManager } from '../UpgradeManager';
 
 export class EnemyManager {
     // Asset loading
@@ -31,6 +33,8 @@ export class EnemyManager {
     private enemyBullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
     private explosionManager?: ExplosionManager;
+    private player?: Player;
+    private upgradeManager?: UpgradeManager;
 
     private asteroids: Asteroid[] = [];
     private kamikazes: Kamikaze[] = [];
@@ -63,6 +67,16 @@ export class EnemyManager {
     // Set explosion manager for visual effects
     setExplosionManager(explosionManager: ExplosionManager): void {
         this.explosionManager = explosionManager;
+    }
+
+    // Set player reference for Energy Siphon healing
+    setPlayer(player: Player): void {
+        this.player = player;
+    }
+
+    // Set upgrade manager for acid bullets and other upgrade effects
+    setUpgradeManager(upgradeManager: UpgradeManager): void {
+        this.upgradeManager = upgradeManager;
     }
 
     create(): void {
@@ -298,8 +312,17 @@ export class EnemyManager {
 
                 const destroyed = asteroid.takeDamage(bulletDamage);
 
+                // Apply acid effect if player has the upgrade and enemy wasn't destroyed
+                if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
+                    asteroid.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                }
+
                 if (destroyed) {
                     scoreValue = asteroid.scoreValue;
+                    // Trigger Energy Siphon healing if player has the upgrade
+                    if (this.player) {
+                        this.player.onEnemyKilled(asteroid.maxHP);
+                    }
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
                         // Use different explosion sizes based on asteroid type
@@ -333,8 +356,17 @@ export class EnemyManager {
 
                 const destroyed = kamikaze.takeDamage(bulletDamage);
 
+                // Apply acid effect if player has the upgrade and enemy wasn't destroyed
+                if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
+                    kamikaze.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                }
+
                 if (destroyed) {
                     scoreValue = kamikaze.scoreValue;
+                    // Trigger Energy Siphon healing if player has the upgrade
+                    if (this.player) {
+                        this.player.onEnemyKilled(kamikaze.maxHP);
+                    }
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
                         // Use different explosion sizes based on kamikaze type
@@ -368,8 +400,17 @@ export class EnemyManager {
 
                 const destroyed = gunner.takeDamage(bulletDamage);
 
+                // Apply acid effect if player has the upgrade and enemy wasn't destroyed
+                if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
+                    gunner.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                }
+
                 if (destroyed) {
                     scoreValue = gunner.scoreValue;
+                    // Trigger Energy Siphon healing if player has the upgrade
+                    if (this.player) {
+                        this.player.onEnemyKilled(gunner.maxHP);
+                    }
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
                         // Use different explosion sizes based on gunner type
@@ -403,8 +444,17 @@ export class EnemyManager {
 
                 const destroyed = leaper.takeDamage(bulletDamage);
 
+                // Apply acid effect if player has the upgrade and enemy wasn't destroyed
+                if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
+                    leaper.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                }
+
                 if (destroyed) {
                     scoreValue = leaper.scoreValue;
+                    // Trigger Energy Siphon healing if player has the upgrade
+                    if (this.player) {
+                        this.player.onEnemyKilled(leaper.maxHP);
+                    }
                     // Create explosion effect when enemy is destroyed (using saved position)
                     if (this.explosionManager) {
                         this.explosionManager.explodeLarge(explosionX, explosionY);
@@ -424,6 +474,58 @@ export class EnemyManager {
         }
 
         return scoreValue;
+    }
+
+    // Handle enemy death from acid damage
+    private handleAcidDeath(enemy: Enemy, explosionX: number, explosionY: number): void {
+        // Use the provided explosion coordinates (saved before enemy was moved off-screen)
+        // If coordinates are undefined, skip explosion (this shouldn't happen but let's be safe)
+        if (explosionX === undefined || explosionY === undefined) {
+            console.warn('[ACID_DEATH] Invalid explosion coordinates, skipping explosion');
+            return;
+        }
+
+        // Trigger Energy Siphon healing if player has the upgrade
+        if (this.player) {
+            this.player.onEnemyKilled(enemy.maxHP);
+        }
+
+        // Create explosion effect based on enemy type
+        if (this.explosionManager) {
+            // Check enemy type and create appropriate explosion
+            if (this.asteroids.includes(enemy as any)) {
+                const asteroid = enemy as any;
+                const asteroidType = asteroid.getType();
+                if (asteroidType === 'large') {
+                    this.explosionManager.explodeMedium(explosionX, explosionY);
+                } else {
+                    this.explosionManager.explodeSmall(explosionX, explosionY);
+                }
+            } else if (this.kamikazes.includes(enemy as any)) {
+                const kamikaze = enemy as any;
+                const kamikazeType = kamikaze.getType();
+                if (kamikazeType === 'fast') {
+                    this.explosionManager.explodeSmall(explosionX, explosionY);
+                } else {
+                    this.explosionManager.explodeMedium(explosionX, explosionY);
+                }
+            } else if (this.gunners.includes(enemy as any)) {
+                const gunner = enemy as any;
+                const gunnerType = gunner.getType();
+                if (gunnerType === 'large') {
+                    this.explosionManager.explodeLarge(explosionX, explosionY);
+                } else {
+                    this.explosionManager.explodeMedium(explosionX, explosionY);
+                }
+            } else if (this.leapers.includes(enemy as any)) {
+                this.explosionManager.explodeLarge(explosionX, explosionY);
+            }
+        }
+
+        // Play explosion sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound();
+        }
     }
 
     // Get groups for collision detection

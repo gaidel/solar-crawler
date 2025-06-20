@@ -52,6 +52,11 @@ export class GameUI {
     private enterKey!: Phaser.Input.Keyboard.Key;
     private spaceKey!: Phaser.Input.Keyboard.Key;
     private escKey!: Phaser.Input.Keyboard.Key;
+    private rKey!: Phaser.Input.Keyboard.Key;
+
+    // Upgrade system
+    private upgradeCallback?: (upgradeId: string) => void;
+    private showingUpgradeScreen = false;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -83,6 +88,9 @@ export class GameUI {
 
         // Add ESC key for menu navigation
         this.escKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
+
+        // Add R key for upgrade reroll
+        this.rKey = this.scene.input!.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R)!;
     }
 
     private playerHPBar?: Phaser.GameObjects.Graphics;
@@ -351,7 +359,6 @@ export class GameUI {
             }
         );
         restartText.setOrigin(0.5);
-        this.uiOverlay.add(restartText);
         this.menuItems.push(restartText);
 
         const menuText = this.scene.add.text(
@@ -555,6 +562,10 @@ export class GameUI {
         // Clear any existing overlays
         this.clearScreens();
 
+        // Store callback and set flag for upgrade screen
+        this.upgradeCallback = onUpgradeSelected;
+        this.showingUpgradeScreen = true;
+
         // Create dark overlay
         const overlay = this.scene.add.graphics();
         overlay.fillStyle(0x000000, UI_CONFIG.OVERLAY_ALPHA);
@@ -610,7 +621,9 @@ export class GameUI {
         const startY = 260;
         const itemSpacing = 90;
 
-        UPGRADE_DEFINITIONS.forEach((upgrade, index) => {
+        // Get 4 random upgrades instead of all upgrades
+        const randomUpgrades = (this.scene as any).upgradeManager.getRandomUpgrades(4);
+        randomUpgrades.forEach((upgrade, index) => {
             const y = startY + index * itemSpacing;
             const iconX = GAME_CONFIG.WIDTH / 2 - 200;
 
@@ -668,10 +681,18 @@ export class GameUI {
         });
 
         // Instructions
+        let instructionText = 'W/S to navigate, ENTER to select';
+        
+        // Add debug instruction if debug mode is enabled
+        const scene = this.scene as any;
+        if (scene.physics && scene.physics.world && scene.physics.world.debugGraphic) {
+            instructionText += ' | R to reroll (debug)';
+        }
+        
         const instructions = this.scene.add.text(
             GAME_CONFIG.WIDTH / 2,
             GAME_CONFIG.HEIGHT - 80,
-            'W/S to navigate, ENTER to select',
+            instructionText,
             {
                 fontSize: UI_CONFIG.FONT_SIZE_SMALL,
                 color: '#888888',
@@ -683,6 +704,20 @@ export class GameUI {
 
         this.selectedIndex = 0;
         this.updateMenuSelection();
+    }
+
+    private rerollUpgrades(): void {
+        if (!this.upgradeCallback || !this.showingUpgradeScreen) {
+            return;
+        }
+
+        // Clear existing items
+        if (this.uiOverlay) {
+            this.uiOverlay.destroy();
+        }
+
+        // Recreate the upgrade screen with new random upgrades
+        this.showUpgradeScreen(this.upgradeCallback);
     }
 
     showPauseMenu(onResume: () => void, onReturnToMenu: () => void): void {
@@ -769,6 +804,99 @@ export class GameUI {
         this.uiOverlay.setScrollFactor(0);
 
         // No initial selection - user must navigate first
+    }
+
+    showRebirth(wave: number, onRestartWave: () => void, onReturnToMenu: () => void): void {
+        this.clearScreens();
+
+        // Reset menu state
+        this.menuItems = [];
+        this.menuCallbacks = [onRestartWave, onReturnToMenu];
+
+        // Create overlay
+        this.uiOverlay = this.scene.add.container(0, 0);
+
+        // Semi-transparent background
+        const overlay = this.scene.add.rectangle(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2,
+            GAME_CONFIG.WIDTH,
+            GAME_CONFIG.HEIGHT,
+            0x000000,
+            UI_CONFIG.OVERLAY_ALPHA
+        );
+        this.uiOverlay.add(overlay);
+
+        // Rebirth title
+        const title = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 150,
+            'REBIRTH ACTIVATED!',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+                color: '#ffaa00',
+                fontStyle: 'bold',
+            }
+        );
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
+
+        // Subtitle
+        const subtitle = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 100,
+            'Rebirth upgrade consumed',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ff8844',
+            }
+        );
+        subtitle.setOrigin(0.5);
+        this.uiOverlay.add(subtitle);
+
+        // Wave restart message
+        const waveMessage = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 - 50,
+            `Wave ${wave} will restart`,
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        waveMessage.setOrigin(0.5);
+        this.uiOverlay.add(waveMessage);
+
+        // Menu options
+        const restartText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 20,
+            'Restart Wave',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        restartText.setOrigin(0.5);
+        this.uiOverlay.add(restartText);
+        this.menuItems.push(restartText);
+
+        const menuText = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT / 2 + 80,
+            'Return to Menu',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                color: '#ffffff',
+            }
+        );
+        menuText.setOrigin(0.5);
+        this.uiOverlay.add(menuText);
+        this.menuItems.push(menuText);
+
+        // Set initial selection
+        this.selectedIndex = 0;
+        this.updateMenuSelection();
     }
 
     private showExitConfirmation(): void {
@@ -1048,6 +1176,9 @@ export class GameUI {
         this.showingSettings = false;
         this.editingVolume = false;
         this.volumeEditType = null;
+        // Clear upgrade screen state
+        this.showingUpgradeScreen = false;
+        this.upgradeCallback = undefined;
     }
 
     // ESC key handling
@@ -1211,6 +1342,16 @@ export class GameUI {
             } else {
                 // In other menus, ESC means "go to menu" (second option)
                 this.menuCallbacks[1](); // Return to menu is always second option
+            }
+        }
+
+        // Handle R key for upgrade reroll (debug mode only)
+        if (this.showingUpgradeScreen && Phaser.Input.Keyboard.JustDown(this.rKey)) {
+            // Check if debug mode is enabled by checking if debugGraphic exists
+            const scene = this.scene as any;
+            if (scene.physics && scene.physics.world && scene.physics.world.debugGraphic) {
+                console.log('[DEBUG] Rerolling upgrades...');
+                this.rerollUpgrades();
             }
         }
     }

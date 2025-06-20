@@ -24,7 +24,12 @@ This document tracks development progress, known issues, and upcoming tasks for 
 | HP System | ✅ | ✅ | ✅ Complete |
 | Enemy Bullet System | ✅ | ✅ | ✅ Complete |
 | Wave System | ✅ | ✅ | ✅ Complete |
-| Upgrades | ✅ | ✅ | ✅ Complete |
+| Upgrade System | ✅ | ✅ | ✅ Complete |
+| Upgrade Pool System | ✅ | ✅ | ✅ Complete |
+| Acid Bullets Upgrade | ✅ | ✅ | ✅ Complete |
+| Phase Shield Upgrade | ✅ | ✅ | ✅ Complete |
+| Interceptor Upgrade | ✅ | ✅ | ✅ Complete |
+| Rebirth Upgrade | ✅ | ✅ | ✅ Complete |
 | Victory Screen | ✅ | ✅ | ✅ Complete |
 | Game Over Screen | ✅ | ✅ | ✅ Complete |
 | Code Quality | ✅ | ✅ | ✅ Complete |
@@ -33,8 +38,8 @@ This document tracks development progress, known issues, and upcoming tasks for 
 
 ## 🔴 Critical Issues
 
-### 1. **Missing Core Features**
-- **Roguelike Elements**: Missing upgrade system between waves
+### 1. **Missing Core Features** ✅ FIXED
+- ✅ **Roguelike Elements**: Complete upgrade system implemented with 12 unique upgrades
 
 ### 2. **Enemy Types** ✅ FIXED
 All 4 enemy types implemented:
@@ -344,6 +349,34 @@ All 4 enemy types implemented:
 - Console logging for cheat activation to track testing actions
 - Automatic cheat availability detection based on physics debug graphics presence
 
+### ✅ **Complete Upgrade System Implementation** (Latest Session)
+- Implemented comprehensive roguelike upgrade system with 12 unique upgrades
+- **Upgrade Pool System**: Each upgrade can only be selected once per game
+- **Progressive Selection**: Upgrades offered after every wave except the final wave
+- **Strategic Depth**: 4 random upgrades shown per selection from remaining pool
+
+**Implemented Upgrades:**
+1. **Damage Boost**: Double bullet damage (8 → 16)
+2. **Health Boost**: Double maximum health (100 → 200)
+3. **Rate of Fire**: Double firing speed (600ms → 300ms)
+4. **Armor Plating**: Reduce incoming damage by 50%
+5. **Auto-Repair**: Regenerate 1 HP every second with timer system
+6. **Energy Siphon**: Restore 10% of enemy's max HP on kill
+7. **Acid Bullets**: Poison damage-over-time with green visual effects and stacking
+8. **Engine Upgrade**: Double movement speed (300 → 600)
+9. **Phase Shield**: 4-second invincibility with flickering effect after taking damage
+10. **Interceptor**: Player bullets destroy enemy bullets with explosion effects
+11. **Projectile Speed**: Double bullet velocity (600 → 1200)
+12. **Rebirth**: One-time cheat death - restart current wave instead of game over
+
+**Technical Implementation:**
+- Created UpgradeManager class with pool management and upgrade application
+- Enhanced Player class with dynamic stat calculation based on active upgrades
+- Added visual upgrade selection interface with icon-based navigation
+- Implemented complex upgrade effects like acid DoT, phase shield invincibility, bullet interception
+- Added upgrade persistence across waves with proper reset on game restart
+- Fixed critical explosion coordinate bug in acid death effects
+
 ### ✅ **Enhanced Wave System with Difficulty Scaling** (Previous)
 - Implemented escalating difficulty system with spawn frequency modifiers
 - **Wave 1-4**: Progressive enemy introduction with normal spawn rates
@@ -377,11 +410,35 @@ All 4 enemy types implemented:
 
 ## 🎯 Priority Tasks for Next Session
 
-1. **Upgrade System** - Add roguelike upgrade mechanics between waves
-2. **Game Balancing** - Fine-tune enemy spawn rates and difficulty progression  
-3. **Performance Optimization** - Monitor and optimize bullet pooling and enemy management
-4. **Polish & Effects** - Enhance visual feedback and game juice
-5. **Additional Content** - Consider more enemy varieties or wave mechanics
+1. **Additional Upgrades** - Implement remaining 4 upgrades to reach the planned 16 total
+2. **Game Balancing** - Fine-tune upgrade effects and enemy difficulty scaling
+3. **Visual Polish** - Enhance upgrade selection UI and visual effects
+4. **Performance Optimization** - Monitor and optimize complex upgrade interactions
+5. **Additional Content** - Consider more enemy varieties or special wave mechanics
+6. **Achievement System** - Track player progress and unlock conditions
+
+---
+
+## 📈 Current Session Summary
+
+### 🎯 **Major Achievements**
+- **12 Unique Upgrades Implemented**: Complete roguelike progression system
+- **Upgrade Pool Management**: Each upgrade selectable only once per game
+- **Complex Upgrade Effects**: Acid DoT, Phase Shield, Bullet Interception, Rebirth system
+- **Strategic Depth**: Players must plan builds across 7 upgrade opportunities
+- **Bug Fixes**: Resolved explosion coordinate issues and upgrade system edge cases
+
+### 📊 **Game Completion Status**
+- **Core Gameplay**: 100% Complete (All 4 enemy types, 8-wave system, HP management)
+- **Upgrade System**: 75% Complete (12/16 planned upgrades implemented)
+- **Audio & Visual**: 100% Complete (Full audio system, explosion effects, UI)
+- **Menu System**: 100% Complete (Main menu, pause, settings, transitions)
+
+### 🚀 **Next Session Goals**
+- Implement remaining 4 upgrades for complete 16-upgrade system
+- Balance testing and difficulty tuning
+- Visual polish and upgrade UI enhancements
+- Consider additional content or achievement systems
 
 ---
 

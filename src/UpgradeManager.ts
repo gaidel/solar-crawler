@@ -1,18 +1,29 @@
-import { UPGRADE_CONFIG, UPGRADE_DEFINITIONS, UpgradeData } from './config/constants';
+import { UPGRADE_CONFIG, UPGRADE_DEFINITIONS, UpgradeData, BULLET_CONFIG } from './config/constants';
 
 export class UpgradeManager {
+    private activeUpgrades: Set<string> = new Set();
+    private availableUpgrades: UpgradeData[] = []; // Pool of upgrades that can still be selected
+
     // Asset loading
     static preload(scene: Phaser.Scene): void {
         scene.load.image('upgrade-damage', 'assets/upgrade-damage.png');
         scene.load.image('upgrade-health', 'assets/upgrade-health.png');
         scene.load.image('upgrade-rate-of-fire', 'assets/upgrade-rate-of-fire.png');
         scene.load.image('upgrade-shield', 'assets/upgrade-shield.png');
+        scene.load.image('upgrade-regeneration', 'assets/upgrade-regeneration.png');
+        scene.load.image('upgrade-vampirism', 'assets/upgrade-vampirism.png');
+        scene.load.image('upgrade-acid', 'assets/upgrade-acid.png');
+        scene.load.image('upgrade-engine', 'assets/upgrade-engine.png');
+        scene.load.image('upgrade-ghost', 'assets/upgrade-ghost.png');
+        scene.load.image('upgrade-interceptor', 'assets/upgrade-interceptor.png');
+        scene.load.image('upgrade-projectile-speed', 'assets/upgrade-projectile-speed.png');
+        scene.load.image('upgrade-rebirth', 'assets/upgrade-rebirth.png');
     }
 
-    private activeUpgrades: Set<string> = new Set();
-
     constructor() {
-        // Initialize with no upgrades
+        // Initialize available upgrades pool with all upgrades
+        this.availableUpgrades = [...UPGRADE_DEFINITIONS];
+        console.log(`[UPGRADE] Initialized with ${this.availableUpgrades.length} available upgrades`);
     }
 
     // Check if player has a specific upgrade
@@ -28,7 +39,11 @@ export class UpgradeManager {
         }
 
         this.activeUpgrades.add(upgradeId);
-        console.log(`[UPGRADE] Applied upgrade: ${upgradeId}`);
+        
+        // Remove from available upgrades pool
+        this.availableUpgrades = this.availableUpgrades.filter(upgrade => upgrade.id !== upgradeId);
+        
+        console.log(`[UPGRADE] Applied upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`);
     }
 
     // Get current damage multiplier
@@ -53,6 +68,82 @@ export class UpgradeManager {
         return this.hasUpgrade(UPGRADE_CONFIG.SHIELD) ? UPGRADE_CONFIG.SHIELD_DAMAGE_REDUCTION : 0;
     }
 
+    // Check if auto-repair is active
+    hasAutoRepair(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.AUTO_REPAIR);
+    }
+
+    // Check if energy siphon is active
+    hasEnergySiphon(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.ENERGY_SIPHON);
+    }
+
+    // Get auto-repair amount per tick
+    getAutoRepairAmount(): number {
+        return this.hasAutoRepair() ? UPGRADE_CONFIG.AUTO_REPAIR_AMOUNT : 0;
+    }
+
+    // Get energy siphon heal ratio
+    getEnergySiphonRatio(): number {
+        return this.hasEnergySiphon() ? UPGRADE_CONFIG.ENERGY_SIPHON_RATIO : 0;
+    }
+
+    // Check if acid bullets are active
+    hasAcidBullets(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.ACID_BULLETS);
+    }
+
+    // Check if engine upgrade is active
+    hasEngineUpgrade(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.ENGINE);
+    }
+
+    // Get engine speed multiplier
+    getEngineSpeedMultiplier(): number {
+        return this.hasEngineUpgrade() ? UPGRADE_CONFIG.ENGINE_SPEED_MULTIPLIER : 1;
+    }
+
+    // Check if phase shield is active
+    hasPhaseShield(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.PHASE_SHIELD);
+    }
+
+    // Check if interceptor is active
+    hasInterceptor(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.INTERCEPTOR);
+    }
+
+    // Check if projectile speed upgrade is active
+    hasProjectileSpeed(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.PROJECTILE_SPEED);
+    }
+
+    // Check if rebirth upgrade is active
+    hasRebirth(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.REBIRTH);
+    }
+
+    // Consume rebirth upgrade (remove it after use)
+    consumeRebirth(): boolean {
+        if (this.hasRebirth()) {
+            this.activeUpgrades.delete(UPGRADE_CONFIG.REBIRTH);
+            console.log('[REBIRTH] Rebirth upgrade consumed - wave restarting instead of game over');
+            return true;
+        }
+        return false;
+    }
+
+    // Calculate bullet speed based on upgrades
+    calculateBulletSpeed(): number {
+        let speed = BULLET_CONFIG.SPEED;
+        
+        if (this.hasProjectileSpeed()) {
+            speed *= UPGRADE_CONFIG.PROJECTILE_SPEED_MULTIPLIER;
+        }
+        
+        return speed;
+    }
+
     // Calculate actual damage based on upgrades
     calculateDamage(baseDamage: number): number {
         return Math.round(baseDamage * this.getDamageMultiplier());
@@ -66,6 +157,11 @@ export class UpgradeManager {
     // Calculate actual fire rate based on upgrades
     calculateFireRate(baseFireRate: number): number {
         return Math.round(baseFireRate / this.getFireRateMultiplier());
+    }
+
+    // Calculate actual movement speed based on upgrades
+    calculateMovementSpeed(baseSpeed: number): number {
+        return Math.round(baseSpeed * this.getEngineSpeedMultiplier());
     }
 
     // Calculate incoming damage after shield reduction
@@ -82,15 +178,46 @@ export class UpgradeManager {
         return UPGRADE_DEFINITIONS;
     }
 
+    // Get random available upgrades for selection (only from remaining pool)
+    getRandomUpgrades(count: number = 4): UpgradeData[] {
+        // If not enough upgrades available, return all remaining
+        if (this.availableUpgrades.length <= count) {
+            return [...this.availableUpgrades];
+        }
+        
+        // Get a copy of available upgrades
+        const upgradesCopy = [...this.availableUpgrades];
+        
+        // Shuffle the array
+        for (let i = upgradesCopy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [upgradesCopy[i], upgradesCopy[j]] = [upgradesCopy[j], upgradesCopy[i]];
+        }
+        
+        // Return first 'count' upgrades
+        return upgradesCopy.slice(0, count);
+    }
+
     // Get list of active upgrade IDs
     getActiveUpgrades(): string[] {
         return Array.from(this.activeUpgrades);
     }
 
+    // Check if there are upgrades available for selection
+    hasAvailableUpgrades(): boolean {
+        return this.availableUpgrades.length > 0;
+    }
+
+    // Get count of available upgrades
+    getAvailableUpgradeCount(): number {
+        return this.availableUpgrades.length;
+    }
+
     // Reset all upgrades (for restart)
     reset(): void {
         this.activeUpgrades.clear();
-        console.log('[UPGRADE] All upgrades reset');
+        this.availableUpgrades = [...UPGRADE_DEFINITIONS]; // Restore full pool
+        console.log(`[UPGRADE] All upgrades reset - ${this.availableUpgrades.length} upgrades available`);
     }
 
     // Debug: Get upgrade status

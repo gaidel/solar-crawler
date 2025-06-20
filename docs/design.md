@@ -49,6 +49,30 @@ Different enemies deal different damage amounts:
 ### **Death Condition**
 Player is destroyed only when HP reaches 0, allowing for strategic damage management.
 
+### **Upgrade System**
+Between waves, players can select from a pool of powerful upgrades to customize their build:
+
+**Available Upgrades (12 total):**
+1. **Damage Boost** - Double bullet damage (8 → 16)
+2. **Health Boost** - Double maximum health (100 → 200)  
+3. **Rate of Fire** - Double firing speed (600ms → 300ms)
+4. **Armor Plating** - Reduce incoming damage by 50%
+5. **Auto-Repair** - Regenerate 1 HP every second
+6. **Energy Siphon** - Restore 10% of enemy's max HP on kill
+7. **Acid Bullets** - Apply poison damage-over-time effects
+8. **Engine Upgrade** - Double movement speed
+9. **Phase Shield** - 4 seconds invincibility after taking damage
+10. **Interceptor** - Player bullets destroy enemy bullets
+11. **Projectile Speed** - Double bullet velocity
+12. **Rebirth** - Restart wave instead of game over (one-time use)
+
+**Upgrade Mechanics:**
+- Upgrades appear after every wave completion (except the final wave)
+- 4 random upgrades offered per selection
+- Each upgrade can only be taken once per game
+- Upgrades persist across waves until game restart
+- Strategic build planning becomes crucial for later waves
+
 ---
 
 ## 👾 Enemy Types & Varieties
@@ -110,10 +134,11 @@ Each enemy type has multiple subtypes with different characteristics:
 ## 🌊 Wave Progression System
 
 ### **Wave Structure**
-- **8 Total Waves** with 30-second duration each
+- **8 Total Waves** with 60-second duration each
 - **Progressive Enemy Introduction** for learning curve
 - **HP Persistence** between waves (no healing)
 - **Escalating Difficulty** with increased spawn frequency in later waves
+- **Upgrade Selection** after each wave completion (except final wave)
 
 ### **Enemy Availability by Wave**
 - **Wave 1**: Asteroids only (learning basic mechanics)
@@ -127,7 +152,9 @@ Each enemy type has multiple subtypes with different characteristics:
 
 ### **Wave Transitions**
 - **Wave Completion**: "WAVE X CLEARED!" screen with continue/menu options
+- **Upgrade Selection**: Choose from 4 random upgrades after each wave (except final)
 - **Final Victory**: "ALL WAVES CLEARED! COMPLETE VICTORY!" after wave 8
+- **Rebirth System**: Players with Rebirth upgrade restart current wave instead of game over
 - **Seamless Progression**: Player position resets, HP preserved, enemies cleared
 
 ---
@@ -222,6 +249,13 @@ Each enemy type has multiple subtypes with different characteristics:
 - **Behavior**: Particles rotate and spread in all directions
 - **Performance**: Single particle emitter reused for all explosions
 - **Cleanup**: Automatic memory management and sprite disposal
+
+### **Upgrade Visual Effects**
+- **Acid Bullets**: Enemies glow green when poisoned, effect stacks with multiple hits
+- **Phase Shield**: Player flickers between visible/transparent during invincibility
+- **Auto-Repair**: Subtle HP regeneration without visual indicators
+- **Energy Siphon**: Instant HP restoration on enemy kill
+- **Interceptor**: Small explosions when player bullets destroy enemy bullets
 
 ---
 

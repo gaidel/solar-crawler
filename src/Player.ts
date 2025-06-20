@@ -1,4 +1,4 @@
-import { PLAYER_CONFIG, BULLET_CONFIG } from './config/constants';
+import { PLAYER_CONFIG, BULLET_CONFIG, UPGRADE_CONFIG } from './config/constants';
 import { setupCircularCollision } from './utils/CollisionHelpers';
 import { UpgradeManager } from './UpgradeManager';
 
@@ -27,6 +27,14 @@ export class Player {
     private maxHP: number = PLAYER_CONFIG.BASE_MAX_HP;
     private currentHP: number = PLAYER_CONFIG.BASE_MAX_HP;
     private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
+    
+    // Auto-repair system
+    private autoRepairTimer: Phaser.Time.TimerEvent | null = null;
+    
+    // Phase Shield system (invincibility frames)
+    private isInvincible: boolean = false;
+    private invincibilityTimer: Phaser.Time.TimerEvent | null = null;
+    private flickerTimer: Phaser.Time.TimerEvent | null = null;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -41,6 +49,7 @@ export class Player {
     setUpgradeManager(upgradeManager: UpgradeManager): void {
         this.upgradeManager = upgradeManager;
         this.updateStatsFromUpgrades();
+        this.setupAutoRepair();
     }
 
     create(bullets: Phaser.Physics.Arcade.Group): void {
@@ -64,11 +73,16 @@ export class Player {
     }
 
     update(time: number, input: PlayerInput): void {
+        // Calculate movement speed based on upgrades
+        const movementSpeed = this.upgradeManager
+            ? this.upgradeManager.calculateMovementSpeed(PLAYER_CONFIG.SPEED)
+            : PLAYER_CONFIG.SPEED;
+
         // Handle player movement based on input commands
         if (input.moveUp) {
-            this.sprite.setVelocityY(-PLAYER_CONFIG.SPEED);
+            this.sprite.setVelocityY(-movementSpeed);
         } else if (input.moveDown) {
-            this.sprite.setVelocityY(PLAYER_CONFIG.SPEED);
+            this.sprite.setVelocityY(movementSpeed);
         } else {
             this.sprite.setVelocityY(0);
         }
@@ -113,7 +127,12 @@ export class Player {
             bullet.setActive(true);
             bullet.setVisible(true);
             bullet.setScale(BULLET_CONFIG.SCALE);
-            bullet.setVelocityX(BULLET_CONFIG.SPEED);
+            
+            // Use dynamic bullet speed based on upgrades
+            const bulletSpeed = this.upgradeManager 
+                ? this.upgradeManager.calculateBulletSpeed() 
+                : BULLET_CONFIG.SPEED;
+            bullet.setVelocityX(bulletSpeed);
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
 
@@ -151,6 +170,11 @@ export class Player {
 
     // HP System methods
     takeDamage(damage: number): boolean {
+        // Check if player is currently invincible (Phase Shield)
+        if (this.isInvincible) {
+            return false; // No damage taken during invincibility
+        }
+
         // Apply shield damage reduction if available
         const actualDamage = this.upgradeManager
             ? this.upgradeManager.calculateIncomingDamage(damage)
@@ -158,21 +182,13 @@ export class Player {
 
         this.currentHP -= actualDamage;
 
-        // Visual feedback for damage (red flash)
-        this.sprite.setTint(0xff0000); // Red tint
-
-        // Clear any existing damage flash timer to prevent conflicts
-        if (this.damageFlashTimer) {
-            this.damageFlashTimer.remove();
+        // Activate Phase Shield if player has the upgrade
+        if (this.upgradeManager && this.upgradeManager.hasPhaseShield()) {
+            this.activatePhaseShield();
+        } else {
+            // Normal damage flash if no Phase Shield
+            this.showDamageFlash();
         }
-
-        // Create new timer to restore original color (200ms for player)
-        this.damageFlashTimer = this.scene.time.delayedCall(200, () => {
-            if (this.sprite && this.sprite.active) {
-                this.sprite.clearTint();
-            }
-            this.damageFlashTimer = null;
-        });
 
         if (this.currentHP <= 0) {
             this.currentHP = 0;
@@ -199,6 +215,19 @@ export class Player {
         console.log('[CHEAT] Player health restored to full (100 HP)');
     }
 
+    // Heal player (with Energy Siphon or Auto-Repair)
+    heal(amount: number): void {
+        this.currentHP = Math.min(this.currentHP + amount, this.maxHP);
+    }
+
+    // Energy Siphon: Heal based on enemy max HP
+    onEnemyKilled(enemyMaxHP: number): void {
+        if (this.upgradeManager && this.upgradeManager.hasEnergySiphon()) {
+            const healAmount = Math.ceil(enemyMaxHP * this.upgradeManager.getEnergySiphonRatio());
+            this.heal(healAmount);
+        }
+    }
+
     // Update player stats based on current upgrades
     updateStatsFromUpgrades(): void {
         if (!this.upgradeManager) return;
@@ -214,6 +243,118 @@ export class Player {
                 `[UPGRADE] Health increased from ${oldMaxHP} to ${this.maxHP} (current: ${this.currentHP})`
             );
         }
+    }
+
+    // Setup auto-repair system (public method)
+    setupAutoRepair(): void {
+        if (this.autoRepairTimer) {
+            this.autoRepairTimer.remove();
+            this.autoRepairTimer = null;
+        }
+
+        if (this.upgradeManager && this.upgradeManager.hasAutoRepair()) {
+            this.autoRepairTimer = this.scene.time.addEvent({
+                delay: UPGRADE_CONFIG.AUTO_REPAIR_RATE,
+                callback: () => {
+                    if (this.currentHP < this.maxHP) {
+                        this.heal(UPGRADE_CONFIG.AUTO_REPAIR_AMOUNT);
+                    }
+                },    
+                loop: true,
+            });
+        }
+    }
+
+    // Phase Shield system methods
+    private showDamageFlash(): void {
+        // Visual feedback for damage (red flash)
+        this.sprite.setTint(0xff0000); // Red tint
+
+        // Clear any existing damage flash timer to prevent conflicts
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+        }
+
+        // Create new timer to restore original color (200ms for player)
+        this.damageFlashTimer = this.scene.time.delayedCall(200, () => {
+            if (this.sprite && this.sprite.active) {
+                this.sprite.clearTint();
+            }
+            this.damageFlashTimer = null;
+        });
+    }
+
+    private activatePhaseShield(): void {
+        // Set invincibility state
+        this.isInvincible = true;
+
+        // Clear any existing timers
+        if (this.invincibilityTimer) {
+            this.invincibilityTimer.remove();
+        }
+        if (this.flickerTimer) {
+            this.flickerTimer.remove();
+        }
+        if (this.damageFlashTimer) {
+            this.damageFlashTimer.remove();
+            this.damageFlashTimer = null;
+        }
+
+        // Start flickering effect
+        this.startFlickering();
+
+        // Set timer to end invincibility
+        this.invincibilityTimer = this.scene.time.delayedCall(
+            UPGRADE_CONFIG.PHASE_SHIELD_DURATION,
+            () => {
+                this.deactivatePhaseShield();
+            }
+        );
+
+        console.log('[PHASE_SHIELD] Activated for 4 seconds');
+    }
+
+    private startFlickering(): void {
+        let isVisible = true;
+
+        this.flickerTimer = this.scene.time.addEvent({
+            delay: UPGRADE_CONFIG.PHASE_SHIELD_FLICKER_RATE,
+            callback: () => {
+                if (this.sprite && this.sprite.active) {
+                    isVisible = !isVisible;
+                    this.sprite.setAlpha(isVisible ? 1.0 : 0.3);
+                }
+            },
+            loop: true,
+        });
+    }
+
+    private deactivatePhaseShield(): void {
+        // Clear invincibility state
+        this.isInvincible = false;
+
+        // Clear timers
+        if (this.invincibilityTimer) {
+            this.invincibilityTimer.remove();
+            this.invincibilityTimer = null;
+        }
+        if (this.flickerTimer) {
+            this.flickerTimer.remove();
+            this.flickerTimer = null;
+        }
+
+        // Restore normal appearance
+        if (this.sprite && this.sprite.active) {
+            this.sprite.setAlpha(1.0);
+            this.sprite.clearTint();
+        }
+
+        console.log('[PHASE_SHIELD] Deactivated');
+    }
+
+    // Check if player is currently invincible (for external use)
+    isPlayerInvincible(): boolean {
+        return this.isInvincible;
     }
 
     // Game state methods
@@ -241,8 +382,14 @@ export class Player {
             this.damageFlashTimer = null;
         }
 
+        // Clear Phase Shield timers and state
+        this.deactivatePhaseShield();
+
         // Reset firing timer
         this.lastFired = 0;
+
+        // Re-setup auto-repair after reset
+        this.setupAutoRepair();
     }
 
     resetPosition(): void {
@@ -259,6 +406,9 @@ export class Player {
             this.damageFlashTimer = null;
         }
 
+        // Clear Phase Shield timers and state
+        this.deactivatePhaseShield();
+
         // Reset firing timer
         this.lastFired = 0;
     }
@@ -268,6 +418,22 @@ export class Player {
         if (this.damageFlashTimer) {
             this.damageFlashTimer.remove();
             this.damageFlashTimer = null;
+        }
+
+        // Clear auto-repair timer if it exists
+        if (this.autoRepairTimer) {
+            this.autoRepairTimer.remove();
+            this.autoRepairTimer = null;
+        }
+
+        // Clear Phase Shield timers
+        if (this.invincibilityTimer) {
+            this.invincibilityTimer.remove();
+            this.invincibilityTimer = null;
+        }
+        if (this.flickerTimer) {
+            this.flickerTimer.remove();
+            this.flickerTimer = null;
         }
 
         if (this.sprite) {

@@ -1,3 +1,11 @@
+import { UPGRADE_CONFIG } from '../config/constants';
+
+// Interface for acid damage over time effect
+export interface AcidEffect {
+    damage: number;
+    timer: Phaser.Time.TimerEvent;
+}
+
 export interface Enemy {
     // Core enemy properties
     sprite: Phaser.Physics.Arcade.Sprite;
@@ -15,6 +23,10 @@ export interface Enemy {
     takeDamage(damage: number): boolean; // Returns true if enemy is destroyed
     onHit(): void;
     reset(): void;
+
+    // Acid effect methods
+    applyAcidEffect(damage: number, onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void): void;
+    hasAcidEffects(): boolean;
 }
 
 export abstract class BaseEnemy implements Enemy {
@@ -28,6 +40,10 @@ export abstract class BaseEnemy implements Enemy {
     protected group: Phaser.Physics.Arcade.Group;
     private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
     protected healthBar: Phaser.GameObjects.Graphics | null = null;
+    
+    // Acid effects system
+    private acidEffects: AcidEffect[] = [];
+    private baseColor: number = 0xffffff; // Store original color for acid tinting
 
     // Static method for loading assets - to be implemented by subclasses
     static preload(_scene: Phaser.Scene): void {
@@ -129,7 +145,8 @@ export abstract class BaseEnemy implements Enemy {
         // Create new timer to restore original color (100ms for quick flash)
         this.damageFlashTimer = this.scene.time.delayedCall(100, () => {
             if (this.sprite && this.sprite.active) {
-                this.sprite.clearTint();
+                // Restore appropriate color (base or acid tint)
+                this.updateTintColor();
             }
             this.damageFlashTimer = null;
         });
@@ -147,6 +164,9 @@ export abstract class BaseEnemy implements Enemy {
             this.damageFlashTimer.remove();
             this.damageFlashTimer = null;
         }
+
+        // Clear all acid effects
+        this.clearAcidEffects();
 
         // Hide health bar
         if (this.healthBar) {
@@ -179,6 +199,9 @@ export abstract class BaseEnemy implements Enemy {
             this.damageFlashTimer = null;
         }
 
+        // Clear all acid effects
+        this.clearAcidEffects();
+
         // Hide health bar
         if (this.healthBar) {
             this.healthBar.setVisible(false);
@@ -203,6 +226,9 @@ export abstract class BaseEnemy implements Enemy {
             this.damageFlashTimer = null;
         }
 
+        // Clear all acid effects
+        this.clearAcidEffects();
+
         // Destroy health bar
         if (this.healthBar) {
             this.healthBar.destroy();
@@ -223,5 +249,68 @@ export abstract class BaseEnemy implements Enemy {
 
         // Default cleanup for enemies that move off-screen
         return this.sprite.x < -100;
+    }
+
+    // Acid effects system methods
+    applyAcidEffect(damage: number, onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void): void {
+        // Create acid timer that applies damage after delay
+        const acidTimer = this.scene.time.delayedCall(UPGRADE_CONFIG.ACID_DURATION, () => {
+            // Apply acid damage if enemy is still alive and active
+            if (this.isActive && this.sprite.active && this.currentHP > 0) {
+                // Save position BEFORE calling takeDamage (which may move the enemy)
+                const explosionX = this.sprite.x;
+                const explosionY = this.sprite.y;
+                
+                const destroyed = this.takeDamage(damage);
+                
+                // If enemy was destroyed by acid damage, call the callback with saved position
+                if (destroyed && onEnemyDestroyed) {
+                    onEnemyDestroyed(this, explosionX, explosionY);
+                }
+            }
+            
+            // Remove this effect from the array
+            this.acidEffects = this.acidEffects.filter(effect => effect.timer !== acidTimer);
+            
+            // Update tint based on remaining acid effects
+            this.updateTintColor();
+        });
+
+        // Add the effect to our tracking array
+        const acidEffect: AcidEffect = {
+            damage: damage,
+            timer: acidTimer
+        };
+        this.acidEffects.push(acidEffect);
+
+        // Update visual tint to show acid effect
+        this.updateTintColor();
+    }
+
+    hasAcidEffects(): boolean {
+        return this.acidEffects.length > 0;
+    }
+
+    private updateTintColor(): void {
+        if (!this.sprite || !this.sprite.active) {
+            return;
+        }
+
+        if (this.hasAcidEffects()) {
+            this.sprite.setTint(UPGRADE_CONFIG.ACID_TINT_COLOR);
+        } else {
+            this.sprite.setTint(this.baseColor);
+        }
+    }
+
+    private clearAcidEffects(): void {
+        // Clear all acid effect timers
+        this.acidEffects.forEach(effect => {
+            if (effect.timer) {
+                effect.timer.remove();
+            }
+        });
+        this.acidEffects = [];
+        this.updateTintColor();
     }
 }

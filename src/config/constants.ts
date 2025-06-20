@@ -5,7 +5,7 @@ export const GAME_CONFIG = {
     WIN_TIME: 60000, // Victory time in milliseconds (1 minute)
     BACKGROUND_SCROLL_SPEED: 2,
     TOTAL_WAVES: 8, // Total number of waves to complete the game
-    WAVE_DURATION: 30000, // Duration of each wave in milliseconds (30 seconds for debugging)
+    WAVE_DURATION: 60000, // Duration of each wave in milliseconds (60 seconds)
 };
 
 // Wave difficulty modifiers for spawn frequency
@@ -103,7 +103,7 @@ export const BULLET_CONFIG = {
     SPEED: 400,
     MAX_POOL_SIZE: 20,
     OFFSET_X: 50, // Distance from player center
-    BASE_DAMAGE: 5, // Base damage - upgraded to 10 with damage upgrade
+    BASE_DAMAGE: 8, // Base damage - upgraded to 16 with damage upgrade
 };
 
 export const GUNNER_CONFIG = {
@@ -218,12 +218,29 @@ export const UPGRADE_CONFIG = {
     HEALTH: 'health',
     RATE_OF_FIRE: 'rate_of_fire',
     SHIELD: 'shield',
+    AUTO_REPAIR: 'auto_repair',
+    ENERGY_SIPHON: 'energy_siphon',
+    ACID_BULLETS: 'acid_bullets',
+    ENGINE: 'engine',
+    PHASE_SHIELD: 'phase_shield',
+    INTERCEPTOR: 'interceptor',
+    PROJECTILE_SPEED: 'projectile_speed',
+    REBIRTH: 'rebirth',
 
     // Upgrade effects
     DAMAGE_MULTIPLIER: 2, // Double damage (5 -> 10)
     HEALTH_MULTIPLIER: 2, // Double max HP (100 -> 200)
     FIRE_RATE_MULTIPLIER: 2, // Double fire rate (600ms -> 300ms)
     SHIELD_DAMAGE_REDUCTION: 0.5, // Reduce incoming damage by half (round up)
+    AUTO_REPAIR_RATE: 1000, // Heal 1 HP every 1000ms (1 second)
+    AUTO_REPAIR_AMOUNT: 1, // Heal 1 HP per tick
+    ENERGY_SIPHON_RATIO: 0.1, // Restore 10% of enemy max HP on kill
+    ACID_DURATION: 2000, // Acid effect duration in milliseconds (2 seconds)
+    ACID_TINT_COLOR: 0x44ff44, // Green tint for acid effect
+    ENGINE_SPEED_MULTIPLIER: 2, // Double movement speed
+    PHASE_SHIELD_DURATION: 4000, // Invincibility duration in milliseconds (4 seconds)
+    PHASE_SHIELD_FLICKER_RATE: 150, // Flicker interval in milliseconds
+    PROJECTILE_SPEED_MULTIPLIER: 2, // Double bullet speed
 
     // UI Configuration
     ICON_SCALE: 0.6, // Scale for 128x128 icons
@@ -259,8 +276,56 @@ export const UPGRADE_DEFINITIONS: UpgradeData[] = [
     },
     {
         id: UPGRADE_CONFIG.SHIELD,
-        name: 'Shield',
+        name: 'Armor Plating',
         description: 'Reduce incoming damage by half',
         icon: 'upgrade-shield',
+    },
+    {
+        id: UPGRADE_CONFIG.AUTO_REPAIR,
+        name: 'Auto-Repair',
+        description: 'Regenerate 1 HP every second',
+        icon: 'upgrade-regeneration',
+    },
+    {
+        id: UPGRADE_CONFIG.ENERGY_SIPHON,
+        name: 'Energy Siphon',
+        description: 'Restore 10% of enemy HP on kill',
+        icon: 'upgrade-vampirism',
+    },
+    {
+        id: UPGRADE_CONFIG.ACID_BULLETS,
+        name: 'Acid Bullets',
+        description: 'Bullets apply poison damage over time',
+        icon: 'upgrade-acid',
+    },
+    {
+        id: UPGRADE_CONFIG.ENGINE,
+        name: 'Engine Upgrade',
+        description: 'Double your movement speed',
+        icon: 'upgrade-engine',
+    },
+    {
+        id: UPGRADE_CONFIG.PHASE_SHIELD,
+        name: 'Phase Shield',
+        description: 'Invincibility after taking damage',
+        icon: 'upgrade-ghost',
+    },
+    {
+        id: UPGRADE_CONFIG.INTERCEPTOR,
+        name: 'Interceptor',
+        description: 'Bullets destroy enemy bullets',
+        icon: 'upgrade-interceptor',
+    },
+    {
+        id: UPGRADE_CONFIG.PROJECTILE_SPEED,
+        name: 'Projectile Speed',
+        description: 'Double your bullet speed',
+        icon: 'upgrade-projectile-speed',
+    },
+    {
+        id: UPGRADE_CONFIG.REBIRTH,
+        name: 'Rebirth',
+        description: 'Restart wave instead of game over',
+        icon: 'upgrade-rebirth',
     },
 ];

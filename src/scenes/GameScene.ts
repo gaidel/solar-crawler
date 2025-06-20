@@ -91,6 +91,8 @@ export class GameScene extends Phaser.Scene {
         this.enemyManager = new EnemyManager(this);
         this.enemyManager.setAudioManager(this.audioManager);
         this.enemyManager.setCurrentWave(this.currentWave);
+        this.enemyManager.setPlayer(this.player); // Connect player for Energy Siphon
+        this.enemyManager.setUpgradeManager(this.upgradeManager); // Connect upgrade manager for acid bullets
         this.enemyManager.create();
 
         // Create explosion manager
@@ -217,6 +219,22 @@ export class GameScene extends Phaser.Scene {
                     bullet as Phaser.Physics.Arcade.Sprite
                 ),
             undefined,
+            this
+        );
+
+        // Player bullets vs Enemy bullets (Interceptor upgrade)
+        this.physics.add.overlap(
+            this.bullets,
+            this.enemyManager.getEnemyBullets(),
+            (playerBullet, enemyBullet) =>
+                this.handleBulletInterception(
+                    playerBullet as Phaser.Physics.Arcade.Sprite,
+                    enemyBullet as Phaser.Physics.Arcade.Sprite
+                ),
+            // Process callback - only if player has Interceptor upgrade
+            (playerBullet, enemyBullet) => {
+                return this.upgradeManager ? this.upgradeManager.hasInterceptor() : false;
+            },
             this
         );
     }
@@ -501,6 +519,42 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    private handleBulletInterception(
+        playerBullet: Phaser.Physics.Arcade.Sprite,
+        enemyBullet: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if both bullets are still active
+        if (!playerBullet.active || !enemyBullet.active) {
+            return;
+        }
+
+        // Destroy both bullets
+        playerBullet.setActive(false);
+        playerBullet.setVisible(false);
+        if (playerBullet.body) {
+            playerBullet.body.enable = false;
+        }
+
+        enemyBullet.setActive(false);
+        enemyBullet.setVisible(false);
+        if (enemyBullet.body) {
+            enemyBullet.body.enable = false;
+        }
+
+        // Create small explosion effect at collision point
+        const collisionX = (playerBullet.x + enemyBullet.x) / 2;
+        const collisionY = (playerBullet.y + enemyBullet.y) / 2;
+        
+        if (this.explosionManager) {
+            this.explosionManager.explodeSmall(collisionX, collisionY);
+        }
+
+        // Play soft explosion sound for bullet interception
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.2); // 20% volume for bullet collision
+        }
+    }
+
     private handlePlayerGunnerCollision(
         playerSprite: Phaser.Physics.Arcade.Sprite,
         enemySprite: Phaser.Physics.Arcade.Sprite
@@ -545,6 +599,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     private gameOver(): void {
+        // Check if player has Rebirth upgrade
+        if (this.upgradeManager && this.upgradeManager.hasRebirth()) {
+            this.triggerRebirth();
+            return;
+        }
+
+        // Normal game over
         this.gameState = GameState.GAME_OVER;
 
         // Update HP display to show 0 HP before showing game over screen
@@ -570,6 +631,67 @@ export class GameScene extends Phaser.Scene {
         );
     }
 
+    private triggerRebirth(): void {
+        // Change game state to prevent further updates
+        this.gameState = GameState.GAME_OVER; // Use GAME_OVER state to stop updates
+
+        // Consume the rebirth upgrade (remove it)
+        if (this.upgradeManager) {
+            this.upgradeManager.consumeRebirth();
+        }
+
+        // Update HP display to show 0 HP
+        this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
+
+        // Pause physics to prevent movement and collisions
+        this.physics.pause();
+
+        // Stop enemy spawning
+        this.enemyManager.stopSpawning();
+
+        // Create explosion effect at player position
+        if (this.explosionManager) {
+            this.explosionManager.explodeLarge(this.player.getX(), this.player.getY());
+        }
+
+        // Play explosion sound when player dies
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound();
+        }
+
+        // Show rebirth message and restart current wave
+        this.gameUI.showRebirth(
+            this.currentWave,
+            () => this.restartCurrentWave(),
+            () => this.returnToMenu()
+        );
+    }
+
+    private restartCurrentWave(): void {
+        this.gameState = GameState.PLAYING;
+        this.waveStartTime = this.time.now;
+
+        // Clear UI overlays and menus
+        this.gameUI.hideOverlays();
+
+        // Reset player to full health and position
+        this.player.reset();
+
+        // Clear all enemies from screen
+        this.enemyManager.reset();
+
+        // Update enemy manager with current wave number (don't increment)
+        this.enemyManager.setCurrentWave(this.currentWave);
+
+        // Resume physics
+        this.physics.resume();
+
+        // Restart enemy spawning
+        this.enemyManager.restartSpawning();
+
+        console.log(`[REBIRTH] Wave ${this.currentWave} restarted`);
+    }
+
     private completeWave(): void {
         if (this.currentWave >= GAME_CONFIG.TOTAL_WAVES) {
             // Final victory after completing all waves
@@ -592,11 +714,11 @@ export class GameScene extends Phaser.Scene {
         // Stop enemy spawning
         this.enemyManager.stopSpawning();
 
-        // Show upgrade screen only after wave 1
-        if (this.currentWave === 1) {
+        // Show upgrade screen after every wave (except the last one) if upgrades are available
+        if (this.currentWave < GAME_CONFIG.TOTAL_WAVES && this.upgradeManager.hasAvailableUpgrades()) {
             this.showUpgradeSelection();
         } else {
-            // Show normal wave completion message for other waves
+            // Show normal wave completion message if no upgrades available or it's the last wave
             this.gameUI.showWaveVictory(
                 this.currentWave,
                 this.score,
@@ -793,6 +915,9 @@ export class GameScene extends Phaser.Scene {
 
         // Update player stats based on new upgrades
         this.player.updateStatsFromUpgrades();
+
+        // Setup auto-repair if that upgrade was selected
+        this.player.setupAutoRepair();
 
         console.log(`[UPGRADE] Current upgrades: ${this.upgradeManager.getUpgradeStatus()}`);
 
