@@ -126,7 +126,11 @@ export class Player {
         if (bullet) {
             bullet.setActive(true);
             bullet.setVisible(true);
-            bullet.setScale(BULLET_CONFIG.SCALE);
+            // Use dynamic bullet scale based on upgrades
+            const bulletScale = this.upgradeManager 
+                ? this.upgradeManager.calculateBulletScale() 
+                : BULLET_CONFIG.SCALE;
+            bullet.setScale(bulletScale);
             
             // Use dynamic bullet speed based on upgrades
             const bulletSpeed = this.upgradeManager 

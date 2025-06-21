@@ -3,6 +3,8 @@ import { UPGRADE_CONFIG, UPGRADE_DEFINITIONS, UpgradeData, BULLET_CONFIG } from 
 export class UpgradeManager {
     private activeUpgrades: Set<string> = new Set();
     private availableUpgrades: UpgradeData[] = []; // Pool of upgrades that can still be selected
+    private pendingDelayedUpgrades: number = 0; // Number of delayed upgrades to trigger next wave
+    private currentWaveUpgradeSelections: number = 0; // Remaining upgrade selections for current wave
 
     // Asset loading
     static preload(scene: Phaser.Scene): void {
@@ -18,6 +20,10 @@ export class UpgradeManager {
         scene.load.image('upgrade-interceptor', 'assets/upgrade-interceptor.png');
         scene.load.image('upgrade-projectile-speed', 'assets/upgrade-projectile-speed.png');
         scene.load.image('upgrade-rebirth', 'assets/upgrade-rebirth.png');
+        scene.load.image('upgrade-aoe', 'assets/upgrade-aoe.png');
+        scene.load.image('upgrade-healing', 'assets/upgrade-healing.png');
+        scene.load.image('upgrade-later', 'assets/upgrade-later.png');
+        scene.load.image('upgrade-projectile', 'assets/upgrade-projectile.png');
     }
 
     constructor() {
@@ -33,6 +39,14 @@ export class UpgradeManager {
 
     // Apply an upgrade to the player
     applyUpgrade(upgradeId: string): void {
+        // Check if it's an instant upgrade
+        if (this.isInstantUpgrade(upgradeId)) {
+            // Instant upgrades: remove from pool but don't add to permanent upgrades
+            this.availableUpgrades = this.availableUpgrades.filter(upgrade => upgrade.id !== upgradeId);
+            console.log(`[UPGRADE] Applied instant upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`);
+            return;
+        }
+
         if (this.activeUpgrades.has(upgradeId)) {
             console.warn(`Upgrade ${upgradeId} already applied`);
             return;
@@ -123,6 +137,64 @@ export class UpgradeManager {
         return this.hasUpgrade(UPGRADE_CONFIG.REBIRTH);
     }
 
+    // Check if AOE bullets are active
+    hasAOEBullets(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.AOE_BULLETS);
+    }
+
+    // Check if bullet size upgrade is active
+    hasBulletSize(): boolean {
+        return this.hasUpgrade(UPGRADE_CONFIG.BULLET_SIZE);
+    }
+
+    // Check if upgrade is an instant effect (not permanent)
+    isInstantUpgrade(upgradeId: string): boolean {
+        return upgradeId === UPGRADE_CONFIG.INSTANT_HEAL || upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE;
+    }
+
+    // Check if upgrade is a delayed effect
+    isDelayedUpgrade(upgradeId: string): boolean {
+        return upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE;
+    }
+
+    // Add delayed upgrade (doesn't affect current wave, affects next wave)
+    addDelayedUpgrade(): void {
+        this.pendingDelayedUpgrades += 3; // Add 3 upgrade selections for next wave
+        console.log(`[DELAYED_UPGRADE] Added delayed upgrade - ${this.pendingDelayedUpgrades} total pending`);
+    }
+
+    // Check if there are pending delayed upgrades
+    hasPendingDelayedUpgrades(): boolean {
+        return this.pendingDelayedUpgrades > 0;
+    }
+
+    // Initialize upgrade selections for current wave (call this when starting upgrade selection)
+    initializeWaveUpgrades(): number {
+        this.currentWaveUpgradeSelections = Math.min(1 + this.pendingDelayedUpgrades, this.availableUpgrades.length);
+        console.log(`[UPGRADE] Initialized ${this.currentWaveUpgradeSelections} upgrade selections for current wave`);
+        return this.currentWaveUpgradeSelections;
+    }
+
+    // Get remaining upgrade selections for current wave
+    getRemainingUpgradeSelections(): number {
+        return this.currentWaveUpgradeSelections;
+    }
+
+    // Consume one upgrade selection (either normal or delayed)
+    consumeUpgradeSelection(): void {
+        if (this.currentWaveUpgradeSelections > 0) {
+            this.currentWaveUpgradeSelections--;
+            
+            // Also consume delayed upgrade if we have them
+            if (this.pendingDelayedUpgrades > 0) {
+                this.pendingDelayedUpgrades--;
+                console.log(`[DELAYED_UPGRADE] Consumed delayed upgrade - ${this.pendingDelayedUpgrades} pending for future waves`);
+            }
+            
+            console.log(`[UPGRADE] Consumed upgrade selection - ${this.currentWaveUpgradeSelections} remaining this wave`);
+        }
+    }
+
     // Consume rebirth upgrade (remove it after use)
     consumeRebirth(): boolean {
         if (this.hasRebirth()) {
@@ -142,6 +214,17 @@ export class UpgradeManager {
         }
         
         return speed;
+    }
+
+    // Calculate bullet scale based on upgrades
+    calculateBulletScale(): number {
+        let scale = BULLET_CONFIG.SCALE;
+        
+        if (this.hasBulletSize()) {
+            scale *= UPGRADE_CONFIG.BULLET_SIZE_MULTIPLIER;
+        }
+        
+        return scale;
     }
 
     // Calculate actual damage based on upgrades
@@ -217,6 +300,8 @@ export class UpgradeManager {
     reset(): void {
         this.activeUpgrades.clear();
         this.availableUpgrades = [...UPGRADE_DEFINITIONS]; // Restore full pool
+        this.pendingDelayedUpgrades = 0; // Reset delayed upgrades
+        this.currentWaveUpgradeSelections = 0; // Reset current wave selections
         console.log(`[UPGRADE] All upgrades reset - ${this.availableUpgrades.length} upgrades available`);
     }
 

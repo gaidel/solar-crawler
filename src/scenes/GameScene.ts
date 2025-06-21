@@ -1,4 +1,4 @@
-import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG } from '../config/constants';
+import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG, UPGRADE_CONFIG } from '../config/constants';
 import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
@@ -316,6 +316,10 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
+        // Store bullet position for potential AOE explosion
+        const impactX = bullet.x;
+        const impactY = bullet.y;
+
         // Properly deactivate bullet
         bullet.setActive(false);
         bullet.setVisible(false);
@@ -329,6 +333,11 @@ export class GameScene extends Phaser.Scene {
         const bulletDamage = this.player.getBulletDamage();
         const scoreValue = this.enemyManager.handleBulletCollision(enemy, bulletDamage);
         this.score += scoreValue;
+
+        // Check for AOE damage upgrade
+        if (this.upgradeManager && this.upgradeManager.hasAOEBullets()) {
+            this.handleAOEExplosion(impactX, impactY, bulletDamage);
+        }
     }
 
     private handlePlayerAsteroidCollision(
@@ -517,6 +526,45 @@ export class GameScene extends Phaser.Scene {
         if (playerDestroyed) {
             this.gameOver();
         }
+    }
+
+    private handleAOEExplosion(x: number, y: number, bulletDamage: number): void {
+        // Create explosion effect at impact point
+        if (this.explosionManager) {
+            this.explosionManager.explodeMedium(x, y);
+        }
+
+        // Play explosion sound with moderate volume
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.6); // 60% volume for AOE explosion
+        }
+
+        // Calculate AOE damage (half of bullet damage)
+        const aoeDamage = Math.round(bulletDamage * UPGRADE_CONFIG.AOE_DAMAGE_MULTIPLIER);
+        const aoeRadius = UPGRADE_CONFIG.AOE_RADIUS;
+
+        // Find all active enemies within AOE radius and damage them
+        const allEnemyGroups = [
+            this.enemyManager.getAsteroidGroup(),
+            this.enemyManager.getKamikazeGroup(),
+            this.enemyManager.getGunnerGroup(),
+            this.enemyManager.getLeaperGroup()
+        ];
+
+        allEnemyGroups.forEach(group => {
+            group.getChildren().forEach(enemy => {
+                if (enemy instanceof Phaser.Physics.Arcade.Sprite && enemy.active) {
+                    // Calculate distance from explosion center
+                    const distance = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
+                    
+                    // If enemy is within AOE radius, damage them
+                    if (distance <= aoeRadius) {
+                        const aoeScoreValue = this.enemyManager.handleBulletCollision(enemy, aoeDamage);
+                        this.score += aoeScoreValue;
+                    }
+                }
+            });
+        });
     }
 
     private handleBulletInterception(
@@ -716,7 +764,7 @@ export class GameScene extends Phaser.Scene {
 
         // Show upgrade screen after every wave (except the last one) if upgrades are available
         if (this.currentWave < GAME_CONFIG.TOTAL_WAVES && this.upgradeManager.hasAvailableUpgrades()) {
-            this.showUpgradeSelection();
+            this.showUpgradeSelectionWithDelayed();
         } else {
             // Show normal wave completion message if no upgrades available or it's the last wave
             this.gameUI.showWaveVictory(
@@ -837,6 +885,9 @@ export class GameScene extends Phaser.Scene {
         // Pause enemy spawning
         this.enemyManager.pauseSpawning();
 
+        // Pause acid effects
+        this.enemyManager.pauseAcidEffects();
+
         // Show pause menu
         this.gameUI.showPauseMenu(
             () => this.resumeGame(),
@@ -852,6 +903,9 @@ export class GameScene extends Phaser.Scene {
 
         // Resume enemy spawning
         this.enemyManager.resumeSpawning();
+
+        // Resume acid effects
+        this.enemyManager.resumeAcidEffects();
 
         // Clear any UI overlays
         this.gameUI.clearScreens();
@@ -907,22 +961,77 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
+    // Show multiple upgrade selections if delayed upgrades are pending
+    private showUpgradeSelectionWithDelayed(): void {
+        const upgradeCount = this.upgradeManager.initializeWaveUpgrades();
+        console.log(`[UPGRADE] Showing upgrade selection screen (${upgradeCount} total upgrades available)`);
+        
+        this.showNextUpgradeSelection();
+    }
+
+    private showNextUpgradeSelection(): void {
+        // Check if we still have upgrade selections to show
+        if (this.upgradeManager.getRemainingUpgradeSelections() <= 0) {
+            // No more upgrades to show, proceed to next wave
+            this.startNextWave();
+            return;
+        }
+
+        console.log(`[UPGRADE] Showing upgrade selection (${this.upgradeManager.getRemainingUpgradeSelections()} remaining)`);
+        this.gameUI.showUpgradeScreen((upgradeId: string) => {
+            this.applyUpgradeWithDelayed(upgradeId);
+        });
+    }
+
+    private applyUpgradeWithDelayed(upgradeId: string): void {
+        console.log(`[UPGRADE] Player selected upgrade: ${upgradeId}`);
+
+        // Apply the upgrade normally
+        this.applyUpgradeLogic(upgradeId);
+
+        // Consume one upgrade selection (handles both normal and delayed)
+        this.upgradeManager.consumeUpgradeSelection();
+
+        // Show next upgrade selection or continue to next wave
+        this.showNextUpgradeSelection();
+    }
+
     private applyUpgrade(upgradeId: string): void {
         console.log(`[UPGRADE] Player selected upgrade: ${upgradeId}`);
 
-        // Apply the upgrade
-        this.upgradeManager.applyUpgrade(upgradeId);
-
-        // Update player stats based on new upgrades
-        this.player.updateStatsFromUpgrades();
-
-        // Setup auto-repair if that upgrade was selected
-        this.player.setupAutoRepair();
-
-        console.log(`[UPGRADE] Current upgrades: ${this.upgradeManager.getUpgradeStatus()}`);
+        // Apply the upgrade logic
+        this.applyUpgradeLogic(upgradeId);
 
         // Continue to next wave
         this.startNextWave();
+    }
+
+    private applyUpgradeLogic(upgradeId: string): void {
+        // Handle instant upgrades
+        if (this.upgradeManager.isInstantUpgrade(upgradeId)) {
+            if (upgradeId === UPGRADE_CONFIG.INSTANT_HEAL) {
+                // Instant heal: restore player to full health
+                this.player.restoreFullHealth();
+                console.log('[INSTANT_HEAL] Player health restored to maximum');
+            } else if (upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE) {
+                // Delayed upgrade: add bonus upgrade selections for next wave
+                this.upgradeManager.addDelayedUpgrade();
+                console.log('[DELAYED_UPGRADE] Delayed upgrade activated - next wave will have 3 upgrades');
+            }
+            // Still need to apply to UpgradeManager to remove from pool
+            this.upgradeManager.applyUpgrade(upgradeId);
+        } else {
+            // Apply permanent upgrade
+            this.upgradeManager.applyUpgrade(upgradeId);
+
+            // Update player stats based on new upgrades
+            this.player.updateStatsFromUpgrades();
+
+            // Setup auto-repair if that upgrade was selected
+            this.player.setupAutoRepair();
+
+            console.log(`[UPGRADE] Current upgrades: ${this.upgradeManager.getUpgradeStatus()}`);
+        }
     }
 
     private cleanup(): void {

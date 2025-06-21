@@ -27,6 +27,8 @@ export interface Enemy {
     // Acid effect methods
     applyAcidEffect(damage: number, onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void): void;
     hasAcidEffects(): boolean;
+    pauseAcidEffects(): void;
+    resumeAcidEffects(): void;
 }
 
 export abstract class BaseEnemy implements Enemy {
@@ -312,5 +314,23 @@ export abstract class BaseEnemy implements Enemy {
         });
         this.acidEffects = [];
         this.updateTintColor();
+    }
+
+    pauseAcidEffects(): void {
+        // Pause all active acid effect timers
+        this.acidEffects.forEach(effect => {
+            if (effect.timer && !effect.timer.hasDispatched) {
+                effect.timer.paused = true;
+            }
+        });
+    }
+
+    resumeAcidEffects(): void {
+        // Resume all paused acid effect timers
+        this.acidEffects.forEach(effect => {
+            if (effect.timer && !effect.timer.hasDispatched) {
+                effect.timer.paused = false;
+            }
+        });
     }
 }

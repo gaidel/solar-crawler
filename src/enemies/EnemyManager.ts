@@ -597,6 +597,56 @@ export class EnemyManager {
         }
     }
 
+    // Pause all acid effects (for pause state)
+    pauseAcidEffects(): void {
+        // Pause acid effects on all active enemies
+        this.asteroids.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.pauseAcidEffects();
+            }
+        });
+        this.kamikazes.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.pauseAcidEffects();
+            }
+        });
+        this.gunners.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.pauseAcidEffects();
+            }
+        });
+        this.leapers.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.pauseAcidEffects();
+            }
+        });
+    }
+
+    // Resume all acid effects (after pause state)
+    resumeAcidEffects(): void {
+        // Resume acid effects on all active enemies
+        this.asteroids.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.resumeAcidEffects();
+            }
+        });
+        this.kamikazes.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.resumeAcidEffects();
+            }
+        });
+        this.gunners.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.resumeAcidEffects();
+            }
+        });
+        this.leapers.forEach(enemy => {
+            if (enemy.isActive) {
+                enemy.resumeAcidEffects();
+            }
+        });
+    }
+
     // Restart spawning (after stop spawning - recreates timers based on current wave)
     restartSpawning(): void {
         this.startSpawning();

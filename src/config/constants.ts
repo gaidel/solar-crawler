@@ -226,6 +226,10 @@ export const UPGRADE_CONFIG = {
     INTERCEPTOR: 'interceptor',
     PROJECTILE_SPEED: 'projectile_speed',
     REBIRTH: 'rebirth',
+    AOE_BULLETS: 'aoe_bullets',
+    INSTANT_HEAL: 'instant_heal',
+    DELAYED_UPGRADE: 'delayed_upgrade',
+    BULLET_SIZE: 'bullet_size',
 
     // Upgrade effects
     DAMAGE_MULTIPLIER: 2, // Double damage (5 -> 10)
@@ -241,6 +245,9 @@ export const UPGRADE_CONFIG = {
     PHASE_SHIELD_DURATION: 4000, // Invincibility duration in milliseconds (4 seconds)
     PHASE_SHIELD_FLICKER_RATE: 150, // Flicker interval in milliseconds
     PROJECTILE_SPEED_MULTIPLIER: 2, // Double bullet speed
+    AOE_RADIUS: 160, // 1/8 of screen width (1280/8 = 160px)
+    AOE_DAMAGE_MULTIPLIER: 0.5, // AOE damage is half of bullet damage
+    BULLET_SIZE_MULTIPLIER: 2, // Double bullet size
 
     // UI Configuration
     ICON_SCALE: 0.6, // Scale for 128x128 icons
@@ -327,5 +334,29 @@ export const UPGRADE_DEFINITIONS: UpgradeData[] = [
         name: 'Rebirth',
         description: 'Restart wave instead of game over',
         icon: 'upgrade-rebirth',
+    },
+    {
+        id: UPGRADE_CONFIG.AOE_BULLETS,
+        name: 'Explosive Rounds',
+        description: 'Area damage bullets',
+        icon: 'upgrade-aoe',
+    },
+    {
+        id: UPGRADE_CONFIG.INSTANT_HEAL,
+        name: 'Repair Kit',
+        description: 'Restore full health',
+        icon: 'upgrade-healing',
+    },
+    {
+        id: UPGRADE_CONFIG.DELAYED_UPGRADE,
+        name: 'Reserve Cache',
+        description: 'Triple upgrades next wave',
+        icon: 'upgrade-later',
+    },
+    {
+        id: UPGRADE_CONFIG.BULLET_SIZE,
+        name: 'Heavy Rounds',
+        description: 'Double bullet size',
+        icon: 'upgrade-projectile',
     },
 ];

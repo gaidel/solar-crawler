@@ -41,6 +41,9 @@ export class GameUI {
     // Settings system
     private showingSettings = false;
     private settingsCallback?: () => void;
+
+    // Active upgrades screen state
+    private showingActiveUpgrades = false;
     private audioManager?: AudioManager;
     private editingVolume = false;
     private volumeEditType: 'master' | 'music' | 'soundEffects' | null = null;
@@ -208,7 +211,7 @@ export class GameUI {
 
     // Update method for menu navigation (called from GameScene)
     update(): void {
-        if (this.menuItems.length > 0) {
+        if (this.menuItems.length > 0 || this.showingActiveUpgrades) {
             this.handleMenuNavigation();
         }
     }
@@ -578,9 +581,9 @@ export class GameUI {
         this.uiOverlay.setScrollFactor(0);
 
         // Title
-        const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 120, 'CHOOSE YOUR UPGRADE', {
+        const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 120, 'WAVE CLEARED!', {
             fontSize: UI_CONFIG.FONT_SIZE_LARGE,
-            color: '#ffffff',
+            color: '#44ff44', // Green color for success
             align: 'center',
         });
         title.setOrigin(0.5);
@@ -590,7 +593,7 @@ export class GameUI {
         const subtitle = this.scene.add.text(
             GAME_CONFIG.WIDTH / 2,
             180,
-            'Select one upgrade to enhance your ship',
+            'Excellent work! Choose an upgrade to enhance your ship',
             {
                 fontSize: UI_CONFIG.FONT_SIZE_SMALL,
                 color: '#cccccc',
@@ -681,13 +684,7 @@ export class GameUI {
         });
 
         // Instructions
-        let instructionText = 'W/S to navigate, ENTER to select';
-        
-        // Add debug instruction if debug mode is enabled
-        const scene = this.scene as any;
-        if (scene.physics && scene.physics.world && scene.physics.world.debugGraphic) {
-            instructionText += ' | R to reroll (debug)';
-        }
+        const instructionText = 'W/S to navigate, ENTER to select';
         
         const instructions = this.scene.add.text(
             GAME_CONFIG.WIDTH / 2,
@@ -732,6 +729,7 @@ export class GameUI {
         this.menuItems = [];
         this.menuCallbacks = [
             onResume,
+            () => this.showActiveUpgrades(() => this.showPauseMenu(onResume, onReturnToMenu)),
             () => this.showSettingsMenu(() => this.showPauseMenu(onResume, onReturnToMenu)),
             () => this.showExitConfirmation(),
         ];
@@ -763,9 +761,10 @@ export class GameUI {
 
         // Create menu items
         const menuOptions = [
-            { text: 'RESUME GAME', y: -40 },
-            { text: 'SETTINGS', y: 0 },
-            { text: 'RETURN TO MENU', y: 40 },
+            { text: 'RESUME GAME', y: -60 },
+            { text: 'ACTIVE UPGRADES', y: -20 },
+            { text: 'SETTINGS', y: 20 },
+            { text: 'RETURN TO MENU', y: 60 },
         ];
 
         menuOptions.forEach((option, index) => {
@@ -793,7 +792,7 @@ export class GameUI {
 
         // Control hints
         const controlHint = this.scene.add
-            .text(0, 80, 'W/S to navigate | ENTER to select', {
+            .text(0, 100, 'W/S to navigate | ENTER to select', {
                 fontSize: UI_CONFIG.FONT_SIZE_SMALL,
                 color: '#888888',
                 align: 'center',
@@ -804,6 +803,158 @@ export class GameUI {
         this.uiOverlay.setScrollFactor(0);
 
         // No initial selection - user must navigate first
+    }
+
+    showActiveUpgrades(onBack: () => void): void {
+        this.clearScreens();
+        this.showingActiveUpgrades = true;
+
+        // Get active upgrades from the upgrade manager
+        const scene = this.scene as any;
+        const upgradeManager = scene.upgradeManager;
+        if (!upgradeManager) {
+            // If no upgrade manager, just go back
+            onBack();
+            return;
+        }
+
+        const activeUpgradeIds = upgradeManager.getActiveUpgrades();
+        const allUpgrades = upgradeManager.getAvailableUpgrades(); // This returns ALL upgrade definitions
+
+        // Filter to get active upgrade data
+        const activeUpgrades = allUpgrades.filter(upgrade => activeUpgradeIds.includes(upgrade.id));
+
+        // Create dark overlay
+        const overlay = this.scene.add.graphics();
+        overlay.fillStyle(0x000000, UI_CONFIG.OVERLAY_ALPHA);
+        overlay.fillRect(0, 0, GAME_CONFIG.WIDTH, GAME_CONFIG.HEIGHT);
+        overlay.setScrollFactor(0);
+
+        // Container for upgrade screen
+        this.uiOverlay = this.scene.add.container(0, 0);
+        this.uiOverlay.add(overlay);
+        this.uiOverlay.setScrollFactor(0);
+
+        // Title
+        const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 100, 'ACTIVE UPGRADES', {
+            fontSize: UI_CONFIG.FONT_SIZE_LARGE,
+            color: '#ffffff',
+            align: 'center',
+        });
+        title.setOrigin(0.5);
+        this.uiOverlay.add(title);
+
+        // Check if player has any upgrades
+        if (activeUpgrades.length === 0) {
+            // No upgrades message
+            const noUpgradesText = this.scene.add.text(
+                GAME_CONFIG.WIDTH / 2,
+                GAME_CONFIG.HEIGHT / 2,
+                'No upgrades active yet.\nComplete waves to unlock upgrades!',
+                {
+                    fontSize: UI_CONFIG.FONT_SIZE_MEDIUM,
+                    color: '#cccccc',
+                    align: 'center',
+                }
+            );
+            noUpgradesText.setOrigin(0.5);
+            this.uiOverlay.add(noUpgradesText);
+        } else {
+            // Subtitle
+            const subtitle = this.scene.add.text(
+                GAME_CONFIG.WIDTH / 2,
+                140,
+                `${activeUpgrades.length} upgrades active`,
+                {
+                    fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                    color: '#cccccc',
+                    align: 'center',
+                }
+            );
+            subtitle.setOrigin(0.5);
+            this.uiOverlay.add(subtitle);
+
+            // Create upgrade grid (2 columns, 4 rows maximum)
+            const startY = 200;
+            const itemHeight = 100;
+            const columnWidth = 600;
+            const leftColumnX = GAME_CONFIG.WIDTH / 2 - columnWidth / 2;
+            const rightColumnX = GAME_CONFIG.WIDTH / 2 + columnWidth / 2;
+
+            activeUpgrades.forEach((upgrade, index) => {
+                const isLeftColumn = index % 2 === 0;
+                const row = Math.floor(index / 2);
+                const x = isLeftColumn ? leftColumnX : rightColumnX;
+                const y = startY + row * itemHeight;
+
+                // Upgrade icon
+                const iconX = x - 150;
+                const icon = this.scene.add.image(iconX, y, upgrade.icon);
+                icon.setScale(0.4); // Smaller icons for compact display
+                this.uiOverlay.add(icon);
+
+                // Icon frame
+                const iconSize = 128 * 0.4;
+                const frameThickness = 2;
+                const frameOffset = iconSize / 2 + frameThickness / 2;
+
+                const iconFrame = this.scene.add.graphics();
+                iconFrame.lineStyle(frameThickness, 0x666666, 1);
+                iconFrame.strokeRect(
+                    iconX - frameOffset,
+                    y - frameOffset,
+                    iconSize + frameThickness,
+                    iconSize + frameThickness
+                );
+                this.uiOverlay.add(iconFrame);
+
+                // Upgrade name
+                const nameText = this.scene.add.text(
+                    x - 100,
+                    y - 10,
+                    upgrade.name,
+                    {
+                        fontSize: '20px',
+                        color: '#ffffff',
+                        fontStyle: 'bold',
+                    }
+                );
+                nameText.setOrigin(0, 0.5);
+                this.uiOverlay.add(nameText);
+
+                // Upgrade description
+                const descText = this.scene.add.text(
+                    x - 100,
+                    y + 15,
+                    upgrade.description,
+                    {
+                        fontSize: '16px',
+                        color: '#cccccc',
+                    }
+                );
+                descText.setOrigin(0, 0.5);
+                this.uiOverlay.add(descText);
+            });
+        }
+
+        // Back instruction
+        const backInstruction = this.scene.add.text(
+            GAME_CONFIG.WIDTH / 2,
+            GAME_CONFIG.HEIGHT - 60,
+            'ENTER to return to pause menu',
+            {
+                fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+                color: '#888888',
+                align: 'center',
+            }
+        );
+        backInstruction.setOrigin(0.5);
+        this.uiOverlay.add(backInstruction);
+
+        // Set up simple menu for back action
+        this.menuItems = []; // No selectable items, just waiting for Enter
+        this.menuCallbacks = [onBack];
+        this.selectedIndex = 0;
     }
 
     showRebirth(wave: number, onRestartWave: () => void, onReturnToMenu: () => void): void {
@@ -1174,6 +1325,7 @@ export class GameUI {
         this.selectedIndex = 0;
         this.showingConfirmation = false;
         this.showingSettings = false;
+        this.showingActiveUpgrades = false;
         this.editingVolume = false;
         this.volumeEditType = null;
         // Clear upgrade screen state
@@ -1326,20 +1478,26 @@ export class GameUI {
 
         // Handle menu selection
         if (this.isEnterPressed()) {
-            if (this.selectedIndex >= 0 && this.selectedIndex < this.menuCallbacks.length) {
+            if (this.showingActiveUpgrades) {
+                // In active upgrades screen, Enter always goes back
+                this.menuCallbacks[0]();
+            } else if (this.selectedIndex >= 0 && this.selectedIndex < this.menuCallbacks.length) {
                 this.menuCallbacks[this.selectedIndex]();
             }
         }
 
         // Handle ESC key differently based on context
-        if (this.isEscPressed() && this.menuCallbacks.length > 1) {
+        if (this.isEscPressed() && this.menuCallbacks.length > 0) {
             if (this.showingConfirmation) {
                 // In confirmation dialog, ESC means "NO, cancel the exit"
                 this.menuCallbacks[0](); // First option is always "NO, CONTINUE PLAYING"
             } else if (this.showingSettings) {
                 // In settings menu, ESC means "go back"
                 this.menuCallbacks[this.menuCallbacks.length - 1](); // Last option is always "BACK"
-            } else {
+            } else if (this.showingActiveUpgrades) {
+                // In active upgrades screen, ESC means "go back"
+                this.menuCallbacks[0](); // Only callback is the back function
+            } else if (this.menuCallbacks.length > 1) {
                 // In other menus, ESC means "go to menu" (second option)
                 this.menuCallbacks[1](); // Return to menu is always second option
             }
