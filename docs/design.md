@@ -129,6 +129,17 @@ Each enemy type has multiple subtypes with different characteristics:
 - Slow zigzag pattern (150 amplitude, 0.001 frequency)
 - Same stats as normal, but longer wave periods
 
+### 5. **Mothership (Boss)**
+**Final Boss for Wave 8:**
+- **Massive Size**: 669x471 sprite scaled to 80% of screen height
+- **High HP**: 5000 HP (requires ~80 seconds of max DPS to defeat)
+- **Epic Entrance**: 2-second dissolve effect when spawning
+- **Strategic Movement**: Moves from center-right to final position off-screen
+- **Offensive Capability**: Fires bullets every 1.5 seconds at player
+- **Boss Immunity**: **Immune to acid bullet effects** - no poison damage or green tint
+- **Epic Death**: Multiple staggered explosions on defeat
+- **Victory Condition**: Wave 8 ends only when boss is defeated (no timer)
+
 ---
 
 ## 🌊 Wave Progression System
@@ -148,7 +159,7 @@ Each enemy type has multiple subtypes with different characteristics:
 - **Wave 5**: All enemy types with +10% spawn frequency
 - **Wave 6**: All enemy types with +20% spawn frequency
 - **Wave 7**: All enemy types with +50% spawn frequency
-- **Wave 8**: All enemy types with +50% spawn frequency (final challenge)
+- **Wave 8**: All enemy types with +50% spawn frequency + **Mothership Boss** (final challenge)
 
 ### **Wave Transitions**
 - **Wave Completion**: "WAVE X CLEARED!" screen with continue/menu options

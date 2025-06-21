@@ -36,9 +36,9 @@ export class MainMenuScene extends Phaser.Scene {
         this.audioManager = new AudioManager(this);
         this.audioManager.playMenuMusic();
 
-        // Initialize GameUI for settings
+        // Initialize GameUI for settings (without HUD)
         this.gameUI = new GameUI(this);
-        this.gameUI.create();
+        this.gameUI.createForMenu();
         this.gameUI.setAudioManager(this.audioManager);
 
         // Add scene resume handler to restart music when returning from game

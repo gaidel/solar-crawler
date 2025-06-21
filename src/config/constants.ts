@@ -29,6 +29,43 @@ export const UI_CONFIG = {
     HUD_HEIGHT: 40, // Reserved space at top for HUD
 };
 
+// Rendering depth/z-index configuration for proper layering
+export const DEPTH_CONFIG = {
+    // Background layer (lowest)
+    BACKGROUND: 0,
+    
+    // Projectiles layer (above background, behind characters)
+    ENEMY_BULLETS: 5,
+    PLAYER_BULLETS: 6,
+    
+    // Regular enemies layer (above projectiles)
+    ASTEROIDS: 10,
+    GUNNERS: 11,
+    KAMIKAZES: 12,
+    LEAPERS: 13,
+    
+    // Boss enemies layer (above regular enemies)
+    MOTHERSHIP: 20,
+    
+    // Player layer (above enemies)
+    PLAYER: 30,
+    
+    // Effects layer (above player)
+    EXPLOSIONS: 40,
+    
+    // HUD layer (above effects)
+    HUD_ELEMENTS: 100,
+    HUD_TEXT: 101,
+    
+    // UI Overlays layer (highest)
+    PAUSE_MENU: 200,
+    UPGRADE_SCREEN: 201,
+    SETTINGS_MENU: 202,
+    CONFIRMATION_DIALOG: 203,
+    GAME_OVER_SCREEN: 204,
+    VICTORY_SCREEN: 205,
+} as const;
+
 export const PLAYER_CONFIG = {
     START_X: 100,
     START_Y: 400, // Moved down to avoid HUD area

@@ -1,4 +1,4 @@
-import { GUNNER_CONFIG } from '../config/constants';
+import { GUNNER_CONFIG, DEPTH_CONFIG } from '../config/constants';
 import { BaseEnemy } from './Enemy';
 import { setupCircularCollision } from '../utils/CollisionHelpers';
 import { AudioManager } from '../AudioManager';
@@ -150,6 +150,9 @@ export class Gunner extends BaseEnemy {
 
             // Set up circular collision for enemy bullet
             setupCircularCollision(bullet, 0.9);
+            
+            // Set proper depth for enemy bullets
+            bullet.setDepth(DEPTH_CONFIG.ENEMY_BULLETS);
 
             // Set bullet velocity (use type-specific speed)
             bullet.setVelocity(this.bulletSpeed, 0);

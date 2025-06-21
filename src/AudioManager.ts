@@ -8,7 +8,7 @@ export interface VolumeSettings {
 export class AudioManager {
     private scene: Phaser.Scene;
     private currentMusic?: Phaser.Sound.BaseSound;
-    private pendingMusicType?: 'menu' | 'game';
+    private pendingMusicType?: 'menu' | 'game' | 'boss';
     private autoplayRetryCount: number = 0;
     private maxAutoplayRetries: number = 10;
 
@@ -104,6 +104,7 @@ export class AudioManager {
     static preload(scene: Phaser.Scene): void {
         scene.load.audio('menuMusic', 'assets/menu.mp3');
         scene.load.audio('gameMusic', 'assets/space-ambient-cinematic-music-345394.mp3');
+        scene.load.audio('bossMusic', 'assets/epic-inspiring-battle-361552.mp3');
         scene.load.audio('shotSound', 'assets/shot.mp3');
         scene.load.audio('explosionSound', 'assets/explosion.mp3');
     }
@@ -116,7 +117,7 @@ export class AudioManager {
     }
 
     // Try to start music, handle autoplay policy
-    private tryPlayMusic(musicKey: string, musicType: 'menu' | 'game'): void {
+    private tryPlayMusic(musicKey: string, musicType: 'menu' | 'game' | 'boss'): void {
         this.stopCurrentMusic();
 
         try {
@@ -206,6 +207,8 @@ export class AudioManager {
                 this.tryPlayMusic('menuMusic', 'menu');
             } else if (this.pendingMusicType === 'game') {
                 this.tryPlayMusic('gameMusic', 'game');
+            } else if (this.pendingMusicType === 'boss') {
+                this.tryPlayMusic('bossMusic', 'boss');
             }
         } catch (error) {
             console.warn('Force play failed:', error);
@@ -223,6 +226,11 @@ export class AudioManager {
         this.tryPlayMusic('gameMusic', 'game');
     }
 
+    // Play boss battle music
+    playBossMusic(): void {
+        this.tryPlayMusic('bossMusic', 'boss');
+    }
+
     // Retry playing pending music (call this on user interaction)
     retryPendingMusic(): boolean {
         if (this.pendingMusicType && !this.isMusicPlaying()) {
@@ -230,6 +238,8 @@ export class AudioManager {
                 this.playMenuMusic();
             } else if (this.pendingMusicType === 'game') {
                 this.playGameMusic();
+            } else if (this.pendingMusicType === 'boss') {
+                this.playBossMusic();
             }
 
             if (this.isMusicPlaying()) {

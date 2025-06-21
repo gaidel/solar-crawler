@@ -19,7 +19,7 @@ The ship moves vertically while the background scrolls horizontally. Your object
 - **Upgrade system**: Choose upgrades after Wave 1 to enhance your ship
 - **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)
 - **Main Menu**: Navigate game options, view controls, about, and credits
-- **Background Music**: Dynamic audio experience with menu and gameplay tracks
+- **Background Music**: Dynamic audio experience with menu, gameplay, and epic boss battle tracks
 
 ---
 
@@ -55,6 +55,7 @@ Created by Andrey Gaidel, with assistance from large language models.
 Music files are used under royalty-free licenses from [Pixabay](https://pixabay.com):
 - **Menu music**: "Space Ambient Cinematic" by DELOSound (`menu.mp3`)
 - **Game music**: "Space Ambient Cinematic Music" by MFCC (`space-ambient-cinematic-music-345394.mp3`)
+- **Boss battle music**: "Epic Inspiring Battle" by Hot_Dope (`epic-inspiring-battle-361552.mp3`)
 
 All audio is used under the [Pixabay Content License](https://pixabay.com/service/license/) - free to use, modify, and integrate into creative works.
 

@@ -4,6 +4,7 @@ import {
     UPGRADE_DEFINITIONS,
     UPGRADE_CONFIG,
     UpgradeData,
+    DEPTH_CONFIG,
 } from './config/constants';
 import { AudioManager } from './AudioManager';
 
@@ -73,6 +74,12 @@ export class GameUI {
         this.createHUD();
     }
 
+    // Create only input setup without HUD (for menu scenes)
+    createForMenu(): void {
+        // Set up only keyboard input for menu navigation
+        this.setupInput();
+    }
+
     setAudioManager(audioManager: AudioManager): void {
         this.audioManager = audioManager;
     }
@@ -100,6 +107,10 @@ export class GameUI {
     private playerHPText?: Phaser.GameObjects.Text;
     private playerHPValueText?: Phaser.GameObjects.Text;
 
+    // Boss HP bar elements
+    private bossHPBar?: Phaser.GameObjects.Graphics;
+    private bossHPValueText?: Phaser.GameObjects.Text;
+
     private createHUD(): void {
         // Score and timer display (right side)
         this.scoreText = this.scene.add.text(GAME_CONFIG.WIDTH - 20, 10, 'Score: 0  Time: 60s', {
@@ -109,6 +120,7 @@ export class GameUI {
         });
         this.scoreText.setOrigin(1, 0); // Right-aligned
         this.scoreText.setScrollFactor(0);
+        this.scoreText.setDepth(DEPTH_CONFIG.HUD_TEXT);
 
         // Player HP label (left side)
         this.playerHPText = this.scene.add.text(20, 10, 'HP:', {
@@ -116,10 +128,12 @@ export class GameUI {
             color: '#ffffff',
         });
         this.playerHPText.setScrollFactor(0);
+        this.playerHPText.setDepth(DEPTH_CONFIG.HUD_TEXT);
 
         // Player HP bar
         this.playerHPBar = this.scene.add.graphics();
         this.playerHPBar.setScrollFactor(0);
+        this.playerHPBar.setDepth(DEPTH_CONFIG.HUD_ELEMENTS);
 
         // HP value text inside the bar
         this.playerHPValueText = this.scene.add.text(0, 0, '100/100', {
@@ -129,8 +143,12 @@ export class GameUI {
         });
         this.playerHPValueText.setOrigin(0.5, 0.5); // Center the text
         this.playerHPValueText.setScrollFactor(0);
+        this.playerHPValueText.setDepth(DEPTH_CONFIG.HUD_TEXT);
 
         this.updatePlayerHPBar(100, 100); // Initialize with full HP
+
+        // Create boss HP bar elements (initially hidden)
+        this.createBossHPBar();
     }
 
     // Input handling methods
@@ -151,14 +169,51 @@ export class GameUI {
 
     // HUD update methods
     updateHUD(score: number, timeLeft: number, currentWave?: number, totalWaves?: number): void {
-        let timeText = `Score: ${score}  Time: ${Math.ceil(timeLeft / 1000)}s`;
-
+        let timeText = `Score: ${score}`;
+        
         // Add wave information if provided
         if (currentWave !== undefined && totalWaves !== undefined) {
-            timeText = `Wave: ${currentWave}/${totalWaves}  ${timeText}`;
+            // Special handling for boss wave (wave 8)
+            if (currentWave === 8) {
+                timeText = `Wave: ${currentWave}/${totalWaves}  ${timeText}  [BOSS FIGHT]`;
+            } else {
+                timeText = `Wave: ${currentWave}/${totalWaves}  ${timeText}  Time: ${Math.ceil(timeLeft / 1000)}s`;
+            }
+        } else {
+            // Fallback for when wave info is not provided
+            timeText = `${timeText}  Time: ${Math.ceil(timeLeft / 1000)}s`;
         }
 
         this.scoreText.setText(timeText);
+    }
+
+    updateHUDWithBossHP(score: number, currentWave: number, totalWaves: number, bossHP: { current: number; max: number } | null): void {
+        // Update main HUD text - just wave and score (boss HP bar is separate now)
+        let hudText = `Wave: ${currentWave}/${totalWaves}  Score: ${score}`;
+        if (!bossHP) {
+            hudText += `  [BOSS FIGHT]`;
+        }
+        
+        this.scoreText.setText(hudText);
+        
+        if (bossHP) {
+            // Show boss HP bar
+            this.showBossHPBar();
+            this.updateBossHPBar(bossHP.current, bossHP.max);
+        } else {
+            // Hide boss HP bar
+            this.hideBossHPBar();
+        }
+    }
+
+    private showBossHPBar(): void {
+        if (this.bossHPBar) this.bossHPBar.setVisible(true);
+        if (this.bossHPValueText) this.bossHPValueText.setVisible(true);
+    }
+
+    private hideBossHPBar(): void {
+        if (this.bossHPBar) this.bossHPBar.setVisible(false);
+        if (this.bossHPValueText) this.bossHPValueText.setVisible(false);
     }
 
     updatePlayerHP(currentHP: number, maxHP: number): void {
@@ -207,6 +262,64 @@ export class GameUI {
 
         // Position the HP value text in the center of the bar
         this.playerHPValueText.setPosition(barX + barWidth / 2, barY + barHeight / 2);
+    }
+
+    private createBossHPBar(): void {
+        // Boss HP bar (no separate text label - it's part of main HUD text)
+        this.bossHPBar = this.scene.add.graphics();
+        this.bossHPBar.setScrollFactor(0);
+        this.bossHPBar.setDepth(DEPTH_CONFIG.HUD_ELEMENTS);
+        this.bossHPBar.setVisible(false); // Initially hidden
+
+        // Boss HP value text inside the bar
+        this.bossHPValueText = this.scene.add.text(0, 0, 'Mothership: 5000/5000', {
+            fontSize: UI_CONFIG.FONT_SIZE_SMALL,
+            color: '#ffffff',
+            fontStyle: 'bold',
+        });
+        this.bossHPValueText.setOrigin(0.5, 0.5); // Center the text
+        this.bossHPValueText.setScrollFactor(0);
+        this.bossHPValueText.setDepth(DEPTH_CONFIG.HUD_TEXT);
+        this.bossHPValueText.setVisible(false); // Initially hidden
+    }
+
+    private updateBossHPBar(currentHP: number, maxHP: number): void {
+        if (!this.bossHPBar || !this.bossHPValueText) return;
+
+        const barWidth = 360; // Even wider bar for boss to fit text comfortably
+        const barHeight = 24; // Taller to fit "Mothership:" text inside
+        const barX = (GAME_CONFIG.WIDTH - barWidth) / 2; // Center horizontally
+        const barY = 8; // Top of screen
+
+        // Clear previous drawing
+        this.bossHPBar.clear();
+
+        // Background (dark red - missing health)
+        this.bossHPBar.fillStyle(0x330000, 0.8);
+        this.bossHPBar.fillRect(barX, barY, barWidth, barHeight);
+
+        // Foreground (current health)
+        const healthPercentage = currentHP / maxHP;
+        const healthWidth = barWidth * healthPercentage;
+
+        // Boss HP bar color (different from player - more menacing)
+        let healthColor = 0xff6600; // Orange-red
+        if (healthPercentage < 0.3) {
+            healthColor = 0xcc0000; // Dark red
+        } else if (healthPercentage < 0.6) {
+            healthColor = 0xff3300; // Red-orange
+        }
+
+        this.bossHPBar.fillStyle(healthColor, 0.9);
+        this.bossHPBar.fillRect(barX, barY, healthWidth, barHeight);
+
+        // Border
+        this.bossHPBar.lineStyle(1, 0xffffff, 0.8);
+        this.bossHPBar.strokeRect(barX, barY, barWidth, barHeight);
+
+        // Position the HP value text in the center of the bar
+        this.bossHPValueText.setPosition(barX + barWidth / 2, barY + barHeight / 2);
+        this.bossHPValueText.setText(`Mothership: ${currentHP}/${maxHP}`);
     }
 
     // Update method for menu navigation (called from GameScene)
@@ -298,7 +411,8 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(controlHint);
 
-        this.uiOverlay.setScrollFactor(0);
+        // Set proper depth for Game Over screen (highest priority)
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.GAME_OVER_SCREEN);
 
         // No initial selection - user must navigate first
     }
@@ -376,6 +490,9 @@ export class GameUI {
         menuText.setOrigin(0.5);
         this.uiOverlay.add(menuText);
         this.menuItems.push(menuText);
+
+        // Set proper depth for Victory screen (highest priority)
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.VICTORY_SCREEN);
 
         // Set initial selection
         this.selectedIndex = 0;
@@ -556,6 +673,9 @@ export class GameUI {
         this.uiOverlay.add(menuText);
         this.menuItems.push(menuText);
 
+        // Set proper depth for Final Victory screen (highest priority)
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.VICTORY_SCREEN);
+
         // Set initial selection
         this.selectedIndex = 0;
         this.updateMenuSelection();
@@ -579,6 +699,9 @@ export class GameUI {
         this.uiOverlay = this.scene.add.container(0, 0);
         this.uiOverlay.add(overlay);
         this.uiOverlay.setScrollFactor(0);
+
+        // Set proper depth for upgrade screen
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.UPGRADE_SCREEN);
 
         // Title
         const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 120, 'WAVE CLEARED!', {
@@ -800,7 +923,7 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(controlHint);
 
-        this.uiOverlay.setScrollFactor(0);
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.PAUSE_MENU);
 
         // No initial selection - user must navigate first
     }
@@ -834,6 +957,9 @@ export class GameUI {
         this.uiOverlay = this.scene.add.container(0, 0);
         this.uiOverlay.add(overlay);
         this.uiOverlay.setScrollFactor(0);
+
+        // Set proper depth for Active Upgrades screen
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.PAUSE_MENU);
 
         // Title
         const title = this.scene.add.text(GAME_CONFIG.WIDTH / 2, 100, 'ACTIVE UPGRADES', {
@@ -977,6 +1103,9 @@ export class GameUI {
             UI_CONFIG.OVERLAY_ALPHA
         );
         this.uiOverlay.add(overlay);
+
+        // Set proper depth to render above everything
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.CONFIRMATION_DIALOG);
 
         // Rebirth title
         const title = this.scene.add.text(
@@ -1138,7 +1267,8 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(controlHint);
 
-        this.uiOverlay.setScrollFactor(0);
+        // Set proper depth for Exit Confirmation dialog (highest priority)
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.CONFIRMATION_DIALOG);
 
         // No initial selection - user must navigate first
     }
@@ -1245,7 +1375,8 @@ export class GameUI {
             .setOrigin(0.5);
         this.uiOverlay.add(controlHint);
 
-        this.uiOverlay.setScrollFactor(0);
+        // Set proper depth for Settings Menu
+        this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.SETTINGS_MENU);
 
         // No initial selection - user must navigate first
     }
@@ -1331,6 +1462,8 @@ export class GameUI {
         // Clear upgrade screen state
         this.showingUpgradeScreen = false;
         this.upgradeCallback = undefined;
+        
+        // Don't hide boss HP bar when clearing screens - it should stay visible during pause
     }
 
     // ESC key handling
@@ -1346,6 +1479,12 @@ export class GameUI {
     }
 
     // Menu navigation methods
+    // Helper method to set proper depth for UI overlays
+    private setUIDepth(overlay: Phaser.GameObjects.Container, depth: number): void {
+        overlay.setDepth(depth);
+        overlay.setScrollFactor(0);
+    }
+
     private updateMenuSelection(): void {
         this.menuItems.forEach((item, index) => {
             if (this.selectedIndex !== -1 && index === this.selectedIndex) {

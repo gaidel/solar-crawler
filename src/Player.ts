@@ -1,4 +1,4 @@
-import { PLAYER_CONFIG, BULLET_CONFIG, UPGRADE_CONFIG } from './config/constants';
+import { PLAYER_CONFIG, BULLET_CONFIG, UPGRADE_CONFIG, DEPTH_CONFIG } from './config/constants';
 import { setupCircularCollision } from './utils/CollisionHelpers';
 import { UpgradeManager } from './UpgradeManager';
 
@@ -70,6 +70,9 @@ export class Player {
 
         // Set up collision using dynamic calculation
         setupCircularCollision(this.sprite, 0.9); // Slightly smaller for forgiving gameplay
+        
+        // Set player depth to render above enemies
+        this.sprite.setDepth(DEPTH_CONFIG.PLAYER);
     }
 
     update(time: number, input: PlayerInput): void {
@@ -139,6 +142,9 @@ export class Player {
             bullet.setVelocityX(bulletSpeed);
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
+            
+            // Set proper depth for player bullets
+            bullet.setDepth(DEPTH_CONFIG.PLAYER_BULLETS);
 
             // Re-enable physics body for collision detection
             if (bullet.body) {

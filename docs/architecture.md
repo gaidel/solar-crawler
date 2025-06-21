@@ -193,11 +193,85 @@ src/
 
 ---
 
+## 🎭 Rendering Order (Z-Index/Depth)
+
+### 📚 **Rendering Layers (Front to Back)**
+
+The game uses Phaser's `depth` system to control rendering order. Higher depth values render on top of lower values.
+
+**Layer Order (closest to player/top → furthest/bottom):**
+
+| Layer | Depth Range | Objects | Description |
+|-------|-------------|---------|-------------|
+| **UI Overlays** | 200-203 | Menus, dialogs, confirmations | Always on top, blocks game interaction |
+| **HUD Elements** | 100-101 | HP bars, score, wave counter | Game UI that should never be occluded |
+| **Explosions** | 40 | Explosion sprites and particles | Visual effects that should be very visible |
+| **Player Ship** | 30 | Player sprite and related effects | Player should be clearly visible |
+| **Boss Enemies** | 20 | Mothership and other bosses | Major threats, prominent visibility |
+| **Regular Enemies** | 10-13 | Asteroids, gunners, kamikazes, leapers | Standard enemy sprites |
+| **Projectiles** | 5-6 | Player bullets, enemy bullets | Should render behind characters |
+| **Background** | 0 | Scrolling background, environment | Furthest back, foundation layer |
+
+### 🎯 **Implementation Rules**
+
+#### **UI Layer Management:**
+- **Menus and overlays**: Use `setScrollFactor(0)` to stay fixed on screen
+- **HUD elements**: Always set high depth (800+) and scroll factor 0
+- **Temporary UI**: Use containers for easy cleanup
+
+#### **Game Object Depth Assignment:**
+```typescript
+// Background elements
+backgroundSprite.setDepth(0);
+
+// Projectiles (behind characters)
+enemyBullet.setDepth(5);
+playerBullet.setDepth(6);
+
+// Regular enemies
+asteroid.setDepth(10);
+gunner.setDepth(11);
+kamikaze.setDepth(12);
+leaper.setDepth(13);
+
+// Boss enemies
+mothership.setDepth(20);
+
+// Player
+playerSprite.setDepth(30);
+
+// Effects
+explosion.setDepth(40);
+
+// HUD
+hpBar.setDepth(100);
+scoreText.setDepth(101);
+
+// UI Overlays
+pauseMenu.setDepth(200);
+upgradeScreen.setDepth(201);
+```
+
+#### **Why This Order Matters:**
+- **Player visibility**: Player should never be hidden behind enemies or effects
+- **UI clarity**: HUD and menus must always be readable
+- **Visual hierarchy**: Important elements (player, bosses) render above less important ones
+- **Effect prominence**: Explosions should be clearly visible as feedback
+
+#### **Maintenance Guidelines:**
+- **Use constants** for depth values to avoid magic numbers
+- **Keep ranges** - don't use exact same depth for different object types
+- **Document changes** when adding new object types
+- **Test layering** especially when adding new visual elements
+
+---
+
 ## 🎯 Benefits of This Structure
 
 - [x] **Easy to navigate** - logical file locations
 - [x] **Scalable** - can grow without becoming messy
 - [x] **Maintainable** - clear separation of concerns
+- [x] **Clear rendering order** - predictable visual hierarchy
 - [x] **Collaborative** - new developers can understand quickly
 - [x] **Professional** - industry-standard organization
 

@@ -2,6 +2,7 @@ import { Asteroid } from './Asteroid';
 import { Kamikaze } from './Kamikaze';
 import { Gunner } from './Gunner';
 import { Leaper } from './Leaper';
+import { Mothership } from './Mothership';
 import {
     ASTEROID_CONFIG,
     KAMIKAZE_CONFIG,
@@ -10,6 +11,7 @@ import {
     GAME_CONFIG,
     BULLET_CONFIG,
     WAVE_MODIFIERS,
+    DEPTH_CONFIG,
 } from '../config/constants';
 import { AudioManager } from '../AudioManager';
 import { ExplosionManager } from '../ExplosionManager';
@@ -23,6 +25,7 @@ export class EnemyManager {
         Kamikaze.preload(scene);
         Gunner.preload(scene);
         Leaper.preload(scene);
+        Mothership.preload(scene);
     }
 
     private scene: Phaser.Scene;
@@ -30,6 +33,7 @@ export class EnemyManager {
     private kamikazeGroup!: Phaser.Physics.Arcade.Group;
     private gunnerGroup!: Phaser.Physics.Arcade.Group;
     private leaperGroup!: Phaser.Physics.Arcade.Group;
+    private mothershipGroup!: Phaser.Physics.Arcade.Group;
     private enemyBullets!: Phaser.Physics.Arcade.Group;
     private audioManager?: AudioManager;
     private explosionManager?: ExplosionManager;
@@ -40,6 +44,7 @@ export class EnemyManager {
     private kamikazes: Kamikaze[] = [];
     private gunners: Gunner[] = [];
     private leapers: Leaper[] = [];
+    private mothership?: Mothership;
 
     // Timers for spawning
     private asteroidTimer!: Phaser.Time.TimerEvent;
@@ -101,6 +106,11 @@ export class EnemyManager {
             maxSize: LEAPER_CONFIG.MAX_POOL_SIZE,
         });
 
+        this.mothershipGroup = this.scene.physics.add.group({
+            defaultKey: 'mothership',
+            maxSize: 1, // Only one boss at a time
+        });
+
         // Create enemy bullets group
         this.enemyBullets = this.scene.physics.add.group({
             defaultKey: 'enemy_bullet',
@@ -138,6 +148,9 @@ export class EnemyManager {
         for (let i = 0; i < LEAPER_CONFIG.MAX_POOL_SIZE; i++) {
             this.leapers.push(new Leaper(this.scene, this.leaperGroup));
         }
+
+        // Initialize mothership (boss)
+        this.mothership = new Mothership(this.scene, this.mothershipGroup, this.enemyBullets);
     }
 
     private startSpawning(): void {
@@ -262,6 +275,11 @@ export class EnemyManager {
                 }
             }
         });
+
+        // Update mothership if active
+        if (this.mothership && this.mothership.isActive) {
+            this.mothership.update(playerX, playerY);
+        }
 
         // Clean up enemy bullets
         this.cleanupEnemyBullets();
@@ -473,6 +491,47 @@ export class EnemyManager {
             }
         }
 
+        // Check mothership (boss)
+        if (this.mothership && this.mothership.isActive && this.mothership.sprite === enemy) {
+            // Save position BEFORE calling takeDamage (which may move the enemy)
+            const explosionX = enemy.x;
+            const explosionY = enemy.y;
+
+            const destroyed = this.mothership.takeDamage(bulletDamage);
+
+            // Boss is immune to acid effects - no acid damage applied
+
+            if (destroyed) {
+                scoreValue = this.mothership.scoreValue;
+                // Trigger Energy Siphon healing if player has the upgrade
+                if (this.player) {
+                    this.player.onEnemyKilled(this.mothership.maxHP);
+                }
+                // Create massive explosion effect when boss is destroyed (using saved position)
+                if (this.explosionManager) {
+                    // Multiple large explosions for epic boss death
+                    this.explosionManager.explodeLarge(explosionX, explosionY);
+                    // Additional explosions with slight delay for dramatic effect
+                    setTimeout(() => {
+                        if (this.explosionManager) {
+                            this.explosionManager.explodeLarge(explosionX - 50, explosionY - 30);
+                            this.explosionManager.explodeLarge(explosionX + 50, explosionY + 30);
+                        }
+                    }, 200);
+                }
+                // Play full explosion sound on destroy
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound(); // Full volume for boss destruction
+                }
+            } else {
+                // Play hit sound only if boss is not destroyed (moderate volume)
+                if (this.audioManager) {
+                    this.audioManager.playExplosionSound(0.4); // 40% volume for boss hit sound
+                }
+            }
+            return scoreValue; // Return immediately after processing hit
+        }
+
         return scoreValue;
     }
 
@@ -565,6 +624,52 @@ export class EnemyManager {
         return this.enemyBullets;
     }
 
+    getMothershipGroup(): Phaser.Physics.Arcade.Group {
+        return this.mothershipGroup;
+    }
+
+    getMothership(): Mothership | undefined {
+        return this.mothership;
+    }
+
+    // Spawn the boss for wave 8
+    spawnMothership(playerX: number, playerY: number): void {
+        if (this.mothership && !this.mothership.isActive) {
+            // Spawn slightly right of center
+            const spawnX = GAME_CONFIG.WIDTH * 0.6; // 60% of screen width (768px for 1280px screen)
+            const spawnY = GAME_CONFIG.HEIGHT / 2; // Center vertically
+            this.mothership.spawn(spawnX, spawnY);
+            
+            // Set proper depths for all enemy types to maintain visual hierarchy
+            this.asteroidGroup.setDepth(DEPTH_CONFIG.ASTEROIDS);
+            this.kamikazeGroup.setDepth(DEPTH_CONFIG.KAMIKAZES);
+            this.gunnerGroup.setDepth(DEPTH_CONFIG.GUNNERS);
+            this.leaperGroup.setDepth(DEPTH_CONFIG.LEAPERS);
+            
+            console.log('[BOSS] Mothership spawned for final wave');
+        }
+    }
+
+    // Check if boss is defeated
+    isBossDefeated(): boolean {
+        const defeated = !this.mothership || !this.mothership.isActive;
+        if (this.currentWave === 8) {
+            console.log(`[BOSS_CHECK] Boss defeated: ${defeated}, mothership exists: ${!!this.mothership}, mothership active: ${this.mothership?.isActive}`);
+        }
+        return defeated;
+    }
+
+    // Get boss HP for UI display
+    getBossHP(): { current: number; max: number } | null {
+        if (this.mothership && this.mothership.isActive) {
+            return {
+                current: this.mothership.currentHP,
+                max: this.mothership.maxHP
+            };
+        }
+        return null;
+    }
+
     // Pause spawning (for pause state)
     pauseSpawning(): void {
         if (this.asteroidTimer) {
@@ -620,6 +725,11 @@ export class EnemyManager {
                 enemy.pauseAcidEffects();
             }
         });
+        
+        // Pause acid effects on boss
+        if (this.mothership && this.mothership.isActive) {
+            this.mothership.pauseAcidEffects();
+        }
     }
 
     // Resume all acid effects (after pause state)
@@ -645,6 +755,11 @@ export class EnemyManager {
                 enemy.resumeAcidEffects();
             }
         });
+        
+        // Resume acid effects on boss
+        if (this.mothership && this.mothership.isActive) {
+            this.mothership.resumeAcidEffects();
+        }
     }
 
     // Restart spawning (after stop spawning - recreates timers based on current wave)
@@ -674,6 +789,11 @@ export class EnemyManager {
         this.kamikazes.forEach((kamikaze) => kamikaze.reset());
         this.gunners.forEach((gunner) => gunner.reset());
         this.leapers.forEach((leaper) => leaper.reset());
+        
+        // Reset boss
+        if (this.mothership) {
+            this.mothership.reset();
+        }
 
         // Reset enemy bullets
         this.enemyBullets.clear(true, true);
@@ -685,6 +805,13 @@ export class EnemyManager {
         this.kamikazes.forEach((kamikaze) => kamikaze.destroy());
         this.gunners.forEach((gunner) => gunner.destroy());
         this.leapers.forEach((leaper) => leaper.destroy());
+        
+        // Destroy boss
+        if (this.mothership) {
+            this.mothership.destroy();
+            this.mothership = undefined;
+        }
+        
         this.asteroids = [];
         this.kamikazes = [];
         this.gunners = [];

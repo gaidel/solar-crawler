@@ -1,3 +1,5 @@
+import { DEPTH_CONFIG } from './config/constants';
+
 export class ExplosionManager {
     private scene: Phaser.Scene;
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -61,6 +63,9 @@ export class ExplosionManager {
             // Don't emit automatically
             emitting: false,
         });
+        
+        // Set high depth for particles to render above everything except UI
+        this.particles.setDepth(DEPTH_CONFIG.EXPLOSIONS);
     }
 
     // Create explosion sprite animation
@@ -71,6 +76,7 @@ export class ExplosionManager {
         explosionSprite.setScale(0.1 * scale); // Start small
         explosionSprite.setAlpha(0.9);
         explosionSprite.setBlendMode('ADD'); // Additive blending for glow effect
+        explosionSprite.setDepth(DEPTH_CONFIG.EXPLOSIONS); // Render above game objects
 
         // Create scale and fade animation
         this.scene.tweens.add({

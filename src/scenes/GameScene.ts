@@ -1,4 +1,4 @@
-import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG, UPGRADE_CONFIG } from '../config/constants';
+import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG, UPGRADE_CONFIG, DEPTH_CONFIG } from '../config/constants';
 import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
@@ -14,6 +14,7 @@ export class GameScene extends Phaser.Scene {
     private bullets!: Phaser.Physics.Arcade.Group;
     private audioManager!: AudioManager;
     private upgradeManager!: UpgradeManager;
+    private background!: Phaser.GameObjects.TileSprite;
 
     // Game state
     private gameState: GameState = GameState.PLAYING;
@@ -60,14 +61,15 @@ export class GameScene extends Phaser.Scene {
         this.upgradeManager = new UpgradeManager();
 
         // Add background
-        const bg = this.add.tileSprite(
+        this.background = this.add.tileSprite(
             GAME_CONFIG.WIDTH / 2,
             GAME_CONFIG.HEIGHT / 2,
             GAME_CONFIG.WIDTH,
             GAME_CONFIG.HEIGHT,
             'background'
-        )!;
-        bg.setScrollFactor(0);
+        );
+        this.background.setScrollFactor(0);
+        this.background.setDepth(DEPTH_CONFIG.BACKGROUND);
 
         // Create bullets group first
         this.bullets = this.physics.add.group({
@@ -163,6 +165,18 @@ export class GameScene extends Phaser.Scene {
             this
         );
 
+        this.physics.add.overlap(
+            this.bullets,
+            this.enemyManager.getMothershipGroup(),
+            (bullet, enemy) =>
+                this.handleEnemyHit(
+                    bullet as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
+            undefined,
+            this
+        );
+
         // Player vs All enemy types (using overlap to prevent physics momentum)
         this.physics.add.overlap(
             this.player.getSprite(),
@@ -202,6 +216,18 @@ export class GameScene extends Phaser.Scene {
             this.enemyManager.getLeaperGroup(),
             (player, enemy) =>
                 this.handlePlayerLeaperCollision(
+                    player as Phaser.Physics.Arcade.Sprite,
+                    enemy as Phaser.Physics.Arcade.Sprite
+                ),
+            undefined,
+            this
+        );
+
+        this.physics.add.overlap(
+            this.player.getSprite(),
+            this.enemyManager.getMothershipGroup(),
+            (player, enemy) =>
+                this.handlePlayerMothershipCollision(
                     player as Phaser.Physics.Arcade.Sprite,
                     enemy as Phaser.Physics.Arcade.Sprite
                 ),
@@ -254,16 +280,27 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        // Check for victory condition (wave completion)
+        // Check for victory condition 
         const waveElapsedTime = this.time.now - this.waveStartTime;
-        if (waveElapsedTime >= GAME_CONFIG.WAVE_DURATION) {
-            this.completeWave();
-            return;
+        
+        // Wave 8 - Boss wave, no timer, victory only on boss defeat
+        if (this.currentWave === 8) {
+            if (this.enemyManager.isBossDefeated()) {
+                this.completeWave();
+                return;
+            }
+        } else {
+            // Regular waves - timer-based victory
+            if (waveElapsedTime >= GAME_CONFIG.WAVE_DURATION) {
+                this.completeWave();
+                return;
+            }
         }
 
         // Update background
-        const bg = this.children.list[0] as Phaser.GameObjects.TileSprite;
-        bg.tilePositionX += GAME_CONFIG.BACKGROUND_SCROLL_SPEED;
+        if (this.background) {
+            this.background.tilePositionX += GAME_CONFIG.BACKGROUND_SCROLL_SPEED;
+        }
 
         // Get input from UI and update player
         const playerInput = this.gameUI.getPlayerInput();
@@ -273,8 +310,15 @@ export class GameScene extends Phaser.Scene {
         this.enemyManager.update(this.player.getX(), this.player.getY());
 
         // Update HUD with wave information
-        const waveTimeLeft = Math.max(0, GAME_CONFIG.WAVE_DURATION - waveElapsedTime);
-        this.gameUI.updateHUD(this.score, waveTimeLeft, this.currentWave, GAME_CONFIG.TOTAL_WAVES);
+        if (this.currentWave === 8) {
+            // Boss wave - show boss HP instead of timer
+            const bossHP = this.enemyManager.getBossHP();
+            this.gameUI.updateHUDWithBossHP(this.score, this.currentWave, GAME_CONFIG.TOTAL_WAVES, bossHP);
+        } else {
+            // Regular waves - show timer
+            const waveTimeLeft = Math.max(0, GAME_CONFIG.WAVE_DURATION - waveElapsedTime);
+            this.gameUI.updateHUD(this.score, waveTimeLeft, this.currentWave, GAME_CONFIG.TOTAL_WAVES);
+        }
 
         // Update player HP display
         this.gameUI.updatePlayerHP(this.player.getCurrentHP(), this.player.getMaxHP());
@@ -465,6 +509,35 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    private handlePlayerMothershipCollision(
+        playerSprite: Phaser.Physics.Arcade.Sprite,
+        enemySprite: Phaser.Physics.Arcade.Sprite
+    ): void {
+        // Check if enemy is already inactive
+        if (!enemySprite.active) {
+            return;
+        }
+
+        // Boss contact damage (very high)
+        const damage = 75;
+        const playerDestroyed = this.player.takeDamage(damage);
+
+        // Play hit sound
+        if (this.audioManager) {
+            this.audioManager.playExplosionSound(0.6); // 60% volume for boss hit
+        }
+
+        // Boss doesn't get destroyed by player contact - it's too big!
+        // Create explosion at contact point instead
+        if (this.explosionManager) {
+            this.explosionManager.explodeMedium(playerSprite.x, playerSprite.y);
+        }
+
+        if (playerDestroyed) {
+            this.gameOver();
+        }
+    }
+
     private handlePlayerEnemyCollision(
         playerSprite: Phaser.Physics.Arcade.Sprite,
         enemySprite: Phaser.Physics.Arcade.Sprite,
@@ -548,7 +621,8 @@ export class GameScene extends Phaser.Scene {
             this.enemyManager.getAsteroidGroup(),
             this.enemyManager.getKamikazeGroup(),
             this.enemyManager.getGunnerGroup(),
-            this.enemyManager.getLeaperGroup()
+            this.enemyManager.getLeaperGroup(),
+            this.enemyManager.getMothershipGroup()
         ];
 
         allEnemyGroups.forEach(group => {
@@ -737,6 +811,12 @@ export class GameScene extends Phaser.Scene {
         // Restart enemy spawning
         this.enemyManager.restartSpawning();
 
+        // Wave 8 - Respawn the boss after rebirth!
+        if (this.currentWave === 8) {
+            console.log('[REBIRTH] Respawning boss for wave 8 after rebirth');
+            this.enemyManager.spawnMothership(this.player.getX(), this.player.getY());
+        }
+
         console.log(`[REBIRTH] Wave ${this.currentWave} restarted`);
     }
 
@@ -826,6 +906,17 @@ export class GameScene extends Phaser.Scene {
 
         // Restart enemy spawning (recreate timers based on new wave)
         this.enemyManager.restartSpawning();
+
+        // Wave 8 - Spawn the boss!
+        if (this.currentWave === 8) {
+            console.log('[BOSS] Starting final boss wave!');
+            this.enemyManager.spawnMothership(this.player.getX(), this.player.getY());
+            
+            // Switch to epic boss battle music
+            if (this.audioManager) {
+                this.audioManager.playBossMusic();
+            }
+        }
     }
 
     private victory(): void {
