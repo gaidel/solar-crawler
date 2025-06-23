@@ -3,6 +3,7 @@ import { Kamikaze } from './Kamikaze';
 import { Gunner } from './Gunner';
 import { Leaper } from './Leaper';
 import { Mothership } from './Mothership';
+import { Enemy } from './Enemy';
 import {
     ASTEROID_CONFIG,
     KAMIKAZE_CONFIG,
@@ -332,7 +333,7 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    asteroid.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    asteroid.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
                 }
 
                 if (destroyed) {
@@ -376,7 +377,7 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    kamikaze.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    kamikaze.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
                 }
 
                 if (destroyed) {
@@ -420,7 +421,7 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    gunner.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    gunner.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
                 }
 
                 if (destroyed) {
@@ -464,7 +465,7 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    leaper.applyAcidEffect(bulletDamage, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    leaper.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
                 }
 
                 if (destroyed) {
