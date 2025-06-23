@@ -423,9 +423,9 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
 
-        // Destroy the enemy
-        enemySprite.setActive(false);
-        enemySprite.setVisible(false);
+        // Properly destroy the asteroid using its onHit method
+        // This ensures health bar is properly cleaned up
+        asteroid.onHit();
 
         // Create explosion at enemy position - size based on asteroid type
         if (this.explosionManager) {
@@ -466,9 +466,9 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
 
-        // Destroy the enemy
-        enemySprite.setActive(false);
-        enemySprite.setVisible(false);
+        // Properly destroy the kamikaze using its onHit method
+        // This ensures health bar is properly cleaned up
+        kamikaze.onHit();
 
         // Create explosion at enemy position - size based on kamikaze type
         if (this.explosionManager) {
@@ -509,9 +509,9 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
 
-        // Destroy the enemy
-        enemySprite.setActive(false);
-        enemySprite.setVisible(false);
+        // Properly destroy the leaper using its onHit method
+        // This ensures health bar is properly cleaned up
+        leaper.onHit();
 
         // Create explosion at enemy position - size based on leaper type
         if (this.explosionManager) {
@@ -716,9 +716,9 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.playExplosionSound(0.4); // 40% volume for player hit
         }
 
-        // Destroy the enemy
-        enemySprite.setActive(false);
-        enemySprite.setVisible(false);
+        // Properly destroy the gunner using its onHit method
+        // This ensures health bar is properly cleaned up
+        gunner.onHit();
 
         // Create explosion at enemy position - size based on gunner type
         if (this.explosionManager) {
