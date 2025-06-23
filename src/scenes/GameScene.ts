@@ -627,8 +627,8 @@ export class GameScene extends Phaser.Scene {
             this.audioManager.playExplosionSound(0.6); // 60% volume for AOE explosion
         }
 
-        // Calculate AOE damage (half of bullet damage)
-        const aoeDamage = Math.round(bulletDamage * UPGRADE_CONFIG.AOE_DAMAGE_MULTIPLIER);
+        // Calculate AOE damage (half of base bullet damage, not current damage)
+        const aoeDamage = Math.round(BULLET_CONFIG.BASE_DAMAGE * UPGRADE_CONFIG.AOE_DAMAGE_MULTIPLIER);
         const aoeRadius = UPGRADE_CONFIG.AOE_RADIUS;
 
         // Find all active enemies within AOE radius and damage them
