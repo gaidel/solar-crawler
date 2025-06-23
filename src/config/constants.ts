@@ -290,7 +290,7 @@ export const UPGRADE_CONFIG = {
     ACID_DURATION: 2000, // Acid effect duration in milliseconds (2 seconds)
     ACID_TINT_COLOR: 0x44ff44, // Green tint for acid effect
     ENGINE_SPEED_MULTIPLIER: 2, // Double movement speed
-    PHASE_SHIELD_DURATION: 4000, // Invincibility duration in milliseconds (4 seconds)
+    PHASE_SHIELD_DURATION: 2000, // Invincibility duration in milliseconds (2 seconds)
     PHASE_SHIELD_FLICKER_RATE: 150, // Flicker interval in milliseconds
     PROJECTILE_SPEED_MULTIPLIER: 2, // Double bullet speed
     AOE_RADIUS: 160, // 1/8 of screen width (1280/8 = 160px)

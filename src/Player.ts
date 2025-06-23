@@ -352,7 +352,7 @@ export class Player {
             }
         );
 
-        console.log('[PHASE_SHIELD] Activated for 4 seconds');
+        console.log('[PHASE_SHIELD] Activated for 2 seconds');
     }
 
     private startFlickering(): void {
