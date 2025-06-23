@@ -284,7 +284,7 @@ export const UPGRADE_CONFIG = {
     HEALTH_MULTIPLIER: 2, // Double max HP (100 -> 200)
     FIRE_RATE_MULTIPLIER: 2, // Double fire rate (600ms -> 300ms)
     SHIELD_DAMAGE_REDUCTION: 0.5, // Reduce incoming damage by half (round up)
-    AUTO_REPAIR_RATE: 1000, // Heal 1 HP every 1000ms (1 second)
+    AUTO_REPAIR_RATE: 2000, // Heal 1 HP every 2000ms (2 seconds)
     AUTO_REPAIR_AMOUNT: 1, // Heal 1 HP per tick
     ENERGY_SIPHON_RATIO: 0.1, // Restore 10% of enemy max HP on kill
     ACID_DURATION: 2000, // Acid effect duration in milliseconds (2 seconds)
@@ -338,7 +338,7 @@ export const UPGRADE_DEFINITIONS: UpgradeData[] = [
     {
         id: UPGRADE_CONFIG.AUTO_REPAIR,
         name: 'Auto-Repair',
-        description: 'Regenerate 1 HP every second',
+        description: 'Regenerate 1 HP every 2 seconds',
         icon: 'upgrade-regeneration',
     },
     {
