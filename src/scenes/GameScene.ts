@@ -994,6 +994,9 @@ export class GameScene extends Phaser.Scene {
         // Pause physics
         this.physics.pause();
 
+        // Pause player firing timer
+        this.player.pause();
+
         // Pause enemy spawning
         this.enemyManager.pauseSpawning();
 
@@ -1012,6 +1015,9 @@ export class GameScene extends Phaser.Scene {
 
         // Resume physics
         this.physics.resume();
+
+        // Resume player firing timer
+        this.player.resume();
 
         // Resume enemy spawning
         this.enemyManager.resumeSpawning();

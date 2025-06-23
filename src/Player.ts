@@ -287,6 +287,25 @@ export class Player {
         }
     }
 
+    // Pause/Resume system methods
+    private pauseStartTime: number = 0;
+
+    pause(): void {
+        // Record when the pause started
+        this.pauseStartTime = this.scene.time.now;
+    }
+
+    resume(): void {
+        // Calculate how long the pause lasted
+        const pauseDuration = this.scene.time.now - this.pauseStartTime;
+        
+        // Adjust the firing timer to account for the pause duration
+        // This prevents exploiting pause/resume for faster firing
+        if (this.lastFired > 0) {
+            this.lastFired += pauseDuration;
+        }
+    }
+
     // Phase Shield system methods
     private showDamageFlash(): void {
         // Visual feedback for damage (red flash)
