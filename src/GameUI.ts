@@ -292,6 +292,9 @@ export class GameUI {
         const barX = (GAME_CONFIG.WIDTH - barWidth) / 2; // Center horizontally
         const barY = 8; // Top of screen
 
+        // Ensure HP is never displayed as negative
+        const displayHP = Math.max(0, currentHP);
+
         // Clear previous drawing
         this.bossHPBar.clear();
 
@@ -299,8 +302,8 @@ export class GameUI {
         this.bossHPBar.fillStyle(0x330000, 0.8);
         this.bossHPBar.fillRect(barX, barY, barWidth, barHeight);
 
-        // Foreground (current health)
-        const healthPercentage = currentHP / maxHP;
+        // Foreground (current health) - use displayHP for calculations
+        const healthPercentage = displayHP / maxHP;
         const healthWidth = barWidth * healthPercentage;
 
         // Boss HP bar color (different from player - more menacing)
@@ -318,9 +321,9 @@ export class GameUI {
         this.bossHPBar.lineStyle(1, 0xffffff, 0.8);
         this.bossHPBar.strokeRect(barX, barY, barWidth, barHeight);
 
-        // Position the HP value text in the center of the bar
+        // Position the HP value text in the center of the bar - use displayHP for text
         this.bossHPValueText.setPosition(barX + barWidth / 2, barY + barHeight / 2);
-        this.bossHPValueText.setText(`Mothership: ${currentHP}/${maxHP}`);
+        this.bossHPValueText.setText(`Mothership: ${displayHP}/${maxHP}`);
     }
 
     // Update method for menu navigation (called from GameScene)
