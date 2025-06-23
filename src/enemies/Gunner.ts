@@ -1,6 +1,6 @@
 import { GUNNER_CONFIG, DEPTH_CONFIG } from '../config/constants';
 import { BaseEnemy } from './Enemy';
-import { setupCircularCollision } from '../utils/CollisionHelpers';
+import { setupGunnerCollision, setupCircularCollision } from '../utils/CollisionHelpers';
 import { AudioManager } from '../AudioManager';
 
 export enum GunnerType {
@@ -88,8 +88,14 @@ export class Gunner extends BaseEnemy {
                 this.sprite.body.enable = true;
             }
 
-            // Set up circular collision
-            setupCircularCollision(this.sprite, 0.8);
+            // Set up optimized rectangular collision for gunner ship with right and downward offset
+            setupGunnerCollision(
+                this.sprite, 
+                GUNNER_CONFIG.COLLISION_WIDTH_FACTOR, 
+                GUNNER_CONFIG.COLLISION_HEIGHT_FACTOR,
+                GUNNER_CONFIG.COLLISION_OFFSET_X,
+                GUNNER_CONFIG.COLLISION_OFFSET_Y
+            );
 
             // Initialize HP
             this.currentHP = this.maxHP;

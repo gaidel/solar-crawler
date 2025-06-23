@@ -591,6 +591,50 @@ private handleDebugCheats(): void {
 
 ---
 
+## 🎯 Collision System Design
+
+### **Player Collision Optimization**
+The player ship uses an optimized rectangular collision body that better matches the elongated spaceship sprite:
+
+**Design Principles:**
+- **Very Narrow Width**: 55% of sprite width for extremely tight fit to ship hull
+- **Minimal Height**: 55% of sprite height for ultra-precise collision detection
+- **Rectangular Shape**: Better suited for ship-like sprites than circular collision
+- **Visual Balance**: Collision box shifted 5px down from center for better visual alignment
+- **Configurable**: Easily adjustable via `PLAYER_CONFIG` constants
+
+**Technical Implementation:**
+```typescript
+// Optimized collision setup for player ship
+setupPlayerCollision(
+    sprite, 
+    PLAYER_CONFIG.COLLISION_WIDTH_FACTOR,  // 0.55 (55% width)
+    PLAYER_CONFIG.COLLISION_HEIGHT_FACTOR, // 0.55 (55% height)
+    PLAYER_CONFIG.COLLISION_OFFSET_Y       // 5px down from center
+);
+```
+
+**Benefits:**
+- **More Accurate**: Better represents the actual ship shape
+- **Fairer Gameplay**: Reduces frustrating "edge hits" on empty sprite areas
+- **Maintains Balance**: Still forgiving enough for enjoyable gameplay
+- **Easy Tuning**: Constants can be adjusted without code changes
+
+### **Enemy Collision Design**
+
+**Gunner Enemies**: Use optimized rectangular collision bodies that better match their elongated ship-like sprites:
+- **Width**: 60% of sprite width for accurate hull detection
+- **Height**: 50% of sprite height for ultra-tight collision detection
+- **Position**: Shifted 5px right (toward ship front) and 7px down from center for optimal visual balance
+- **Shape**: Rectangular collision for maximum accuracy on ship-shaped enemies
+
+**Other Enemies**: Continue to use circular collision bodies for simplicity:
+- **Asteroids**: Circular collision (naturally round objects)
+- **Kamikazes**: Circular collision (simple, fast-moving threats)
+- **Leapers**: Circular collision (zigzag movement makes rectangular less beneficial)
+
+---
+
 ## 📋 Code Standards
 
 ### Language Policy

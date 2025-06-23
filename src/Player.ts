@@ -1,5 +1,5 @@
 import { PLAYER_CONFIG, BULLET_CONFIG, UPGRADE_CONFIG, DEPTH_CONFIG } from './config/constants';
-import { setupCircularCollision } from './utils/CollisionHelpers';
+import { setupPlayerCollision } from './utils/CollisionHelpers';
 import { UpgradeManager } from './UpgradeManager';
 
 export interface PlayerInput {
@@ -68,8 +68,14 @@ export class Player {
         this.sprite.setScale(PLAYER_CONFIG.SCALE);
         this.sprite.setOrigin(0.5, 0.5);
 
-        // Set up collision using dynamic calculation
-        setupCircularCollision(this.sprite, 0.9); // Slightly smaller for forgiving gameplay
+        // Set up optimized rectangular collision for player ship
+        // Use configurable factors for easy tuning, with slight downward offset
+        setupPlayerCollision(
+            this.sprite, 
+            PLAYER_CONFIG.COLLISION_WIDTH_FACTOR, 
+            PLAYER_CONFIG.COLLISION_HEIGHT_FACTOR,
+            PLAYER_CONFIG.COLLISION_OFFSET_Y
+        );
         
         // Set player depth to render above enemies
         this.sprite.setDepth(DEPTH_CONFIG.PLAYER);
@@ -81,26 +87,32 @@ export class Player {
             ? this.upgradeManager.calculateMovementSpeed(PLAYER_CONFIG.SPEED)
             : PLAYER_CONFIG.SPEED;
 
-        // Handle player movement based on input commands
+        // Handle player movement with boundary-aware velocity setting
+        let velocityY = 0;
+        
         if (input.moveUp) {
-            this.sprite.setVelocityY(-movementSpeed);
+            // Only set upward velocity if not at top boundary
+            if (this.sprite.y > PLAYER_CONFIG.MOVEMENT_Y_MIN) {
+                velocityY = -movementSpeed;
+            }
         } else if (input.moveDown) {
-            this.sprite.setVelocityY(movementSpeed);
-        } else {
-            this.sprite.setVelocityY(0);
+            // Only set downward velocity if not at bottom boundary
+            if (this.sprite.y < PLAYER_CONFIG.MOVEMENT_Y_MAX) {
+                velocityY = movementSpeed;
+            }
         }
+        
+        this.sprite.setVelocityY(velocityY);
 
-        // Enforce movement boundaries (avoid HUD area and screen edges)
+        // Enforce movement boundaries as safety net (should rarely trigger now)
         if (this.sprite.y < PLAYER_CONFIG.MOVEMENT_Y_MIN) {
             this.sprite.y = PLAYER_CONFIG.MOVEMENT_Y_MIN;
-            this.sprite.setVelocityY(0);
         }
         if (this.sprite.y > PLAYER_CONFIG.MOVEMENT_Y_MAX) {
             this.sprite.y = PLAYER_CONFIG.MOVEMENT_Y_MAX;
-            this.sprite.setVelocityY(0);
         }
 
-        // Horizontal boundaries
+        // Horizontal boundaries (keep existing logic as horizontal movement is not player-controlled)
         if (this.sprite.x < 0) {
             this.sprite.x = 0;
         }

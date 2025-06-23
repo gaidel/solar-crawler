@@ -42,6 +42,7 @@ export class GameUI {
     // Settings system
     private showingSettings = false;
     private settingsCallback?: () => void;
+    private settingsMenuCreatedTime: number = 0;
 
     // Active upgrades screen state
     private showingActiveUpgrades = false;
@@ -749,14 +750,14 @@ export class GameUI {
 
         // Get 4 random upgrades instead of all upgrades
         const randomUpgrades = (this.scene as any).upgradeManager.getRandomUpgrades(4);
-        randomUpgrades.forEach((upgrade, index) => {
+        randomUpgrades.forEach((upgrade: any, index: number) => {
             const y = startY + index * itemSpacing;
             const iconX = GAME_CONFIG.WIDTH / 2 - 200;
 
             // Upgrade icon
             const icon = this.scene.add.image(iconX, y, upgrade.icon);
             icon.setScale(UPGRADE_CONFIG.ICON_SCALE);
-            this.uiOverlay.add(icon);
+            this.uiOverlay!.add(icon);
 
             // Icon frame (border around icon)
             const iconSize = 128 * UPGRADE_CONFIG.ICON_SCALE; // Calculate actual icon size
@@ -771,7 +772,7 @@ export class GameUI {
                 iconSize + frameThickness,
                 iconSize + frameThickness
             );
-            this.uiOverlay.add(iconFrame);
+            this.uiOverlay!.add(iconFrame);
             this.upgradeIconFrames.push(iconFrame);
 
             // Upgrade name
@@ -786,7 +787,7 @@ export class GameUI {
                 }
             );
             nameText.setOrigin(0, 0.5);
-            this.uiOverlay.add(nameText);
+            this.uiOverlay!.add(nameText);
 
             // Upgrade description
             const descText = this.scene.add.text(
@@ -799,7 +800,7 @@ export class GameUI {
                 }
             );
             descText.setOrigin(0, 0.5);
-            this.uiOverlay.add(descText);
+            this.uiOverlay!.add(descText);
 
             // Store for menu navigation
             this.menuItems.push(nameText);
@@ -925,7 +926,8 @@ export class GameUI {
 
         this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.PAUSE_MENU);
 
-        // No initial selection - user must navigate first
+        // Update menu selection to highlight the pre-selected "RESUME GAME" button
+        this.updateMenuSelection();
     }
 
     showActiveUpgrades(onBack: () => void): void {
@@ -945,7 +947,7 @@ export class GameUI {
         const allUpgrades = upgradeManager.getAvailableUpgrades(); // This returns ALL upgrade definitions
 
         // Filter to get active upgrade data
-        const activeUpgrades = allUpgrades.filter(upgrade => activeUpgradeIds.includes(upgrade.id));
+        const activeUpgrades = allUpgrades.filter((upgrade: any) => activeUpgradeIds.includes(upgrade.id));
 
         // Create dark overlay
         const overlay = this.scene.add.graphics();
@@ -1007,7 +1009,7 @@ export class GameUI {
             const leftColumnX = GAME_CONFIG.WIDTH / 2 - columnWidth / 2;
             const rightColumnX = GAME_CONFIG.WIDTH / 2 + columnWidth / 2;
 
-            activeUpgrades.forEach((upgrade, index) => {
+            activeUpgrades.forEach((upgrade: any, index: number) => {
                 const isLeftColumn = index % 2 === 0;
                 const row = Math.floor(index / 2);
                 const x = isLeftColumn ? leftColumnX : rightColumnX;
@@ -1017,7 +1019,7 @@ export class GameUI {
                 const iconX = x - 150;
                 const icon = this.scene.add.image(iconX, y, upgrade.icon);
                 icon.setScale(0.4); // Smaller icons for compact display
-                this.uiOverlay.add(icon);
+                this.uiOverlay!.add(icon);
 
                 // Icon frame
                 const iconSize = 128 * 0.4;
@@ -1032,7 +1034,7 @@ export class GameUI {
                     iconSize + frameThickness,
                     iconSize + frameThickness
                 );
-                this.uiOverlay.add(iconFrame);
+                this.uiOverlay!.add(iconFrame);
 
                 // Upgrade name
                 const nameText = this.scene.add.text(
@@ -1046,7 +1048,7 @@ export class GameUI {
                     }
                 );
                 nameText.setOrigin(0, 0.5);
-                this.uiOverlay.add(nameText);
+                this.uiOverlay!.add(nameText);
 
                 // Upgrade description
                 const descText = this.scene.add.text(
@@ -1059,7 +1061,7 @@ export class GameUI {
                     }
                 );
                 descText.setOrigin(0, 0.5);
-                this.uiOverlay.add(descText);
+                this.uiOverlay!.add(descText);
             });
         }
 
@@ -1274,14 +1276,29 @@ export class GameUI {
     }
 
     showSettingsMenu(onBack: () => void): void {
-        this.clearScreens();
+        // Clear screens but preserve settings state
+        if (this.uiOverlay) {
+            this.uiOverlay.destroy();
+            this.uiOverlay = undefined;
+        }
+        // Clear menu state but preserve showingSettings
+        this.menuItems = [];
+        this.menuCallbacks = [];
+        this.upgradeIconFrames = [];
+        this.selectedIndex = 0;
+        this.showingConfirmation = false;
+        // Don't reset showingSettings here - we're about to show settings!
+        this.showingActiveUpgrades = false;
+        this.showingUpgradeScreen = false;
+        this.upgradeCallback = undefined;
+        
         this.showingSettings = true;
         this.settingsCallback = onBack;
         this.editingVolume = false;
         this.volumeEditType = null;
+        this.settingsMenuCreatedTime = this.scene.time.now;
 
         if (!this.audioManager) {
-            console.warn('AudioManager not set, cannot show settings');
             onBack();
             return;
         }
@@ -1304,7 +1321,7 @@ export class GameUI {
                 onBack();
             },
         ];
-        this.selectedIndex = -1; // No item selected initially
+        this.selectedIndex = 3; // Pre-select "Back" button for quick exit
 
         // Create overlay
         this.uiOverlay = this.scene.add.container(GAME_CONFIG.WIDTH / 2, GAME_CONFIG.HEIGHT / 2);
@@ -1378,7 +1395,8 @@ export class GameUI {
         // Set proper depth for Settings Menu
         this.setUIDepth(this.uiOverlay, DEPTH_CONFIG.SETTINGS_MENU);
 
-        // No initial selection - user must navigate first
+        // Update menu selection to highlight the pre-selected "Back" button
+        this.updateMenuSelection();
     }
 
     private editVolume(type: 'master' | 'music' | 'soundEffects'): void {
@@ -1593,12 +1611,7 @@ export class GameUI {
             Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
             Phaser.Input.Keyboard.JustDown(this.wKey)
         ) {
-            if (this.selectedIndex === -1) {
-                // First navigation - select first item
-                this.selectedIndex = 0;
-            } else {
-                this.selectedIndex = Math.max(0, this.selectedIndex - 1);
-            }
+            this.selectedIndex = Math.max(0, this.selectedIndex - 1);
             this.updateMenuSelection();
         }
 
@@ -1606,17 +1619,17 @@ export class GameUI {
             Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
             Phaser.Input.Keyboard.JustDown(this.sKey)
         ) {
-            if (this.selectedIndex === -1) {
-                // First navigation - select first item
-                this.selectedIndex = 0;
-            } else {
-                this.selectedIndex = Math.min(this.menuItems.length - 1, this.selectedIndex + 1);
-            }
+            this.selectedIndex = Math.min(this.menuItems.length - 1, this.selectedIndex + 1);
             this.updateMenuSelection();
         }
 
         // Handle menu selection
         if (this.isEnterPressed()) {
+            // Prevent immediate Enter processing in settings menu (avoid key "sticking")
+            if (this.showingSettings && this.scene.time.now - this.settingsMenuCreatedTime < 200) {
+                return;
+            }
+            
             if (this.showingActiveUpgrades) {
                 // In active upgrades screen, Enter always goes back
                 this.menuCallbacks[0]();

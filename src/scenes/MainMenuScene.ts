@@ -6,6 +6,7 @@ import { GameUI } from '../GameUI';
 export class MainMenuScene extends Phaser.Scene {
     private backgroundTileSprite?: Phaser.GameObjects.TileSprite;
     private title?: Phaser.GameObjects.Text;
+    private subtitle?: Phaser.GameObjects.Text;
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedIndex: number = 0;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -83,13 +84,13 @@ export class MainMenuScene extends Phaser.Scene {
         this.title.setOrigin(0.5);
 
         // Subtitle
-        const subtitle = this.add.text(GAME_CONFIG.WIDTH / 2, 220, 'A Space Shooter Adventure', {
+        this.subtitle = this.add.text(GAME_CONFIG.WIDTH / 2, 220, 'A Space Shooter Adventure', {
             fontSize: '24px',
             color: '#ffffff',
             fontFamily: 'monospace',
             align: 'center',
         });
-        subtitle.setOrigin(0.5);
+        this.subtitle.setOrigin(0.5);
 
         // Menu items
         const menuOptions = [
@@ -304,13 +305,21 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     private showSettings(): void {
-        if (!this.gameUI) return;
+        // Prevent multiple calls
+        if (this.showingSettings) {
+            return;
+        }
+        
+        if (!this.gameUI) {
+            return;
+        }
 
         this.showingSettings = true;
 
         // Hide main menu items
         this.menuItems.forEach((item) => item.setVisible(false));
         if (this.title) this.title.setVisible(false);
+        if (this.subtitle) this.subtitle.setVisible(false);
 
         // Show settings menu
         this.gameUI.showSettingsMenu(() => this.hideSettings());
@@ -322,6 +331,7 @@ export class MainMenuScene extends Phaser.Scene {
         // Show main menu items again
         this.menuItems.forEach((item) => item.setVisible(true));
         if (this.title) this.title.setVisible(true);
+        if (this.subtitle) this.subtitle.setVisible(true);
 
         // Clear GameUI overlays
         if (this.gameUI) {

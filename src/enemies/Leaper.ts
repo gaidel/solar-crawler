@@ -115,19 +115,27 @@ export class Leaper extends BaseEnemy {
         const yDifference = targetY - currentY;
         const yVelocity = yDifference * 3; // Multiplier for smooth movement
 
-        this.sprite.setVelocityY(yVelocity);
+        // Clamp Y velocity to prevent going too far off-screen
+        const maxYVelocity = 400; // Maximum Y velocity in pixels per second
+        const clampedYVelocity = Math.max(-maxYVelocity, Math.min(maxYVelocity, yVelocity));
+
+        this.sprite.setVelocityY(clampedYVelocity);
 
         // Update health bar position if damaged
         this.updateHealthBarPosition();
     }
 
-    shouldCleanup(_gameWidth: number, _gameHeight: number): boolean {
+    shouldCleanup(gameWidth: number, gameHeight: number): boolean {
         if (!this.isActive || !this.sprite.active) {
             return false;
         }
 
-        // Cleanup when leaper moves off the left side of screen
-        return this.sprite.x < -100;
+        // Leapers can zigzag up and down, so check vertical boundaries too
+        return (
+            this.sprite.x < -100 ||
+            this.sprite.y < -100 ||
+            this.sprite.y > gameHeight + 100
+        );
     }
 
     // Getter for leaper type (useful for debugging or special effects)

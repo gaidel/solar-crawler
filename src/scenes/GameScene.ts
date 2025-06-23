@@ -1009,9 +1009,11 @@ export class GameScene extends Phaser.Scene {
             this.vKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.V);
             this.hKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.H);
 
-            console.log('[DEBUG] Cheats enabled:');
-            console.log('  V - Skip to 10 seconds remaining in current wave');
-            console.log('  H - Restore player health to full');
+            console.log('[DEBUG] === Solar Crawler Debug Cheats Enabled ===');
+            console.log('[DEBUG] V Key - Skip to 10 seconds remaining in current wave');
+            console.log('[DEBUG] H Key - Restore player health to full');
+            console.log('[DEBUG] R Key - Reroll upgrade selection (in upgrade screen)');
+            console.log('[DEBUG] ============================================');
         }
     }
 
@@ -1033,6 +1035,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     private skipToWaveEnd(): void {
+        if (this.currentWave === 8) {
+            console.log(`[CHEAT] Cannot skip Wave 8 - boss must be defeated to complete final wave`);
+            return;
+        }
+        
         const tenSecondsInMs = 10 * 1000;
         const targetWaveTime = GAME_CONFIG.WAVE_DURATION - tenSecondsInMs;
         this.waveStartTime = this.time.now - targetWaveTime;

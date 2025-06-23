@@ -14,7 +14,7 @@ The ship moves vertically while the background scrolls horizontally. Your object
 - **Three-Key Design**: Complete control with just W/S + ENTER
 - **Side-scrolling shooter**: Move up/down while the world scrolls horizontally  
 - **Auto-fire system**: Ship fires automatically while moving
-- **8-Wave progression**: Survive increasingly difficult waves (30 seconds each)
+- **8-Wave progression**: Survive increasingly difficult waves (60 seconds each)
 - **Escalating difficulty**: Later waves feature faster enemy spawn rates
 - **Upgrade system**: Choose upgrades after Wave 1 to enhance your ship
 - **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)

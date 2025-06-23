@@ -72,9 +72,14 @@ export const PLAYER_CONFIG = {
     SCALE: 0.8,
     SPEED: 300,
     BASE_FIRE_RATE: 600, // Base fire rate (slow) - upgraded to 300ms with rate-of-fire upgrade
-    MOVEMENT_Y_MIN: 60, // Can't move above HUD area
+    MOVEMENT_Y_MIN: 75, // Can't move above HUD area (extra margin to avoid HP bar)
     MOVEMENT_Y_MAX: 680, // Can't move below screen
     BASE_MAX_HP: 100, // Base max HP - upgraded to 200 with health upgrade
+    
+    // Collision configuration for player ship
+    COLLISION_WIDTH_FACTOR: 0.55, // 55% of sprite width - very tight fit to ship hull
+    COLLISION_HEIGHT_FACTOR: 0.55, // 55% of sprite height - precise main body only
+    COLLISION_OFFSET_Y: 5, // Shift collision box 5px down from center (visual balance)
 };
 
 export const ASTEROID_CONFIG = {
@@ -151,6 +156,12 @@ export const GUNNER_CONFIG = {
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
     FIRE_RATE: 2000, // Fires every 2 seconds
+    
+    // Collision configuration for elongated gunner sprites
+    COLLISION_WIDTH_FACTOR: 0.6, // 60% of sprite width - narrower for ship-like enemies
+    COLLISION_HEIGHT_FACTOR: 0.5, // 50% of sprite height - ultra-tight fit to central hull
+    COLLISION_OFFSET_X: 5, // Shift collision box 5px right from center (toward ship front)
+    COLLISION_OFFSET_Y: 7, // Shift collision box 7px down from center (visual balance)
 
     // Normal gunner settings
     NORMAL: {
