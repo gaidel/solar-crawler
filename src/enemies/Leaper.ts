@@ -30,7 +30,7 @@ export class Leaper extends BaseEnemy {
     }
 
     public static preload(scene: Phaser.Scene): void {
-        scene.load.image('leaper', 'assets/leaper.png');
+        scene.load.image('leaper', 'assets/images/enemies/leaper.png');
     }
 
     spawn(x: number, y: number, type?: LeaperType): void {

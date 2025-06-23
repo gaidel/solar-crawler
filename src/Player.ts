@@ -13,8 +13,8 @@ import { AudioManager } from './AudioManager';
 export class Player {
     // Asset loading
     static preload(scene: Phaser.Scene): void {
-        scene.load.image('player', 'assets/player.png');
-        scene.load.image('bullet', 'assets/bullet.png');
+        scene.load.image('player', 'assets/images/player.png');
+        scene.load.image('bullet', 'assets/images/projectiles/bullet.png');
     }
     private sprite!: Phaser.Physics.Arcade.Sprite;
     private scene: Phaser.Scene;

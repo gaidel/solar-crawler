@@ -5,7 +5,7 @@ Space shooter with innovative Three-Key Design.
 **Solar Crawler** is a browser-based side-scrolling space shooter featuring the innovative Three-Key Design. 
 You pilot a spacecraft through hostile space regions, using only W/S (or arrow keys) + ENTER for complete gameplay control.
 
-The ship moves vertically while the background scrolls horizontally. Your objective: survive for 60 seconds while battling various enemy types including asteroids and homing kamikazes.
+The ship moves vertically while the background scrolls horizontally. Your objective: survive 8 waves of 60 seconds each while battling 5 enemy types, culminating in an epic boss battle.
 
 ---
 
@@ -16,7 +16,7 @@ The ship moves vertically while the background scrolls horizontally. Your object
 - **Auto-fire system**: Ship fires automatically while moving
 - **8-Wave progression**: Survive increasingly difficult waves (60 seconds each)
 - **Escalating difficulty**: Later waves feature faster enemy spawn rates
-- **Upgrade system**: Choose upgrades after Wave 1 to enhance your ship
+- **Upgrade system**: Choose from 16 unique upgrades after each wave to enhance your ship
 - **Score system**: Destroy enemies for points (Asteroids: 10, Kamikazes: 20)
 - **Main Menu**: Navigate game options, view controls, about, and credits
 - **Background Music**: Dynamic audio experience with menu, gameplay, and epic boss battle tracks
@@ -43,7 +43,7 @@ If the game uses ES modules, you'll need to serve it with a local web server (e.
 - **[Architecture & File Structure](docs/architecture.md)** - Project organization and coding standards
 - **[Product Requirements](docs/prd.md)** - Game requirements, scope, and control design
 - **[Game Design](docs/design.md)** - Gameplay mechanics and features
-- **[Development Status](docs/todo.md)** - Current progress, issues, and upcoming tasks
+- **[Development History](docs/todo.md)** - Complete development journey and final status
 
 ---
 

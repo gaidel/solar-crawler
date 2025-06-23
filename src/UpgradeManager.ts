@@ -8,22 +8,22 @@ export class UpgradeManager {
 
     // Asset loading
     static preload(scene: Phaser.Scene): void {
-        scene.load.image('upgrade-damage', 'assets/upgrade-damage.png');
-        scene.load.image('upgrade-health', 'assets/upgrade-health.png');
-        scene.load.image('upgrade-rate-of-fire', 'assets/upgrade-rate-of-fire.png');
-        scene.load.image('upgrade-shield', 'assets/upgrade-shield.png');
-        scene.load.image('upgrade-regeneration', 'assets/upgrade-regeneration.png');
-        scene.load.image('upgrade-vampirism', 'assets/upgrade-vampirism.png');
-        scene.load.image('upgrade-acid', 'assets/upgrade-acid.png');
-        scene.load.image('upgrade-engine', 'assets/upgrade-engine.png');
-        scene.load.image('upgrade-ghost', 'assets/upgrade-ghost.png');
-        scene.load.image('upgrade-interceptor', 'assets/upgrade-interceptor.png');
-        scene.load.image('upgrade-projectile-speed', 'assets/upgrade-projectile-speed.png');
-        scene.load.image('upgrade-rebirth', 'assets/upgrade-rebirth.png');
-        scene.load.image('upgrade-aoe', 'assets/upgrade-aoe.png');
-        scene.load.image('upgrade-healing', 'assets/upgrade-healing.png');
-        scene.load.image('upgrade-later', 'assets/upgrade-later.png');
-        scene.load.image('upgrade-projectile', 'assets/upgrade-projectile.png');
+        scene.load.image('upgrade-damage', 'assets/images/upgrades/upgrade-damage.png');
+        scene.load.image('upgrade-health', 'assets/images/upgrades/upgrade-health.png');
+        scene.load.image('upgrade-rate-of-fire', 'assets/images/upgrades/upgrade-rate-of-fire.png');
+        scene.load.image('upgrade-shield', 'assets/images/upgrades/upgrade-shield.png');
+        scene.load.image('upgrade-regeneration', 'assets/images/upgrades/upgrade-regeneration.png');
+        scene.load.image('upgrade-vampirism', 'assets/images/upgrades/upgrade-vampirism.png');
+        scene.load.image('upgrade-acid', 'assets/images/upgrades/upgrade-acid.png');
+        scene.load.image('upgrade-engine', 'assets/images/upgrades/upgrade-engine.png');
+        scene.load.image('upgrade-ghost', 'assets/images/upgrades/upgrade-ghost.png');
+        scene.load.image('upgrade-interceptor', 'assets/images/upgrades/upgrade-interceptor.png');
+        scene.load.image('upgrade-projectile-speed', 'assets/images/upgrades/upgrade-projectile-speed.png');
+        scene.load.image('upgrade-rebirth', 'assets/images/upgrades/upgrade-rebirth.png');
+        scene.load.image('upgrade-aoe', 'assets/images/upgrades/upgrade-aoe.png');
+        scene.load.image('upgrade-healing', 'assets/images/upgrades/upgrade-healing.png');
+        scene.load.image('upgrade-later', 'assets/images/upgrades/upgrade-later.png');
+        scene.load.image('upgrade-projectile', 'assets/images/upgrades/upgrade-projectile.png');
     }
 
     constructor() {

@@ -26,7 +26,7 @@ export class Kamikaze extends BaseEnemy {
 
     // Asset loading
     static preload(scene: Phaser.Scene): void {
-        scene.load.image('kamikaze', 'assets/kamikaze.png');
+        scene.load.image('kamikaze', 'assets/images/enemies/kamikaze.png');
     }
 
     spawn(x: number, y: number, type?: KamikazeType): void {

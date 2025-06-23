@@ -52,19 +52,23 @@ Player is destroyed only when HP reaches 0, allowing for strategic damage manage
 ### **Upgrade System**
 Between waves, players can select from a pool of powerful upgrades to customize their build:
 
-**Available Upgrades (12 total):**
-1. **Damage Boost** - Double bullet damage (8 → 16)
+**Available Upgrades (16 total):**
+1. **Damage Boost** - Increase bullet damage (+8 base damage)
 2. **Health Boost** - Double maximum health (100 → 200)  
 3. **Rate of Fire** - Double firing speed (600ms → 300ms)
 4. **Armor Plating** - Reduce incoming damage by 50%
-5. **Auto-Repair** - Regenerate 1 HP every second
-6. **Energy Siphon** - Restore 10% of enemy's max HP on kill
-7. **Acid Bullets** - Apply poison damage-over-time effects
+5. **Auto-Repair** - Regenerate 1 HP every 2 seconds
+6. **Energy Siphon** - Restore 1 HP on enemy kill
+7. **Acid Bullets** - Apply poison damage (8 HP over time)
 8. **Engine Upgrade** - Double movement speed
-9. **Phase Shield** - 4 seconds invincibility after taking damage
+9. **Phase Shield** - 2 seconds invincibility after taking damage
 10. **Interceptor** - Player bullets destroy enemy bullets
 11. **Projectile Speed** - Double bullet velocity
 12. **Rebirth** - Restart wave instead of game over (one-time use)
+13. **Multi-Shot** - Fire additional projectiles simultaneously
+14. **AOE Bullets** - Bullets explode on impact (4 HP area damage)
+15. **Ghost Mode** - Pass through enemies without collision damage
+16. **Healing Burst** - Instant health restoration when near death
 
 **Upgrade Mechanics:**
 - Upgrades appear after every wave completion (except the final wave)
@@ -182,7 +186,7 @@ Each enemy type has multiple subtypes with different characteristics:
 ## 🧨 Victory & Defeat
 
 ### **Victory Conditions**
-- **Wave Victory**: Survive 30 seconds of current wave
+- **Wave Victory**: Survive 60 seconds of current wave
 - **Final Victory**: Complete all 8 waves successfully
 - **Progression**: Score and HP carry over between waves
 
@@ -212,8 +216,10 @@ Each enemy type has multiple subtypes with different characteristics:
 ## 🔊 Audio
 
 ### **Background Music**
-- **Menu Music**: Looping track for menu system
-- **Game Music**: Looping ambient track during gameplay
+- **Menu Music**: Looping track for menu system (`menu.mp3`)
+- **Game Music**: Looping ambient track during gameplay (`space-ambient-cinematic-music-345394.mp3`)
+- **Boss Music**: Epic battle music for Wave 8 boss fight (`epic-inspiring-battle-361552.mp3`)
+- **Dynamic Transitions**: Music switches automatically based on game state
 - **Continuous Playback**: Music continues during wave transitions
 
 ### **Sound Effects**
@@ -308,3 +314,54 @@ Each enemy type has multiple subtypes with different characteristics:
 - **Editing mode**: Yellow text with brackets `> Volume: 65% <`
 - **Consistent styling**: Matches game's overall aesthetic
 - **HP Color Coding**: Green/Orange/Red based on health percentage
+
+---
+
+## ⚖️ Game Balance & Recent Changes
+
+### **Upgrade Balance Philosophy**
+The upgrade system has been carefully balanced to prevent overpowered combinations while maintaining strategic depth:
+
+**Design Principles:**
+- **No Exponential Scaling**: Upgrades use additive bonuses instead of multiplicative
+- **Fixed Damage Values**: Special bullet types deal consistent damage regardless of other upgrades
+- **Strategic Timing**: Defensive upgrades require tactical activation
+- **Build Diversity**: Multiple viable upgrade paths for different playstyles
+
+### **Recent Balance Adjustments**
+Several upgrades were rebalanced for fairer gameplay:
+
+**Damage System Changes:**
+- **Damage Boost**: Changed from ×2 multiplier to +8 additive bonus
+- **Acid Bullets**: Fixed 8 HP poison damage (doesn't scale with damage upgrades)
+- **AOE Bullets**: Fixed 4 HP area damage (50% of base damage, not current)
+
+**Defensive System Changes:**
+- **Phase Shield**: Reduced from 4 seconds to 2 seconds invincibility
+- **Auto-Repair**: Reduced from 1 HP/second to 1 HP/2 seconds
+- **Energy Siphon**: Changed from 10% enemy max HP to fixed 1 HP per kill
+
+**Impact on Gameplay:**
+- **Early Game**: Upgrades provide meaningful but not overwhelming advantages
+- **Mid Game**: Players must choose between offense, defense, and utility
+- **Late Game**: Boss remains challenging even with multiple upgrades
+- **Replayability**: Different upgrade combinations create varied experiences
+
+### **Player Experience Improvements**
+
+**Movement System:**
+- **Smooth Boundaries**: Eliminated "shaking" at screen edges
+- **Precise Control**: Boundary-aware movement prevents oscillation
+- **Visual Clarity**: Adjusted movement limits to avoid UI overlap
+
+**Collision System:**
+- **Ultra-Precise Detection**: Player ship uses 55% × 55% rectangular collision
+- **Fair Hit Detection**: Gunner enemies use optimized rectangular collision
+- **Visual Accuracy**: Collision boxes match sprite shapes for fairness
+- **Configurable Parameters**: Easy adjustment via constants for fine-tuning
+
+**Menu System:**
+- **Intuitive Navigation**: Pre-selected menu items for faster interaction
+- **Settings Accessibility**: Volume controls available from main menu and pause
+- **Anti-Sticky Keys**: Protection against accidental menu exits
+- **Consistent Design**: Unified visual style across all interfaces

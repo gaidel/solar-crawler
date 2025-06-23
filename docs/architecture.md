@@ -6,20 +6,45 @@
 solar-crawler/
 ├── 📄 index.html              # Entry point HTML file
 ├── 📄 index.ts               # Main game initialization
-├── 📁 assets/                # All game resources
-│   ├── 🖼️ player.png
-│   ├── 🖼️ asteroid.png
-│   ├── 🖼️ kamikaze.png
-│   ├── 🖼️ gunner.png
-│   ├── 🖼️ leaper.png
-│   ├── 🖼️ bullet.png
-│   ├── 🖼️ enemy_bullet.png
-│   ├── 🖼️ explosion.png
-│   ├── 🖼️ background.png
-│   ├── 🎵 menu.mp3
-│   ├── 🎵 space-ambient-cinematic-music-345394.mp3
-│   ├── 🎵 shot.mp3
-│   └── 🎵 explosion.mp3
+├── 📁 assets/                # All game resources (organized by type)
+│   ├── 📁 audio/            # Audio assets organized by category
+│   │   ├── 📁 bgm/          # Background music
+│   │   │   ├── 🎵 menu.mp3
+│   │   │   ├── 🎵 space-ambient-cinematic-music-345394.mp3
+│   │   │   └── 🎵 epic-inspiring-battle-361552.mp3
+│   │   └── 📁 sfx/          # Sound effects
+│   │       ├── 🎵 shot.mp3
+│   │       └── 🎵 explosion.mp3
+│   └── 📁 images/           # Visual assets organized by function
+│       ├── 🖼️ background.png
+│       ├── 🖼️ explosion.png
+│       ├── 🖼️ player.png
+│       ├── 📁 enemies/      # Enemy sprites
+│       │   ├── 🖼️ asteroid.png
+│       │   ├── 🖼️ gunner.png
+│       │   ├── 🖼️ kamikaze.png
+│       │   ├── 🖼️ leaper.png
+│       │   └── 🖼️ mothership.png
+│       ├── 📁 projectiles/  # Bullet sprites
+│       │   ├── 🖼️ bullet.png
+│       │   └── 🖼️ enemy_bullet.png
+│       └── 📁 upgrades/     # Upgrade icons (16 total)
+│           ├── 🖼️ upgrade-damage.png
+│           ├── 🖼️ upgrade-rate-of-fire.png
+│           ├── 🖼️ upgrade-projectile-speed.png
+│           ├── 🖼️ upgrade-health.png
+│           ├── 🖼️ upgrade-regeneration.png
+│           ├── 🖼️ upgrade-vampirism.png
+│           ├── 🖼️ upgrade-shield.png
+│           ├── 🖼️ upgrade-engine.png
+│           ├── 🖼️ upgrade-projectile.png
+│           ├── 🖼️ upgrade-acid.png
+│           ├── 🖼️ upgrade-aoe.png
+│           ├── 🖼️ upgrade-interceptor.png
+│           ├── 🖼️ upgrade-ghost.png
+│           ├── 🖼️ upgrade-healing.png
+│           ├── 🖼️ upgrade-rebirth.png
+│           └── 🖼️ upgrade-later.png
 ├── 📁 docs/                  # Project documentation
 │   ├── 📄 prd.md            # Product Requirements Document
 │   ├── 📄 design.md         # Game Design Document
@@ -97,38 +122,7 @@ solar-crawler/
 
 ---
 
-## 🔮 Future Structure (As Game Grows)
 
-```
-src/
-├── Player.ts                # Player class  
-├── GameUI.ts                # UI system and input handling
-├── AudioManager.ts          # Sound management (implemented)
-├── ExplosionManager.ts      # Visual explosion effects (implemented)
-├── enemies/                 # Enemy system (implemented)
-│   ├── Enemy.ts             # Base enemy interface and class
-│   ├── Asteroid.ts          # Asteroid enemy implementation
-│   ├── Kamikaze.ts          # Kamikaze enemy implementation
-│   ├── Gunner.ts            # Gunner enemy class (implemented)
-│   ├── Leaper.ts            # Leaper enemy class (implemented)
-│   └── EnemyManager.ts      # Enemy management system
-├── Bullet.ts                # Bullet class (future)
-├── WaveManager.ts           # Wave progression logic (future)
-├── config/
-│   ├── constants.ts         # Game constants
-│   └── settings.ts          # Game settings (future)
-├── scenes/                  # Scene system (implemented)
-│   ├── MainMenuScene.ts     # Main menu
-│   ├── AboutScene.ts        # About screen
-│   ├── ControlsScene.ts     # Controls screen  
-│   ├── CreditsScene.ts      # Credits screen
-│   └── GameScene.ts         # Main gameplay
-└── utils/
-    ├── CollisionHelpers.ts  # Collision utilities
-    └── MathHelpers.ts       # Math utilities (future)
-```
-
----
 
 ## 🎨 Code Organization Best Practices
 
@@ -219,38 +213,15 @@ The game uses Phaser's `depth` system to control rendering order. Higher depth v
 - **HUD elements**: Always set high depth (800+) and scroll factor 0
 - **Temporary UI**: Use containers for easy cleanup
 
-#### **Game Object Depth Assignment:**
-```typescript
-// Background elements
-backgroundSprite.setDepth(0);
-
-// Projectiles (behind characters)
-enemyBullet.setDepth(5);
-playerBullet.setDepth(6);
-
-// Regular enemies
-asteroid.setDepth(10);
-gunner.setDepth(11);
-kamikaze.setDepth(12);
-leaper.setDepth(13);
-
-// Boss enemies
-mothership.setDepth(20);
-
-// Player
-playerSprite.setDepth(30);
-
-// Effects
-explosion.setDepth(40);
-
-// HUD
-hpBar.setDepth(100);
-scoreText.setDepth(101);
-
-// UI Overlays
-pauseMenu.setDepth(200);
-upgradeScreen.setDepth(201);
-```
+#### **Depth Assignment Guidelines:**
+- **Background elements**: depth 0
+- **Projectiles**: depth 5-6 (behind characters)
+- **Regular enemies**: depth 10-13
+- **Boss enemies**: depth 20
+- **Player**: depth 30
+- **Effects**: depth 40
+- **HUD**: depth 100+
+- **UI Overlays**: depth 200+
 
 #### **Why This Order Matters:**
 - **Player visibility**: Player should never be hidden behind enemies or effects
@@ -293,35 +264,9 @@ The `AudioManager` class provides centralized management of all game audio:
 - **Autoplay Policy Handling** - Progressive retry system for blocked autoplay
 
 **Volume System:**
-```typescript
-interface VolumeSettings {
-    master: number;        // 0.0 to 1.0 (default: 0.5)
-    music: number;         // 0.0 to 1.0 (default: 0.5)  
-    soundEffects: number;  // 0.0 to 1.0 (default: 0.5)
-}
-
-// Effective volume calculation:
-// Music Volume = baseMusicVolume × master × music
-// SFX Volume = baseSoundEffectVolume × master × soundEffects
-```
-
-**Usage Pattern:**
-```typescript
-// In preload() method of scenes
-AudioManager.preload(this);
-
-// In create() method 
-this.audioManager = new AudioManager(this);
-this.audioManager.playMenuMusic(); // or playGameMusic()
-
-// Volume control
-this.audioManager.setMasterVolume(0.7);
-this.audioManager.setMusicVolume(0.5);
-this.audioManager.setSoundEffectsVolume(0.8);
-
-// In destroy() method
-this.audioManager.destroy();
-```
+- **Three-level control**: Master, Music, Sound Effects (0.0 to 1.0)
+- **Effective volume calculation**: Master × Category × Base Volume
+- **Persistent settings**: Saved to localStorage
 
 **Audio Files:**
 - **`menu.mp3`** - Looping background music for menu system
@@ -373,43 +318,14 @@ The `ExplosionManager` class provides comprehensive visual explosion effects for
 - **Synchronized Effects** - Combines sprite animation with particle effects
 
 **Explosion Types:**
-```typescript
-// Different explosion sizes based on enemy type
-explodeSmall(x, y)   // 0.6x scale - for asteroids
-explodeMedium(x, y)  // 0.8x scale - for kamikazes and gunners  
-explodeLarge(x, y)   // 1.2x scale - for leapers and player death
-```
+- **Small**: 0.6x scale (asteroids)
+- **Medium**: 0.8x scale (kamikazes, gunners)
+- **Large**: 1.2x scale (leapers, player death)
 
-**Visual Components:**
-1. **Explosion Sprite Animation:**
-   - Starts at 0.1x scale, grows to 1.5x target size
-   - Fades from 90% to 0% alpha over 400ms
-   - Uses Power2 easing for smooth animation
-   - Automatic sprite cleanup after animation
-
-2. **Particle Effects:**
-   - Orange-red gradient particles (programmatically generated)
-   - Random velocities and directions (360° spread)
-   - Particle rotation and scale animation
-   - Configurable quantity based on explosion intensity
-
-**Usage Pattern:**
-```typescript
-// In preload() method
-ExplosionManager.preload(this);
-
-// In create() method
-this.explosionManager = new ExplosionManager(this);
-this.explosionManager.create();
-
-// Trigger explosions
-this.explosionManager.explodeSmall(enemy.x, enemy.y);   // Asteroid
-this.explosionManager.explodeMedium(enemy.x, enemy.y);  // Kamikaze/Gunner
-this.explosionManager.explodeLarge(enemy.x, enemy.y);   // Leaper/Player
-
-// Cleanup
-this.explosionManager.destroy();
-```
+**Technical Implementation:**
+- **Sprite Animation**: Scale-up and fade-out over 400ms
+- **Particle System**: Orange-red particles with 360° spread
+- **Performance**: Single particle emitter reused for all explosions
 
 **Assets:**
 - **`explosion.png`** - Main explosion sprite texture
@@ -420,129 +336,6 @@ this.explosionManager.destroy();
 - Synchronized with AudioManager for combined audio-visual effects
 - Proper cleanup in GameScene destroy method
 - Performance optimized with single particle emitter reuse
-
----
-
-## 🎯 Enemy Bullet System Architecture
-
-### **Bullet Pooling & Management** - Optimized Projectile System
-The enemy bullet system provides efficient projectile management for Gunner enemies:
-
-**Core Features:**
-- **Object Pooling** - Reuses inactive bullets to prevent memory allocation
-- **Explicit State Management** - Clear active/inactive bullet tracking
-- **Optimized Cleanup** - Multi-boundary cleanup system
-- **Physics Integration** - Proper collision detection with cleanup
-- **Debug Statistics** - Development tools for troubleshooting
-
-**Bullet Pool Configuration:**
-```typescript
-// EnemyManager.ts - Optimized settings
-this.enemyBullets = this.scene.physics.add.group({
-    defaultKey: 'enemy_bullet',
-    maxSize: 20,  // Reduced from 50 for better control
-    // runChildUpdate removed - manual update management
-});
-```
-
-**Bullet Lifecycle Management:**
-1. **Creation/Reuse** - `Gunner.fireBullet()` first searches for inactive bullets
-2. **Activation** - Explicit position reset and physics body re-enabling
-3. **Movement** - Horizontal velocity with collision detection
-4. **Cleanup** - Multiple cleanup triggers for reliability
-
-**Advanced Pooling Logic:**
-```typescript
-// Gunner.ts - Explicit bullet reuse
-private fireBullet(): void {
-    // First try to find an inactive bullet to reuse
-    let bullet: Phaser.Physics.Arcade.Sprite | null = null;
-    
-    this.bullets.getChildren().forEach((child) => {
-        if (!bullet && child instanceof Phaser.Physics.Arcade.Sprite && !child.active) {
-            bullet = child;
-        }
-    });
-    
-    // If no inactive bullet found, get from pool
-    if (!bullet) {
-        bullet = this.bullets.get(x, y, 'enemy_bullet');
-    }
-    
-    if (bullet) {
-        // Reset bullet state completely
-        bullet.setPosition(x, y);
-        bullet.setActive(true);
-        bullet.setVisible(true);
-        if (bullet.body) {
-            bullet.body.enable = true;  // Re-enable physics
-        }
-    }
-}
-```
-
-**Multi-Level Cleanup System:**
-```typescript
-// EnemyManager.ts - Comprehensive cleanup
-private cleanupEnemyBullets(): void {
-    this.enemyBullets.getChildren().forEach((bullet) => {
-        if (bullet instanceof Phaser.Physics.Arcade.Sprite) {
-            // Cleanup off-screen bullets (both directions)
-            if (bullet.active && (bullet.x < -50 || bullet.x > GAME_CONFIG.WIDTH + 100)) {
-                bullet.setActive(false);
-                bullet.setVisible(false);
-                if (bullet.body) bullet.body.enable = false;
-            }
-            
-            // Safety cleanup for inactive but visible bullets
-            if (!bullet.active && bullet.visible) {
-                bullet.setVisible(false);
-                if (bullet.body) bullet.body.enable = false;
-            }
-        }
-    });
-}
-```
-
-**Collision Handling:**
-```typescript
-// GameScene.ts - Player-bullet collision
-private handlePlayerBulletCollision(player, bullet): void {
-    if (!bullet.active) return;  // Prevent double-processing
-    
-    // Player damage logic
-    const playerDestroyed = this.player.takeDamage(DAMAGE_CONFIG.ENEMY_BULLET);
-    
-    // Simple bullet cleanup (no aggressive positioning)
-    bullet.setActive(false);
-    bullet.setVisible(false);
-    if (bullet.body) bullet.body.enable = false;
-}
-```
-
-**Debug & Monitoring:**
-```typescript
-// Development tool for bullet statistics
-getBulletStats(): { total: number; active: number; visible: number } {
-    let total = 0, active = 0, visible = 0;
-    this.enemyBullets.getChildren().forEach((bullet) => {
-        if (bullet instanceof Phaser.Physics.Arcade.Sprite) {
-            total++;
-            if (bullet.active) active++;
-            if (bullet.visible) visible++;
-        }
-    });
-    return { total, active, visible };
-}
-```
-
-**Key Optimizations:**
-- **Reduced Pool Size** - From 50 to 20 bullets maximum
-- **Manual Update Management** - Removed `runChildUpdate: true` for better control
-- **Explicit Reuse Logic** - Search inactive bullets before creating new ones
-- **Multi-Boundary Cleanup** - Handle bullets going off-screen in both directions
-- **State Consistency** - Ensure active/visible/physics states are synchronized
-- **Simple Destruction** - Avoid complex positioning that can cause visual artifacts
 
 ---
 
@@ -564,23 +357,10 @@ The game includes a comprehensive cheat system for easier testing and debugging:
   - Useful for testing damage systems without dying
   - Console logs the health restoration
 
-**Implementation:**
-```typescript
-// GameScene.ts
-private setupDebugCheats(): void {
-    if (this.physics.world.debugGraphic) {
-        this.vKey = this.input.keyboard!.addKey(KeyCodes.V);
-        this.hKey = this.input.keyboard!.addKey(KeyCodes.H);
-    }
-}
-
-private handleDebugCheats(): void {
-    if (!this.physics.world.debugGraphic || this.gameState !== GameState.PLAYING) {
-        return;
-    }
-    // Process V and H key inputs...
-}
-```
+**Technical Details:**
+- **Activation**: Only when `debug: true` in Phaser configuration
+- **Detection**: Via `this.physics.world.debugGraphic` presence
+- **State**: Only active during `GameState.PLAYING`
 
 **Benefits:**
 - **Faster Testing**: No need to play through entire waves to test features
@@ -604,15 +384,9 @@ The player ship uses an optimized rectangular collision body that better matches
 - **Configurable**: Easily adjustable via `PLAYER_CONFIG` constants
 
 **Technical Implementation:**
-```typescript
-// Optimized collision setup for player ship
-setupPlayerCollision(
-    sprite, 
-    PLAYER_CONFIG.COLLISION_WIDTH_FACTOR,  // 0.55 (55% width)
-    PLAYER_CONFIG.COLLISION_HEIGHT_FACTOR, // 0.55 (55% height)
-    PLAYER_CONFIG.COLLISION_OFFSET_Y       // 5px down from center
-);
-```
+- **Collision Size**: 55% width × 55% height of sprite
+- **Positioning**: 5px downward offset from center
+- **Configuration**: Via `PLAYER_CONFIG` constants
 
 **Benefits:**
 - **More Accurate**: Better represents the actual ship shape
@@ -631,7 +405,40 @@ setupPlayerCollision(
 **Other Enemies**: Continue to use circular collision bodies for simplicity:
 - **Asteroids**: Circular collision (naturally round objects)
 - **Kamikazes**: Circular collision (simple, fast-moving threats)
-- **Leapers**: Circular collision (zigzag movement makes rectangular less beneficial)
+  - **Leapers**: Circular collision (zigzag movement makes rectangular less beneficial)
+
+---
+
+## 🗂️ Asset Organization System
+
+### **Professional Asset Structure**
+The project follows industry-standard asset organization with logical separation by function and type:
+
+**Benefits of Current Structure:**
+- **Logical Separation**: Audio vs Images, BGM vs SFX, Enemies vs Projectiles vs Upgrades
+- **Scalable**: Easy to add new categories without restructuring
+- **Professional**: Follows game development best practices
+- **Maintainable**: Clear locations for different asset types
+- **Build-Friendly**: Optimized for CI/CD and asset bundling
+
+**Asset Categories:**
+```
+assets/
+├── audio/           # All audio assets
+│   ├── bgm/        # Background music (looping tracks)
+│   └── sfx/        # Sound effects (short clips)
+└── images/         # All visual assets
+    ├── enemies/    # Enemy sprites (5 types)
+    ├── projectiles/ # Bullet sprites (2 types)
+    ├── upgrades/   # Upgrade icons (16 total)
+    └── [core]/     # Core game sprites (player, background, explosion)
+```
+
+**Migration from Flat Structure:**
+- **Before**: All 28 assets mixed in single `assets/` directory
+- **After**: Organized into 6 logical subdirectories
+- **Impact**: Updated 25+ file paths across 10+ source files
+- **Result**: Professional structure ready for scaling
 
 ---
 

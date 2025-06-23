@@ -10,7 +10,7 @@ export class AboutScene extends Phaser.Scene {
     }
 
     preload(): void {
-        this.load.image('background', 'assets/background.png');
+        this.load.image('background', 'assets/images/background.png');
         AudioManager.preload(this);
     }
 

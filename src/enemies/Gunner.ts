@@ -41,8 +41,8 @@ export class Gunner extends BaseEnemy {
     }
 
     public static preload(scene: Phaser.Scene): void {
-        scene.load.image('gunner', 'assets/gunner.png');
-        scene.load.image('enemy_bullet', 'assets/enemy_bullet.png');
+        scene.load.image('gunner', 'assets/images/enemies/gunner.png');
+        scene.load.image('enemy_bullet', 'assets/images/projectiles/enemy_bullet.png');
     }
 
     spawn(x: number, y: number, type?: GunnerType): void {

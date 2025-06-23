@@ -15,7 +15,7 @@ export class Mothership extends BaseEnemy {
     private bullets: Phaser.Physics.Arcade.Group;
 
     static preload(scene: Phaser.Scene): void {
-        scene.load.image('mothership', 'assets/mothership.png');
+        scene.load.image('mothership', 'assets/images/enemies/mothership.png');
     }
 
     constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, bullets: Phaser.Physics.Arcade.Group) {
