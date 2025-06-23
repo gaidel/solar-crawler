@@ -229,7 +229,12 @@ export class UpgradeManager {
 
     // Calculate actual damage based on upgrades
     calculateDamage(baseDamage: number): number {
-        return Math.round(baseDamage * this.getDamageMultiplier());
+        if (this.hasUpgrade(UPGRADE_CONFIG.DAMAGE)) {
+            // Add base damage instead of multiplying (8 + 8 = 16 instead of 8 * 2 = 16)
+            // This makes the upgrade less powerful when combined with other damage sources
+            return Math.round(baseDamage + BULLET_CONFIG.BASE_DAMAGE);
+        }
+        return baseDamage;
     }
 
     // Calculate actual max HP based on upgrades
