@@ -351,6 +351,21 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
+    private clearAllPlayerBullets(): void {
+        // Clear all active player bullets when transitioning between waves
+        this.bullets.getChildren().forEach((bullet) => {
+            if (bullet instanceof Phaser.Physics.Arcade.Sprite && bullet.active) {
+                bullet.setActive(false);
+                bullet.setVisible(false);
+
+                // Disable physics body to prevent further collisions
+                if (bullet.body) {
+                    bullet.body.enable = false;
+                }
+            }
+        });
+    }
+
     private handleEnemyHit(
         bullet: Phaser.Physics.Arcade.Sprite,
         enemy: Phaser.Physics.Arcade.Sprite
@@ -802,6 +817,9 @@ export class GameScene extends Phaser.Scene {
         // Clear all enemies from screen
         this.enemyManager.reset();
 
+        // Clear all player bullets from previous attempt
+        this.clearAllPlayerBullets();
+
         // Update enemy manager with current wave number (don't increment)
         this.enemyManager.setCurrentWave(this.currentWave);
 
@@ -897,6 +915,9 @@ export class GameScene extends Phaser.Scene {
 
         // Clear all enemies from screen
         this.enemyManager.reset();
+
+        // Clear all player bullets from previous wave
+        this.clearAllPlayerBullets();
 
         // Update enemy manager with new wave number
         this.enemyManager.setCurrentWave(this.currentWave);
