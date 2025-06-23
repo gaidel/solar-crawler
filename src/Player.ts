@@ -242,11 +242,11 @@ export class Player {
         this.currentHP = Math.min(this.currentHP + amount, this.maxHP);
     }
 
-    // Energy Siphon: Heal based on enemy max HP
+    // Energy Siphon: Heal fixed amount on enemy kill
     onEnemyKilled(enemyMaxHP: number): void {
         if (this.upgradeManager && this.upgradeManager.hasEnergySiphon()) {
-            const healAmount = Math.ceil(enemyMaxHP * this.upgradeManager.getEnergySiphonRatio());
-            this.heal(healAmount);
+            // Always heal 1 HP regardless of enemy max HP
+            this.heal(1);
         }
     }
 

@@ -344,7 +344,7 @@ export const UPGRADE_DEFINITIONS: UpgradeData[] = [
     {
         id: UPGRADE_CONFIG.ENERGY_SIPHON,
         name: 'Energy Siphon',
-        description: 'Restore 10% of enemy HP on kill',
+        description: 'Restore 1 HP on enemy kill',
         icon: 'upgrade-vampirism',
     },
     {
