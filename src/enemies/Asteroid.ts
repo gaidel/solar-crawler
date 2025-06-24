@@ -24,7 +24,7 @@ export class Asteroid extends BaseEnemy {
 
     // Asset loading
     static preload(scene: Phaser.Scene): void {
-        scene.load.image('asteroid', 'assets/images/enemies/asteroid.png');
+        scene.load.image('asteroid', 'images/enemies/asteroid.png');
     }
 
     spawn(x: number, y: number, type?: AsteroidType): void {

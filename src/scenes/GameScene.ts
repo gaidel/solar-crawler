@@ -39,7 +39,7 @@ export class GameScene extends Phaser.Scene {
 
     preload() {
         // Load scene-specific assets
-        this.load.image('background', 'assets/images/background.png');
+        this.load.image('background', 'images/background.png');
 
         // Load assets for game entities
         Player.preload(this);

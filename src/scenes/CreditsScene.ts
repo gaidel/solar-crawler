@@ -10,10 +10,10 @@ export class CreditsScene extends Phaser.Scene {
     }
 
     preload(): void {
-        this.load.image('background', 'assets/images/background.png');
-        this.load.image('player', 'assets/images/player.png');
-        this.load.image('asteroid', 'assets/images/enemies/asteroid.png');
-        this.load.image('kamikaze', 'assets/images/enemies/kamikaze.png');
+        this.load.image('background', 'images/background.png');
+        this.load.image('player', 'images/player.png');
+        this.load.image('asteroid', 'images/enemies/asteroid.png');
+        this.load.image('kamikaze', 'images/enemies/kamikaze.png');
         AudioManager.preload(this);
     }
 

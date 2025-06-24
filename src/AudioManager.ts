@@ -102,11 +102,11 @@ export class AudioManager {
 
     // Static method for loading audio assets
     static preload(scene: Phaser.Scene): void {
-        scene.load.audio('menuMusic', 'assets/audio/bgm/menu.mp3');
-        scene.load.audio('gameMusic', 'assets/audio/bgm/space-ambient-cinematic-music-345394.mp3');
-        scene.load.audio('bossMusic', 'assets/audio/bgm/epic-inspiring-battle-361552.mp3');
-        scene.load.audio('shotSound', 'assets/audio/sfx/shot.mp3');
-        scene.load.audio('explosionSound', 'assets/audio/sfx/explosion.mp3');
+        scene.load.audio('menuMusic', 'audio/bgm/menu.mp3');
+        scene.load.audio('gameMusic', 'audio/bgm/space-ambient-cinematic-music-345394.mp3');
+        scene.load.audio('bossMusic', 'audio/bgm/epic-inspiring-battle-361552.mp3');
+        scene.load.audio('shotSound', 'audio/sfx/shot.mp3');
+        scene.load.audio('explosionSound', 'audio/sfx/explosion.mp3');
     }
 
     // Static method to stop all global audio

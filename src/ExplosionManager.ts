@@ -11,7 +11,7 @@ export class ExplosionManager {
     // Static method for loading assets
     static preload(scene: Phaser.Scene): void {
         // Load explosion sprite
-        scene.load.image('explosion_sprite', 'assets/images/explosion.png');
+        scene.load.image('explosion_sprite', 'images/explosion.png');
 
         // Create a simple but colorful explosion particle texture
         const graphics = scene.add.graphics();

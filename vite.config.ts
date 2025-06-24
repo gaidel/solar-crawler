@@ -7,9 +7,12 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
     base: './',
+    publicDir: 'assets',
     build: {
         outDir: 'dist',
-        assetsDir: 'assets',
+        assetsDir: '',
+        chunkSizeWarningLimit: 2048,
+        copyPublicDir: true,
     },
     resolve: {
         alias: {

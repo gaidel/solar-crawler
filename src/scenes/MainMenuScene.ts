@@ -21,8 +21,8 @@ export class MainMenuScene extends Phaser.Scene {
 
     preload(): void {
         // Load assets for menu
-        this.load.image('background', 'assets/images/background.png');
-        this.load.image('player', 'assets/images/player.png');
+        this.load.image('background', 'images/background.png');
+        this.load.image('player', 'images/player.png');
 
         // Load audio assets
         AudioManager.preload(this);
