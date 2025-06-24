@@ -90,8 +90,8 @@ export class Gunner extends BaseEnemy {
 
             // Set up optimized rectangular collision for gunner ship with right and downward offset
             setupGunnerCollision(
-                this.sprite, 
-                GUNNER_CONFIG.COLLISION_WIDTH_FACTOR, 
+                this.sprite,
+                GUNNER_CONFIG.COLLISION_WIDTH_FACTOR,
                 GUNNER_CONFIG.COLLISION_HEIGHT_FACTOR,
                 GUNNER_CONFIG.COLLISION_OFFSET_X,
                 GUNNER_CONFIG.COLLISION_OFFSET_Y
@@ -156,7 +156,7 @@ export class Gunner extends BaseEnemy {
 
             // Set up circular collision for enemy bullet
             setupCircularCollision(bullet, 0.9);
-            
+
             // Set proper depth for enemy bullets
             bullet.setDepth(DEPTH_CONFIG.ENEMY_BULLETS);
 

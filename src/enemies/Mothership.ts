@@ -7,7 +7,7 @@ export class Mothership extends BaseEnemy {
     private dissolveTimer?: Phaser.Time.TimerEvent;
     private isDissolving: boolean = true;
     private targetX: number = GAME_CONFIG.WIDTH + 50; // Final position (center slightly off-screen right, more left part visible)
-    
+
     // Firing system
     private lastFireTime: number = 0;
     private fireRate: number = 1500; // Fire every 1.5 seconds (faster than gunners)
@@ -18,7 +18,11 @@ export class Mothership extends BaseEnemy {
         scene.load.image('mothership', 'assets/images/enemies/mothership.png');
     }
 
-    constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, bullets: Phaser.Physics.Arcade.Group) {
+    constructor(
+        scene: Phaser.Scene,
+        group: Phaser.Physics.Arcade.Group,
+        bullets: Phaser.Physics.Arcade.Group
+    ) {
         super(scene, group);
         this.bullets = bullets;
     }
@@ -39,7 +43,7 @@ export class Mothership extends BaseEnemy {
             this.sprite.setPosition(x, y);
             this.sprite.setActive(true);
             this.sprite.setVisible(true);
-            
+
             // Re-enable physics body when reusing sprite
             if (this.sprite.body) {
                 this.sprite.body.enable = true;
@@ -54,11 +58,11 @@ export class Mothership extends BaseEnemy {
         // Set circular collision body using proper centering approach like other enemies
         const paddingFactor = 0.7; // Collision for boss (70% of sprite size - nearly ideal)
         const radius = (Math.min(669, 471) / 2) * paddingFactor; // Use original sprite dimensions
-        
+
         // Calculate proper offset to center the collision circle, but shift left
         const offsetX = (669 - radius * 2) / 2 - 40; // Shifted 40px to the left
         const offsetY = (471 - radius * 2) / 2 + 30; // Slightly lower (30px down from center)
-        
+
         this.sprite.body!.setCircle(radius, offsetX, offsetY);
 
         // Set boss depth to render above regular enemies but below player
@@ -72,10 +76,10 @@ export class Mothership extends BaseEnemy {
 
     private startDissolveEffect(): void {
         this.isDissolving = true;
-        
+
         // Start invisible
         this.sprite.setAlpha(0);
-        
+
         // Dissolve in over 2 seconds
         this.scene.tweens.add({
             targets: this.sprite,
@@ -85,7 +89,7 @@ export class Mothership extends BaseEnemy {
             onComplete: () => {
                 this.isDissolving = false;
                 this.startMovementToPosition();
-            }
+            },
         });
     }
 
@@ -95,7 +99,7 @@ export class Mothership extends BaseEnemy {
             targets: this.sprite,
             x: this.targetX,
             duration: 3000, // 3 seconds to reach position
-            ease: 'Power2'
+            ease: 'Power2',
         });
     }
 
@@ -112,7 +116,7 @@ export class Mothership extends BaseEnemy {
             // Slight vertical hovering motion
             const hoverOffset = Math.sin(this.scene.time.now * 0.001) * 10;
             this.sprite.y = GAME_CONFIG.HEIGHT / 2 + hoverOffset;
-            
+
             // Fire bullets periodically when in position
             const currentTime = this.scene.time.now;
             if (currentTime - this.lastFireTime > this.fireRate) {
@@ -123,14 +127,16 @@ export class Mothership extends BaseEnemy {
     }
 
     takeDamage(damage: number): boolean {
-        console.log(`[MOTHERSHIP] Boss takes ${damage} damage! HP: ${this.currentHP - damage}/${this.maxHP}`);
+        console.log(
+            `[MOTHERSHIP] Boss takes ${damage} damage! HP: ${this.currentHP - damage}/${this.maxHP}`
+        );
         const destroyed = super.takeDamage(damage);
-        
+
         if (destroyed) {
             console.log('[MOTHERSHIP] Boss destroyed! Victory!');
             // Death explosion is now handled by EnemyManager for consistency
         }
-        
+
         return destroyed;
     }
 
@@ -140,17 +146,17 @@ export class Mothership extends BaseEnemy {
         const radius = (Math.min(669, 471) / 2) * paddingFactor; // Same radius as collision
         const offsetX = (669 - radius * 2) / 2 - 40; // Same offset as collision (shifted left)
         const offsetY = (471 - radius * 2) / 2 + 30; // Same offset as collision (shifted down)
-        
+
         // Calculate collision circle center in world coordinates
-        const collisionCenterX = this.sprite.x - 669/2 + offsetX + radius;
-        const collisionCenterY = this.sprite.y - 471/2 + offsetY + radius;
-        
+        const collisionCenterX = this.sprite.x - 669 / 2 + offsetX + radius;
+        const collisionCenterY = this.sprite.y - 471 / 2 + offsetY + radius;
+
         // Generate random point inside the collision circle
         const angle = Math.random() * Math.PI * 2; // Random angle
         const distance = Math.random() * radius * 0.8; // Random distance (80% of radius for safety)
         const randomX = collisionCenterX + Math.cos(angle) * distance;
         const randomY = collisionCenterY + Math.sin(angle) * distance;
-        
+
         // Find or create bullet
         let bullet: Phaser.Physics.Arcade.Sprite | null = null;
 
@@ -161,7 +167,11 @@ export class Mothership extends BaseEnemy {
         });
 
         if (!bullet) {
-            bullet = this.bullets.get(randomX, randomY, 'enemy_bullet') as Phaser.Physics.Arcade.Sprite;
+            bullet = this.bullets.get(
+                randomX,
+                randomY,
+                'enemy_bullet'
+            ) as Phaser.Physics.Arcade.Sprite;
         }
 
         if (bullet) {
@@ -181,7 +191,7 @@ export class Mothership extends BaseEnemy {
             bullet.setDepth(DEPTH_CONFIG.ENEMY_BULLETS);
 
             // Set up collision
-            const radius = Math.min(bullet.width, bullet.height) / 2 * 0.9;
+            const radius = (Math.min(bullet.width, bullet.height) / 2) * 0.9;
             const offsetX = (bullet.width - radius * 2) / 2;
             const offsetY = (bullet.height - radius * 2) / 2;
             bullet.setCircle(radius, offsetX, offsetY);
@@ -190,7 +200,7 @@ export class Mothership extends BaseEnemy {
             const deltaX = playerX - randomX;
             const deltaY = playerY - randomY;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            
+
             // Normalize direction and apply speed
             if (distance > 0) {
                 const velocityX = (deltaX / distance) * this.bulletSpeed;
@@ -198,7 +208,9 @@ export class Mothership extends BaseEnemy {
                 bullet.setVelocity(velocityX, velocityY);
             }
 
-            console.log(`[MOTHERSHIP] Fired bullet from (${Math.round(randomX)}, ${Math.round(randomY)}) toward player at (${Math.round(playerX)}, ${Math.round(playerY)})`);
+            console.log(
+                `[MOTHERSHIP] Fired bullet from (${Math.round(randomX)}, ${Math.round(randomY)}) toward player at (${Math.round(playerX)}, ${Math.round(playerY)})`
+            );
         }
     }
 
@@ -212,7 +224,7 @@ export class Mothership extends BaseEnemy {
                 ease: 'Power2',
                 onComplete: () => {
                     super.onHit();
-                }
+                },
             });
         } else {
             super.onHit();
@@ -237,4 +249,4 @@ export class Mothership extends BaseEnemy {
         }
         super.destroy();
     }
-} 
+}

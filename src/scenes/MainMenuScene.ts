@@ -309,7 +309,7 @@ export class MainMenuScene extends Phaser.Scene {
         if (this.showingSettings) {
             return;
         }
-        
+
         if (!this.gameUI) {
             return;
         }

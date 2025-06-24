@@ -52,12 +52,12 @@ export function setupPlayerCollision(
     // Calculate collision box dimensions
     const collisionWidth = sprite.width * widthFactor;
     const collisionHeight = sprite.height * heightFactor;
-    
+
     // Calculate offset to center the collision box with optional Y adjustment
     // Example: sprite 100px, collision 60px → offset 20px + additional Y offset
     const offsetX = (sprite.width - collisionWidth) / 2;
     const calculatedOffsetY = (sprite.height - collisionHeight) / 2 + offsetY;
-    
+
     // Set rectangular collision body
     sprite.body!.setSize(collisionWidth, collisionHeight, false);
     sprite.body!.setOffset(offsetX, calculatedOffsetY);
@@ -78,11 +78,11 @@ export function setupElongatedCollision(
     // Calculate collision box dimensions
     const collisionWidth = sprite.width * widthFactor;
     const collisionHeight = sprite.height * heightFactor;
-    
+
     // Calculate offset to center the collision box
     const offsetX = (sprite.width - collisionWidth) / 2;
     const offsetY = (sprite.height - collisionHeight) / 2;
-    
+
     // Set rectangular collision body
     sprite.body!.setSize(collisionWidth, collisionHeight, false);
     sprite.body!.setOffset(offsetX, offsetY);
@@ -107,11 +107,11 @@ export function setupGunnerCollision(
     // Calculate collision box dimensions
     const collisionWidth = sprite.width * widthFactor;
     const collisionHeight = sprite.height * heightFactor;
-    
+
     // Calculate offset to center the collision box with optional X/Y adjustments
     const calculatedOffsetX = (sprite.width - collisionWidth) / 2 + offsetX;
     const calculatedOffsetY = (sprite.height - collisionHeight) / 2 + offsetY;
-    
+
     // Set rectangular collision body
     sprite.body!.setSize(collisionWidth, collisionHeight, false);
     sprite.body!.setOffset(calculatedOffsetX, calculatedOffsetY);

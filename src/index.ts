@@ -1,9 +1,9 @@
 import 'phaser';
-import { MainMenuScene } from './src/scenes/MainMenuScene';
-import { AboutScene } from './src/scenes/AboutScene';
-import { ControlsScene } from './src/scenes/ControlsScene';
-import { CreditsScene } from './src/scenes/CreditsScene';
-import { GameScene } from './src/scenes/GameScene';
+import { MainMenuScene } from './scenes/MainMenuScene';
+import { AboutScene } from './scenes/AboutScene';
+import { ControlsScene } from './scenes/ControlsScene';
+import { CreditsScene } from './scenes/CreditsScene';
+import { GameScene } from './scenes/GameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,

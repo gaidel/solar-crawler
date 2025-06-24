@@ -63,7 +63,7 @@ export class ExplosionManager {
             // Don't emit automatically
             emitting: false,
         });
-        
+
         // Set high depth for particles to render above everything except UI
         this.particles.setDepth(DEPTH_CONFIG.EXPLOSIONS);
     }

@@ -1,11 +1,4 @@
-import {
-    GAME_CONFIG,
-    UI_CONFIG,
-    UPGRADE_DEFINITIONS,
-    UPGRADE_CONFIG,
-    UpgradeData,
-    DEPTH_CONFIG,
-} from './config/constants';
+import { GAME_CONFIG, UI_CONFIG, UPGRADE_CONFIG, DEPTH_CONFIG } from './config/constants';
 import { AudioManager } from './AudioManager';
 
 export enum GameState {
@@ -171,7 +164,7 @@ export class GameUI {
     // HUD update methods
     updateHUD(score: number, timeLeft: number, currentWave?: number, totalWaves?: number): void {
         let timeText = `Score: ${score}`;
-        
+
         // Add wave information if provided
         if (currentWave !== undefined && totalWaves !== undefined) {
             // Special handling for boss wave (wave 8)
@@ -188,15 +181,20 @@ export class GameUI {
         this.scoreText.setText(timeText);
     }
 
-    updateHUDWithBossHP(score: number, currentWave: number, totalWaves: number, bossHP: { current: number; max: number } | null): void {
+    updateHUDWithBossHP(
+        score: number,
+        currentWave: number,
+        totalWaves: number,
+        bossHP: { current: number; max: number } | null
+    ): void {
         // Update main HUD text - just wave and score (boss HP bar is separate now)
         let hudText = `Wave: ${currentWave}/${totalWaves}  Score: ${score}`;
         if (!bossHP) {
             hudText += `  [BOSS FIGHT]`;
         }
-        
+
         this.scoreText.setText(hudText);
-        
+
         if (bossHP) {
             // Show boss HP bar
             this.showBossHPBar();
@@ -812,7 +810,7 @@ export class GameUI {
 
         // Instructions
         const instructionText = 'W/S to navigate, ENTER to select';
-        
+
         const instructions = this.scene.add.text(
             GAME_CONFIG.WIDTH / 2,
             GAME_CONFIG.HEIGHT - 80,
@@ -950,7 +948,9 @@ export class GameUI {
         const allUpgrades = upgradeManager.getAvailableUpgrades(); // This returns ALL upgrade definitions
 
         // Filter to get active upgrade data
-        const activeUpgrades = allUpgrades.filter((upgrade: any) => activeUpgradeIds.includes(upgrade.id));
+        const activeUpgrades = allUpgrades.filter((upgrade: any) =>
+            activeUpgradeIds.includes(upgrade.id)
+        );
 
         // Create dark overlay
         const overlay = this.scene.add.graphics();
@@ -1040,29 +1040,19 @@ export class GameUI {
                 this.uiOverlay!.add(iconFrame);
 
                 // Upgrade name
-                const nameText = this.scene.add.text(
-                    x - 100,
-                    y - 10,
-                    upgrade.name,
-                    {
-                        fontSize: '20px',
-                        color: '#ffffff',
-                        fontStyle: 'bold',
-                    }
-                );
+                const nameText = this.scene.add.text(x - 100, y - 10, upgrade.name, {
+                    fontSize: '20px',
+                    color: '#ffffff',
+                    fontStyle: 'bold',
+                });
                 nameText.setOrigin(0, 0.5);
                 this.uiOverlay!.add(nameText);
 
                 // Upgrade description
-                const descText = this.scene.add.text(
-                    x - 100,
-                    y + 15,
-                    upgrade.description,
-                    {
-                        fontSize: '16px',
-                        color: '#cccccc',
-                    }
-                );
+                const descText = this.scene.add.text(x - 100, y + 15, upgrade.description, {
+                    fontSize: '16px',
+                    color: '#cccccc',
+                });
                 descText.setOrigin(0, 0.5);
                 this.uiOverlay!.add(descText);
             });
@@ -1294,7 +1284,7 @@ export class GameUI {
         this.showingActiveUpgrades = false;
         this.showingUpgradeScreen = false;
         this.upgradeCallback = undefined;
-        
+
         this.showingSettings = true;
         this.settingsCallback = onBack;
         this.editingVolume = false;
@@ -1483,7 +1473,7 @@ export class GameUI {
         // Clear upgrade screen state
         this.showingUpgradeScreen = false;
         this.upgradeCallback = undefined;
-        
+
         // Don't hide boss HP bar when clearing screens - it should stay visible during pause
     }
 
@@ -1632,7 +1622,7 @@ export class GameUI {
             if (this.showingSettings && this.scene.time.now - this.settingsMenuCreatedTime < 200) {
                 return;
             }
-            
+
             if (this.showingActiveUpgrades) {
                 // In active upgrades screen, Enter always goes back
                 this.menuCallbacks[0]();

@@ -131,11 +131,7 @@ export class Leaper extends BaseEnemy {
         }
 
         // Leapers can zigzag up and down, so check vertical boundaries too
-        return (
-            this.sprite.x < -100 ||
-            this.sprite.y < -100 ||
-            this.sprite.y > gameHeight + 100
-        );
+        return this.sprite.x < -100 || this.sprite.y < -100 || this.sprite.y > gameHeight + 100;
     }
 
     // Getter for leaper type (useful for debugging or special effects)

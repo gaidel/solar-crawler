@@ -25,7 +25,10 @@ export interface Enemy {
     reset(): void;
 
     // Acid effect methods
-    applyAcidEffect(damage: number, onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void): void;
+    applyAcidEffect(
+        damage: number,
+        onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void
+    ): void;
     hasAcidEffects(): boolean;
     pauseAcidEffects(): void;
     resumeAcidEffects(): void;
@@ -42,7 +45,7 @@ export abstract class BaseEnemy implements Enemy {
     protected group: Phaser.Physics.Arcade.Group;
     private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
     protected healthBar: Phaser.GameObjects.Graphics | null = null;
-    
+
     // Acid effects system
     private acidEffects: AcidEffect[] = [];
     private baseColor: number = 0xffffff; // Store original color for acid tinting
@@ -254,7 +257,10 @@ export abstract class BaseEnemy implements Enemy {
     }
 
     // Acid effects system methods
-    applyAcidEffect(damage: number, onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void): void {
+    applyAcidEffect(
+        damage: number,
+        onEnemyDestroyed?: (enemy: Enemy, explosionX: number, explosionY: number) => void
+    ): void {
         // Create acid timer that applies damage after delay
         const acidTimer = this.scene.time.delayedCall(UPGRADE_CONFIG.ACID_DURATION, () => {
             // Apply acid damage if enemy is still alive and active
@@ -262,18 +268,18 @@ export abstract class BaseEnemy implements Enemy {
                 // Save position BEFORE calling takeDamage (which may move the enemy)
                 const explosionX = this.sprite.x;
                 const explosionY = this.sprite.y;
-                
+
                 const destroyed = this.takeDamage(damage);
-                
+
                 // If enemy was destroyed by acid damage, call the callback with saved position
                 if (destroyed && onEnemyDestroyed) {
                     onEnemyDestroyed(this, explosionX, explosionY);
                 }
             }
-            
+
             // Remove this effect from the array
-            this.acidEffects = this.acidEffects.filter(effect => effect.timer !== acidTimer);
-            
+            this.acidEffects = this.acidEffects.filter((effect) => effect.timer !== acidTimer);
+
             // Update tint based on remaining acid effects
             this.updateTintColor();
         });
@@ -281,7 +287,7 @@ export abstract class BaseEnemy implements Enemy {
         // Add the effect to our tracking array
         const acidEffect: AcidEffect = {
             damage: damage,
-            timer: acidTimer
+            timer: acidTimer,
         };
         this.acidEffects.push(acidEffect);
 
@@ -307,7 +313,7 @@ export abstract class BaseEnemy implements Enemy {
 
     private clearAcidEffects(): void {
         // Clear all acid effect timers
-        this.acidEffects.forEach(effect => {
+        this.acidEffects.forEach((effect) => {
             if (effect.timer) {
                 effect.timer.remove();
             }
@@ -318,7 +324,7 @@ export abstract class BaseEnemy implements Enemy {
 
     pauseAcidEffects(): void {
         // Pause all active acid effect timers
-        this.acidEffects.forEach(effect => {
+        this.acidEffects.forEach((effect) => {
             if (effect.timer && !effect.timer.hasDispatched) {
                 effect.timer.paused = true;
             }
@@ -327,7 +333,7 @@ export abstract class BaseEnemy implements Enemy {
 
     resumeAcidEffects(): void {
         // Resume all paused acid effect timers
-        this.acidEffects.forEach(effect => {
+        this.acidEffects.forEach((effect) => {
             if (effect.timer && !effect.timer.hasDispatched) {
                 effect.timer.paused = false;
             }

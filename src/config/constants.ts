@@ -33,30 +33,30 @@ export const UI_CONFIG = {
 export const DEPTH_CONFIG = {
     // Background layer (lowest)
     BACKGROUND: 0,
-    
+
     // Projectiles layer (above background, behind characters)
     ENEMY_BULLETS: 5,
     PLAYER_BULLETS: 6,
-    
+
     // Regular enemies layer (above projectiles)
     ASTEROIDS: 10,
     GUNNERS: 11,
     KAMIKAZES: 12,
     LEAPERS: 13,
-    
+
     // Boss enemies layer (above regular enemies)
     MOTHERSHIP: 20,
-    
+
     // Player layer (above enemies)
     PLAYER: 30,
-    
+
     // Effects layer (above player)
     EXPLOSIONS: 40,
-    
+
     // HUD layer (above effects)
     HUD_ELEMENTS: 100,
     HUD_TEXT: 101,
-    
+
     // UI Overlays layer (highest)
     PAUSE_MENU: 200,
     UPGRADE_SCREEN: 201,
@@ -75,7 +75,7 @@ export const PLAYER_CONFIG = {
     MOVEMENT_Y_MIN: 75, // Can't move above HUD area (extra margin to avoid HP bar)
     MOVEMENT_Y_MAX: 680, // Can't move below screen
     BASE_MAX_HP: 100, // Base max HP - upgraded to 200 with health upgrade
-    
+
     // Collision configuration for player ship
     COLLISION_WIDTH_FACTOR: 0.55, // 55% of sprite width - very tight fit to ship hull
     COLLISION_HEIGHT_FACTOR: 0.55, // 55% of sprite height - precise main body only
@@ -156,7 +156,7 @@ export const GUNNER_CONFIG = {
     SPAWN_X: 1380,
     MAX_POOL_SIZE: 6,
     FIRE_RATE: 2000, // Fires every 2 seconds
-    
+
     // Collision configuration for elongated gunner sprites
     COLLISION_WIDTH_FACTOR: 0.6, // 60% of sprite width - narrower for ship-like enemies
     COLLISION_HEIGHT_FACTOR: 0.5, // 50% of sprite height - ultra-tight fit to central hull

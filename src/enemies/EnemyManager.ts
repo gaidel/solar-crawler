@@ -333,7 +333,9 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    asteroid.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    asteroid.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) =>
+                        this.handleAcidDeath(enemy, x, y)
+                    );
                 }
 
                 if (destroyed) {
@@ -377,7 +379,9 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    kamikaze.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    kamikaze.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) =>
+                        this.handleAcidDeath(enemy, x, y)
+                    );
                 }
 
                 if (destroyed) {
@@ -421,7 +425,9 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    gunner.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    gunner.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) =>
+                        this.handleAcidDeath(enemy, x, y)
+                    );
                 }
 
                 if (destroyed) {
@@ -465,7 +471,9 @@ export class EnemyManager {
 
                 // Apply acid effect if player has the upgrade and enemy wasn't destroyed
                 if (!destroyed && this.upgradeManager && this.upgradeManager.hasAcidBullets()) {
-                    leaper.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) => this.handleAcidDeath(enemy, x, y));
+                    leaper.applyAcidEffect(BULLET_CONFIG.BASE_DAMAGE, (enemy, x, y) =>
+                        this.handleAcidDeath(enemy, x, y)
+                    );
                 }
 
                 if (destroyed) {
@@ -634,19 +642,19 @@ export class EnemyManager {
     }
 
     // Spawn the boss for wave 8
-    spawnMothership(playerX: number, playerY: number): void {
+    spawnMothership(_playerX: number, _playerY: number): void {
         if (this.mothership && !this.mothership.isActive) {
             // Spawn slightly right of center
             const spawnX = GAME_CONFIG.WIDTH * 0.6; // 60% of screen width (768px for 1280px screen)
             const spawnY = GAME_CONFIG.HEIGHT / 2; // Center vertically
             this.mothership.spawn(spawnX, spawnY);
-            
+
             // Set proper depths for all enemy types to maintain visual hierarchy
             this.asteroidGroup.setDepth(DEPTH_CONFIG.ASTEROIDS);
             this.kamikazeGroup.setDepth(DEPTH_CONFIG.KAMIKAZES);
             this.gunnerGroup.setDepth(DEPTH_CONFIG.GUNNERS);
             this.leaperGroup.setDepth(DEPTH_CONFIG.LEAPERS);
-            
+
             console.log('[BOSS] Mothership spawned for final wave');
         }
     }
@@ -655,7 +663,9 @@ export class EnemyManager {
     isBossDefeated(): boolean {
         const defeated = !this.mothership || !this.mothership.isActive;
         if (this.currentWave === 8) {
-            console.log(`[BOSS_CHECK] Boss defeated: ${defeated}, mothership exists: ${!!this.mothership}, mothership active: ${this.mothership?.isActive}`);
+            console.log(
+                `[BOSS_CHECK] Boss defeated: ${defeated}, mothership exists: ${!!this.mothership}, mothership active: ${this.mothership?.isActive}`
+            );
         }
         return defeated;
     }
@@ -665,7 +675,7 @@ export class EnemyManager {
         if (this.mothership && this.mothership.isActive) {
             return {
                 current: this.mothership.currentHP,
-                max: this.mothership.maxHP
+                max: this.mothership.maxHP,
             };
         }
         return null;
@@ -706,27 +716,27 @@ export class EnemyManager {
     // Pause all acid effects (for pause state)
     pauseAcidEffects(): void {
         // Pause acid effects on all active enemies
-        this.asteroids.forEach(enemy => {
+        this.asteroids.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.pauseAcidEffects();
             }
         });
-        this.kamikazes.forEach(enemy => {
+        this.kamikazes.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.pauseAcidEffects();
             }
         });
-        this.gunners.forEach(enemy => {
+        this.gunners.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.pauseAcidEffects();
             }
         });
-        this.leapers.forEach(enemy => {
+        this.leapers.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.pauseAcidEffects();
             }
         });
-        
+
         // Pause acid effects on boss
         if (this.mothership && this.mothership.isActive) {
             this.mothership.pauseAcidEffects();
@@ -736,27 +746,27 @@ export class EnemyManager {
     // Resume all acid effects (after pause state)
     resumeAcidEffects(): void {
         // Resume acid effects on all active enemies
-        this.asteroids.forEach(enemy => {
+        this.asteroids.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.resumeAcidEffects();
             }
         });
-        this.kamikazes.forEach(enemy => {
+        this.kamikazes.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.resumeAcidEffects();
             }
         });
-        this.gunners.forEach(enemy => {
+        this.gunners.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.resumeAcidEffects();
             }
         });
-        this.leapers.forEach(enemy => {
+        this.leapers.forEach((enemy) => {
             if (enemy.isActive) {
                 enemy.resumeAcidEffects();
             }
         });
-        
+
         // Resume acid effects on boss
         if (this.mothership && this.mothership.isActive) {
             this.mothership.resumeAcidEffects();
@@ -790,7 +800,7 @@ export class EnemyManager {
         this.kamikazes.forEach((kamikaze) => kamikaze.reset());
         this.gunners.forEach((gunner) => gunner.reset());
         this.leapers.forEach((leaper) => leaper.reset());
-        
+
         // Reset boss
         if (this.mothership) {
             this.mothership.reset();
@@ -806,13 +816,13 @@ export class EnemyManager {
         this.kamikazes.forEach((kamikaze) => kamikaze.destroy());
         this.gunners.forEach((gunner) => gunner.destroy());
         this.leapers.forEach((leaper) => leaper.destroy());
-        
+
         // Destroy boss
         if (this.mothership) {
             this.mothership.destroy();
             this.mothership = undefined;
         }
-        
+
         this.asteroids = [];
         this.kamikazes = [];
         this.gunners = [];

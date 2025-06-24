@@ -27,10 +27,10 @@ export class Player {
     private maxHP: number = PLAYER_CONFIG.BASE_MAX_HP;
     private currentHP: number = PLAYER_CONFIG.BASE_MAX_HP;
     private damageFlashTimer: Phaser.Time.TimerEvent | null = null;
-    
+
     // Auto-repair system
     private autoRepairTimer: Phaser.Time.TimerEvent | null = null;
-    
+
     // Phase Shield system (invincibility frames)
     private isInvincible: boolean = false;
     private invincibilityTimer: Phaser.Time.TimerEvent | null = null;
@@ -71,12 +71,12 @@ export class Player {
         // Set up optimized rectangular collision for player ship
         // Use configurable factors for easy tuning, with slight downward offset
         setupPlayerCollision(
-            this.sprite, 
-            PLAYER_CONFIG.COLLISION_WIDTH_FACTOR, 
+            this.sprite,
+            PLAYER_CONFIG.COLLISION_WIDTH_FACTOR,
             PLAYER_CONFIG.COLLISION_HEIGHT_FACTOR,
             PLAYER_CONFIG.COLLISION_OFFSET_Y
         );
-        
+
         // Set player depth to render above enemies
         this.sprite.setDepth(DEPTH_CONFIG.PLAYER);
     }
@@ -89,7 +89,7 @@ export class Player {
 
         // Handle player movement with boundary-aware velocity setting
         let velocityY = 0;
-        
+
         if (input.moveUp) {
             // Only set upward velocity if not at top boundary
             if (this.sprite.y > PLAYER_CONFIG.MOVEMENT_Y_MIN) {
@@ -101,7 +101,7 @@ export class Player {
                 velocityY = movementSpeed;
             }
         }
-        
+
         this.sprite.setVelocityY(velocityY);
 
         // Enforce movement boundaries as safety net (should rarely trigger now)
@@ -142,19 +142,19 @@ export class Player {
             bullet.setActive(true);
             bullet.setVisible(true);
             // Use dynamic bullet scale based on upgrades
-            const bulletScale = this.upgradeManager 
-                ? this.upgradeManager.calculateBulletScale() 
+            const bulletScale = this.upgradeManager
+                ? this.upgradeManager.calculateBulletScale()
                 : BULLET_CONFIG.SCALE;
             bullet.setScale(bulletScale);
-            
+
             // Use dynamic bullet speed based on upgrades
-            const bulletSpeed = this.upgradeManager 
-                ? this.upgradeManager.calculateBulletSpeed() 
+            const bulletSpeed = this.upgradeManager
+                ? this.upgradeManager.calculateBulletSpeed()
                 : BULLET_CONFIG.SPEED;
             bullet.setVelocityX(bulletSpeed);
             bullet.setVelocityY(0); // Explicitly set Y velocity to 0 for straight movement
             bullet.clearTint(); // Make sure bullet has no tint
-            
+
             // Set proper depth for player bullets
             bullet.setDepth(DEPTH_CONFIG.PLAYER_BULLETS);
 
@@ -243,7 +243,7 @@ export class Player {
     }
 
     // Energy Siphon: Heal fixed amount on enemy kill
-    onEnemyKilled(enemyMaxHP: number): void {
+    onEnemyKilled(_enemyMaxHP: number): void {
         if (this.upgradeManager && this.upgradeManager.hasEnergySiphon()) {
             // Always heal 1 HP regardless of enemy max HP
             this.heal(1);
@@ -281,7 +281,7 @@ export class Player {
                     if (this.currentHP < this.maxHP) {
                         this.heal(UPGRADE_CONFIG.AUTO_REPAIR_AMOUNT);
                     }
-                },    
+                },
                 loop: true,
             });
         }
@@ -298,7 +298,7 @@ export class Player {
     resume(): void {
         // Calculate how long the pause lasted
         const pauseDuration = this.scene.time.now - this.pauseStartTime;
-        
+
         // Adjust the firing timer to account for the pause duration
         // This prevents exploiting pause/resume for faster firing
         if (this.lastFired > 0) {

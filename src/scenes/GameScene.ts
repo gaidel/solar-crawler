@@ -1,4 +1,10 @@
-import { BULLET_CONFIG, GAME_CONFIG, DAMAGE_CONFIG, UPGRADE_CONFIG, DEPTH_CONFIG } from '../config/constants';
+import {
+    BULLET_CONFIG,
+    GAME_CONFIG,
+    DAMAGE_CONFIG,
+    UPGRADE_CONFIG,
+    DEPTH_CONFIG,
+} from '../config/constants';
 import { Player } from '../Player';
 import { GameUI, GameState } from '../GameUI';
 import { EnemyManager } from '../enemies/EnemyManager';
@@ -258,7 +264,7 @@ export class GameScene extends Phaser.Scene {
                     enemyBullet as Phaser.Physics.Arcade.Sprite
                 ),
             // Process callback - only if player has Interceptor upgrade
-            (playerBullet, enemyBullet) => {
+            (_playerBullet, _enemyBullet) => {
                 return this.upgradeManager ? this.upgradeManager.hasInterceptor() : false;
             },
             this
@@ -280,9 +286,9 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        // Check for victory condition 
+        // Check for victory condition
         const waveElapsedTime = this.time.now - this.waveStartTime;
-        
+
         // Wave 8 - Boss wave, no timer, victory only on boss defeat
         if (this.currentWave === 8) {
             if (this.enemyManager.isBossDefeated()) {
@@ -313,11 +319,21 @@ export class GameScene extends Phaser.Scene {
         if (this.currentWave === 8) {
             // Boss wave - show boss HP instead of timer
             const bossHP = this.enemyManager.getBossHP();
-            this.gameUI.updateHUDWithBossHP(this.score, this.currentWave, GAME_CONFIG.TOTAL_WAVES, bossHP);
+            this.gameUI.updateHUDWithBossHP(
+                this.score,
+                this.currentWave,
+                GAME_CONFIG.TOTAL_WAVES,
+                bossHP
+            );
         } else {
             // Regular waves - show timer
             const waveTimeLeft = Math.max(0, GAME_CONFIG.WAVE_DURATION - waveElapsedTime);
-            this.gameUI.updateHUD(this.score, waveTimeLeft, this.currentWave, GAME_CONFIG.TOTAL_WAVES);
+            this.gameUI.updateHUD(
+                this.score,
+                waveTimeLeft,
+                this.currentWave,
+                GAME_CONFIG.TOTAL_WAVES
+            );
         }
 
         // Update player HP display
@@ -616,7 +632,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private handleAOEExplosion(x: number, y: number, bulletDamage: number): void {
+    private handleAOEExplosion(x: number, y: number, _bulletDamage: number): void {
         // Create explosion effect at impact point
         if (this.explosionManager) {
             this.explosionManager.explodeMedium(x, y);
@@ -628,7 +644,9 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Calculate AOE damage (half of base bullet damage, not current damage)
-        const aoeDamage = Math.round(BULLET_CONFIG.BASE_DAMAGE * UPGRADE_CONFIG.AOE_DAMAGE_MULTIPLIER);
+        const aoeDamage = Math.round(
+            BULLET_CONFIG.BASE_DAMAGE * UPGRADE_CONFIG.AOE_DAMAGE_MULTIPLIER
+        );
         const aoeRadius = UPGRADE_CONFIG.AOE_RADIUS;
 
         // Find all active enemies within AOE radius and damage them
@@ -637,18 +655,21 @@ export class GameScene extends Phaser.Scene {
             this.enemyManager.getKamikazeGroup(),
             this.enemyManager.getGunnerGroup(),
             this.enemyManager.getLeaperGroup(),
-            this.enemyManager.getMothershipGroup()
+            this.enemyManager.getMothershipGroup(),
         ];
 
-        allEnemyGroups.forEach(group => {
-            group.getChildren().forEach(enemy => {
+        allEnemyGroups.forEach((group) => {
+            group.getChildren().forEach((enemy) => {
                 if (enemy instanceof Phaser.Physics.Arcade.Sprite && enemy.active) {
                     // Calculate distance from explosion center
                     const distance = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
-                    
+
                     // If enemy is within AOE radius, damage them
                     if (distance <= aoeRadius) {
-                        const aoeScoreValue = this.enemyManager.handleBulletCollision(enemy, aoeDamage);
+                        const aoeScoreValue = this.enemyManager.handleBulletCollision(
+                            enemy,
+                            aoeDamage
+                        );
                         this.score += aoeScoreValue;
                     }
                 }
@@ -681,7 +702,7 @@ export class GameScene extends Phaser.Scene {
         // Create small explosion effect at collision point
         const collisionX = (playerBullet.x + enemyBullet.x) / 2;
         const collisionY = (playerBullet.y + enemyBullet.y) / 2;
-        
+
         if (this.explosionManager) {
             this.explosionManager.explodeSmall(collisionX, collisionY);
         }
@@ -861,7 +882,10 @@ export class GameScene extends Phaser.Scene {
         this.enemyManager.stopSpawning();
 
         // Show upgrade screen after every wave (except the last one) if upgrades are available
-        if (this.currentWave < GAME_CONFIG.TOTAL_WAVES && this.upgradeManager.hasAvailableUpgrades()) {
+        if (
+            this.currentWave < GAME_CONFIG.TOTAL_WAVES &&
+            this.upgradeManager.hasAvailableUpgrades()
+        ) {
             this.showUpgradeSelectionWithDelayed();
         } else {
             // Show normal wave completion message if no upgrades available or it's the last wave
@@ -932,7 +956,7 @@ export class GameScene extends Phaser.Scene {
         if (this.currentWave === 8) {
             console.log('[BOSS] Starting final boss wave!');
             this.enemyManager.spawnMothership(this.player.getX(), this.player.getY());
-            
+
             // Switch to epic boss battle music
             if (this.audioManager) {
                 this.audioManager.playBossMusic();
@@ -1063,10 +1087,12 @@ export class GameScene extends Phaser.Scene {
 
     private skipToWaveEnd(): void {
         if (this.currentWave === 8) {
-            console.log(`[CHEAT] Cannot skip Wave 8 - boss must be defeated to complete final wave`);
+            console.log(
+                `[CHEAT] Cannot skip Wave 8 - boss must be defeated to complete final wave`
+            );
             return;
         }
-        
+
         const tenSecondsInMs = 10 * 1000;
         const targetWaveTime = GAME_CONFIG.WAVE_DURATION - tenSecondsInMs;
         this.waveStartTime = this.time.now - targetWaveTime;
@@ -1089,8 +1115,10 @@ export class GameScene extends Phaser.Scene {
     // Show multiple upgrade selections if delayed upgrades are pending
     private showUpgradeSelectionWithDelayed(): void {
         const upgradeCount = this.upgradeManager.initializeWaveUpgrades();
-        console.log(`[UPGRADE] Showing upgrade selection screen (${upgradeCount} total upgrades available)`);
-        
+        console.log(
+            `[UPGRADE] Showing upgrade selection screen (${upgradeCount} total upgrades available)`
+        );
+
         this.showNextUpgradeSelection();
     }
 
@@ -1102,7 +1130,9 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        console.log(`[UPGRADE] Showing upgrade selection (${this.upgradeManager.getRemainingUpgradeSelections()} remaining)`);
+        console.log(
+            `[UPGRADE] Showing upgrade selection (${this.upgradeManager.getRemainingUpgradeSelections()} remaining)`
+        );
         this.gameUI.showUpgradeScreen((upgradeId: string) => {
             this.applyUpgradeWithDelayed(upgradeId);
         });
@@ -1141,7 +1171,9 @@ export class GameScene extends Phaser.Scene {
             } else if (upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE) {
                 // Delayed upgrade: add bonus upgrade selections for next wave
                 this.upgradeManager.addDelayedUpgrade();
-                console.log('[DELAYED_UPGRADE] Delayed upgrade activated - next wave will have 3 upgrades');
+                console.log(
+                    '[DELAYED_UPGRADE] Delayed upgrade activated - next wave will have 3 upgrades'
+                );
             }
             // Still need to apply to UpgradeManager to remove from pool
             this.upgradeManager.applyUpgrade(upgradeId);

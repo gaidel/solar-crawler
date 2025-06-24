@@ -5,7 +5,6 @@
 ```
 solar-crawler/
 ├── 📄 index.html              # Entry point HTML file
-├── 📄 index.ts               # Main game initialization
 ├── 📁 assets/                # All game resources (organized by type)
 │   ├── 📁 audio/            # Audio assets organized by category
 │   │   ├── 📁 bgm/          # Background music
@@ -50,7 +49,10 @@ solar-crawler/
 │   ├── 📄 design.md         # Game Design Document
 │   ├── 📄 todo.md           # Development progress & issues
 │   └── 📄 architecture.md   # This file
+├── 📁 styles/                # CSS stylesheets
+│   └── 📄 main.css          # Main game styles
 ├── 📁 src/                   # Source code
+│   ├── 📄 index.ts          # Main game initialization
 │   ├── 📄 Player.ts         # Player class
 │   ├── 📄 GameUI.ts         # UI system and input handling
 │   ├── 📄 AudioManager.ts   # Audio system and music management
@@ -75,6 +77,7 @@ solar-crawler/
 │       └── 📄 CollisionHelpers.ts # Collision utilities
 ├── 📄 package.json          # Dependencies and scripts
 ├── 📄 tsconfig.json         # TypeScript configuration
+├── 📄 vite.config.ts         # Vite build configuration
 └── ⚙️ config files          # Build tools, linting, etc.
 ```
 
@@ -92,6 +95,7 @@ solar-crawler/
 ### 📂 **Logical Grouping**
 - **`src/`** - All source code goes here
 - **`assets/`** - All game resources (images, sounds, fonts)
+- **`styles/`** - CSS stylesheets and visual styling
 - **`docs/`** - All documentation files
 - **`config/`** - Configuration and constants (inside `src/`)
 
@@ -111,6 +115,7 @@ solar-crawler/
 - [x] Put utility functions in `src/utils/`
 - [x] Put game classes directly in `src/` (Player.ts, etc.)
 - [x] Put all images/sounds in `assets/`
+- [x] Put all CSS stylesheets in `styles/`
 - [x] Put all documentation in `docs/`
 
 ### **DON'T:**

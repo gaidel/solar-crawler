@@ -1,4 +1,9 @@
-import { UPGRADE_CONFIG, UPGRADE_DEFINITIONS, UpgradeData, BULLET_CONFIG } from './config/constants';
+import {
+    UPGRADE_CONFIG,
+    UPGRADE_DEFINITIONS,
+    UpgradeData,
+    BULLET_CONFIG,
+} from './config/constants';
 
 export class UpgradeManager {
     private activeUpgrades: Set<string> = new Set();
@@ -18,7 +23,10 @@ export class UpgradeManager {
         scene.load.image('upgrade-engine', 'assets/images/upgrades/upgrade-engine.png');
         scene.load.image('upgrade-ghost', 'assets/images/upgrades/upgrade-ghost.png');
         scene.load.image('upgrade-interceptor', 'assets/images/upgrades/upgrade-interceptor.png');
-        scene.load.image('upgrade-projectile-speed', 'assets/images/upgrades/upgrade-projectile-speed.png');
+        scene.load.image(
+            'upgrade-projectile-speed',
+            'assets/images/upgrades/upgrade-projectile-speed.png'
+        );
         scene.load.image('upgrade-rebirth', 'assets/images/upgrades/upgrade-rebirth.png');
         scene.load.image('upgrade-aoe', 'assets/images/upgrades/upgrade-aoe.png');
         scene.load.image('upgrade-healing', 'assets/images/upgrades/upgrade-healing.png');
@@ -29,7 +37,9 @@ export class UpgradeManager {
     constructor() {
         // Initialize available upgrades pool with all upgrades
         this.availableUpgrades = [...UPGRADE_DEFINITIONS];
-        console.log(`[UPGRADE] Initialized with ${this.availableUpgrades.length} available upgrades`);
+        console.log(
+            `[UPGRADE] Initialized with ${this.availableUpgrades.length} available upgrades`
+        );
     }
 
     // Check if player has a specific upgrade
@@ -42,8 +52,12 @@ export class UpgradeManager {
         // Check if it's an instant upgrade
         if (this.isInstantUpgrade(upgradeId)) {
             // Instant upgrades: remove from pool but don't add to permanent upgrades
-            this.availableUpgrades = this.availableUpgrades.filter(upgrade => upgrade.id !== upgradeId);
-            console.log(`[UPGRADE] Applied instant upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`);
+            this.availableUpgrades = this.availableUpgrades.filter(
+                (upgrade) => upgrade.id !== upgradeId
+            );
+            console.log(
+                `[UPGRADE] Applied instant upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`
+            );
             return;
         }
 
@@ -53,11 +67,15 @@ export class UpgradeManager {
         }
 
         this.activeUpgrades.add(upgradeId);
-        
+
         // Remove from available upgrades pool
-        this.availableUpgrades = this.availableUpgrades.filter(upgrade => upgrade.id !== upgradeId);
-        
-        console.log(`[UPGRADE] Applied upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`);
+        this.availableUpgrades = this.availableUpgrades.filter(
+            (upgrade) => upgrade.id !== upgradeId
+        );
+
+        console.log(
+            `[UPGRADE] Applied upgrade: ${upgradeId} (${this.availableUpgrades.length} upgrades remaining)`
+        );
     }
 
     // Get current damage multiplier
@@ -149,7 +167,10 @@ export class UpgradeManager {
 
     // Check if upgrade is an instant effect (not permanent)
     isInstantUpgrade(upgradeId: string): boolean {
-        return upgradeId === UPGRADE_CONFIG.INSTANT_HEAL || upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE;
+        return (
+            upgradeId === UPGRADE_CONFIG.INSTANT_HEAL ||
+            upgradeId === UPGRADE_CONFIG.DELAYED_UPGRADE
+        );
     }
 
     // Check if upgrade is a delayed effect
@@ -160,7 +181,9 @@ export class UpgradeManager {
     // Add delayed upgrade (doesn't affect current wave, affects next wave)
     addDelayedUpgrade(): void {
         this.pendingDelayedUpgrades += 3; // Add 3 upgrade selections for next wave
-        console.log(`[DELAYED_UPGRADE] Added delayed upgrade - ${this.pendingDelayedUpgrades} total pending`);
+        console.log(
+            `[DELAYED_UPGRADE] Added delayed upgrade - ${this.pendingDelayedUpgrades} total pending`
+        );
     }
 
     // Check if there are pending delayed upgrades
@@ -170,8 +193,13 @@ export class UpgradeManager {
 
     // Initialize upgrade selections for current wave (call this when starting upgrade selection)
     initializeWaveUpgrades(): number {
-        this.currentWaveUpgradeSelections = Math.min(1 + this.pendingDelayedUpgrades, this.availableUpgrades.length);
-        console.log(`[UPGRADE] Initialized ${this.currentWaveUpgradeSelections} upgrade selections for current wave`);
+        this.currentWaveUpgradeSelections = Math.min(
+            1 + this.pendingDelayedUpgrades,
+            this.availableUpgrades.length
+        );
+        console.log(
+            `[UPGRADE] Initialized ${this.currentWaveUpgradeSelections} upgrade selections for current wave`
+        );
         return this.currentWaveUpgradeSelections;
     }
 
@@ -184,14 +212,18 @@ export class UpgradeManager {
     consumeUpgradeSelection(): void {
         if (this.currentWaveUpgradeSelections > 0) {
             this.currentWaveUpgradeSelections--;
-            
+
             // Also consume delayed upgrade if we have them
             if (this.pendingDelayedUpgrades > 0) {
                 this.pendingDelayedUpgrades--;
-                console.log(`[DELAYED_UPGRADE] Consumed delayed upgrade - ${this.pendingDelayedUpgrades} pending for future waves`);
+                console.log(
+                    `[DELAYED_UPGRADE] Consumed delayed upgrade - ${this.pendingDelayedUpgrades} pending for future waves`
+                );
             }
-            
-            console.log(`[UPGRADE] Consumed upgrade selection - ${this.currentWaveUpgradeSelections} remaining this wave`);
+
+            console.log(
+                `[UPGRADE] Consumed upgrade selection - ${this.currentWaveUpgradeSelections} remaining this wave`
+            );
         }
     }
 
@@ -199,7 +231,9 @@ export class UpgradeManager {
     consumeRebirth(): boolean {
         if (this.hasRebirth()) {
             this.activeUpgrades.delete(UPGRADE_CONFIG.REBIRTH);
-            console.log('[REBIRTH] Rebirth upgrade consumed - wave restarting instead of game over');
+            console.log(
+                '[REBIRTH] Rebirth upgrade consumed - wave restarting instead of game over'
+            );
             return true;
         }
         return false;
@@ -208,22 +242,22 @@ export class UpgradeManager {
     // Calculate bullet speed based on upgrades
     calculateBulletSpeed(): number {
         let speed = BULLET_CONFIG.SPEED;
-        
+
         if (this.hasProjectileSpeed()) {
             speed *= UPGRADE_CONFIG.PROJECTILE_SPEED_MULTIPLIER;
         }
-        
+
         return speed;
     }
 
     // Calculate bullet scale based on upgrades
     calculateBulletScale(): number {
         let scale = BULLET_CONFIG.SCALE;
-        
+
         if (this.hasBulletSize()) {
             scale *= UPGRADE_CONFIG.BULLET_SIZE_MULTIPLIER;
         }
-        
+
         return scale;
     }
 
@@ -272,16 +306,16 @@ export class UpgradeManager {
         if (this.availableUpgrades.length <= count) {
             return [...this.availableUpgrades];
         }
-        
+
         // Get a copy of available upgrades
         const upgradesCopy = [...this.availableUpgrades];
-        
+
         // Shuffle the array
         for (let i = upgradesCopy.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [upgradesCopy[i], upgradesCopy[j]] = [upgradesCopy[j], upgradesCopy[i]];
         }
-        
+
         // Return first 'count' upgrades
         return upgradesCopy.slice(0, count);
     }
@@ -307,7 +341,9 @@ export class UpgradeManager {
         this.availableUpgrades = [...UPGRADE_DEFINITIONS]; // Restore full pool
         this.pendingDelayedUpgrades = 0; // Reset delayed upgrades
         this.currentWaveUpgradeSelections = 0; // Reset current wave selections
-        console.log(`[UPGRADE] All upgrades reset - ${this.availableUpgrades.length} upgrades available`);
+        console.log(
+            `[UPGRADE] All upgrades reset - ${this.availableUpgrades.length} upgrades available`
+        );
     }
 
     // Debug: Get upgrade status

@@ -1,0 +1,22 @@
+/* Solar Crawler - Main Styles */
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #000;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+}
+
+/* Loading indicator (if needed in future) */
+.loading {
+    color: #fff;
+    text-align: center;
+} 
