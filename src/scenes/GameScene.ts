@@ -28,6 +28,7 @@ export class GameScene extends Phaser.Scene {
     private score: number = 0;
     private currentWave: number = 1;
     private waveStartTime: number = 0;
+    private pauseStartTime: number = 0;
 
     // Debug/Cheat keys (only work when debug mode is enabled)
     private vKey?: Phaser.Input.Keyboard.Key;
@@ -1015,6 +1016,9 @@ export class GameScene extends Phaser.Scene {
     private pauseGame(): void {
         this.gameState = GameState.PAUSED;
 
+        // Record when the pause started
+        this.pauseStartTime = this.time.now;
+
         // Pause physics
         this.physics.pause();
 
@@ -1036,6 +1040,12 @@ export class GameScene extends Phaser.Scene {
 
     private resumeGame(): void {
         this.gameState = GameState.PLAYING;
+
+        // Calculate how long the pause lasted
+        const pauseDuration = this.time.now - this.pauseStartTime;
+
+        // Adjust the wave start time to account for the pause duration
+        this.waveStartTime += pauseDuration;
 
         // Resume physics
         this.physics.resume();
